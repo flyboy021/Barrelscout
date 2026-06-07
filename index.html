@@ -413,21 +413,14 @@
         <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/>
         </svg>
-        <input class="browse-search" id="browse-input" type="search" placeholder="Search bottles, distilleries…" oninput="filterBottles(this.value)" autocomplete="off" autocorrect="off" spellcheck="false"/>
+        <input class="browse-search" id="browse-input" type="search" placeholder="Search any whiskey…" oninput="filterBottles(this.value)" autocomplete="off" autocorrect="off" spellcheck="false"/>
         <button class="search-clear" id="search-clear" onclick="clearSearch()">
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M5 5l10 10M15 5L5 15"/></svg>
         </button>
       </div>
       <div class="filter-chips" id="filter-chips"></div>
       <div class="bottle-list" id="bottle-list"></div>
-      <div id="online-search-section" style="display:none">
-        <div class="online-search-divider">Online Search</div>
-        <button class="btn-online-search" id="online-search-btn" onclick="searchBrowseOnline()">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/></svg>
-          Search WHISKY:EDITION Database
-        </button>
-        <div id="online-results-container"></div>
-      </div>
+      <div class="attribution-line" style="padding:8px 0 16px">Powered by <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a></div>
     </section>
 
     <!-- COLLECTION -->
@@ -587,273 +580,6 @@
 <div id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════════════════
-// BOTTLE DATABASE
-// ═══════════════════════════════════════════════════════
-const BOTTLES = [
-  { id:1, emoji:'🥃', name:'Wild Turkey 101', distillery:'Wild Turkey Distillery', type:'Bourbon', region:'Kentucky', age:'8 yr', proof:'101', vintage:'1980s', rarity:'Common', value:'$35–45',
-    keywords:['wild turkey','turkey','101','russell'],
-    flavors:['Vanilla','Caramel','Oak','Spice','Dried Fruit'],
-    desc:'A classic Kentucky straight bourbon with a bold, full-bodied profile. The 101 proof expression is beloved by enthusiasts for its honest, uncut character and exceptional value.',
-    tags:['Kentucky','Vintage','Wheated'] },
-
-  { id:2, emoji:'🍶', name:'Pappy Van Winkle 23yr', distillery:'Buffalo Trace / Stitzel-Weller', type:'Bourbon', region:'Kentucky', age:'23 yr', proof:'95.6', vintage:'2010s', rarity:'Unicorn', value:'$1,500–3,000',
-    keywords:['pappy','van winkle','vanwinkle','winkle','family reserve'],
-    flavors:['Dark Chocolate','Leather','Tobacco','Fig','Clove'],
-    desc:"The crown jewel of American bourbon collecting. Released annually in extremely limited quantities and commands astronomical prices on the secondary market.",
-    tags:['Wheated','BTAC','Ultra-Rare'] },
-
-  { id:3, emoji:'🥃', name:'Eagle Rare 17yr', distillery:'Buffalo Trace Distillery', type:'Bourbon', region:'Kentucky', age:'17 yr', proof:'90', vintage:'Various', rarity:'Very Rare', value:'$400–800',
-    keywords:['eagle rare','eagle','btac','buffalo trace antique'],
-    flavors:['Toffee','Herbs','Honey','Leather','Orange Peel'],
-    desc:'Part of the Buffalo Trace Antique Collection, Eagle Rare 17 is released once yearly and features an extraordinarily complex profile developed over nearly two decades.',
-    tags:['BTAC','Single Barrel','Anniversary'] },
-
-  { id:4, emoji:'🍾', name:'George T. Stagg', distillery:'Buffalo Trace Distillery', type:'Bourbon', region:'Kentucky', age:'15–17 yr', proof:'130–145', vintage:'Annual BTAC', rarity:'Very Rare', value:'$600–1,200',
-    keywords:['george stagg','stagg','btac','buffalo trace'],
-    flavors:['Cherry','Vanilla','Charred Oak','Mint','Coffee'],
-    desc:'The powerhouse of the Buffalo Trace Antique Collection. An uncut, unfiltered bourbon that regularly earns top scores from critics worldwide.',
-    tags:['BTAC','Cask Strength','Unfiltered'] },
-
-  { id:5, emoji:'🥃', name:'Old Fitzgerald 8yr BiB', distillery:'Heaven Hill / Stitzel-Weller', type:'Bourbon', region:'Kentucky', age:'8 yr', proof:'100', vintage:'1960s–1980s', rarity:'Scarce', value:'$200–600',
-    keywords:['old fitzgerald','fitzgerald','fitz','stitzel','heaven hill','bib','bottled in bond'],
-    flavors:['Wheat','Honey','Baking Spice','Peach','Butterscotch'],
-    desc:'Old Fitzgerald Bottled-in-Bond is a wheated bourbon legend, originally produced at the iconic Stitzel-Weller Distillery.',
-    tags:['Wheated','Bottled-in-Bond','Stitzel-Weller'] },
-
-  { id:6, emoji:'🥃', name:'Four Roses Single Barrel', distillery:'Four Roses Distillery', type:'Bourbon', region:'Kentucky', age:'10–13 yr', proof:'100–120', vintage:'Various', rarity:'Moderate', value:'$50–80',
-    keywords:['four roses','4 roses','single barrel','roses'],
-    flavors:['Rose','Ripe Fruit','Cinnamon','Caramel','Floral'],
-    desc:'Four Roses uses a unique combination of 5 yeast strains and 2 mash bills to produce 10 distinct bourbon recipes.',
-    tags:['Single Barrel','High-Rye','Award-Winning'] },
-
-  { id:7, emoji:'🍾', name:'A.H. Hirsch Reserve 20yr', distillery:"Michter's (Pennco) / Hirsch", type:'Bourbon', region:'Pennsylvania', age:'20 yr', proof:'91.6', vintage:'1974 distillate', rarity:'Legendary', value:'$2,000–5,000',
-    keywords:['hirsch','ah hirsch','a.h. hirsch','pennco','michters'],
-    flavors:['Marzipan','Dried Cherry','Cinnamon Toast','Old Leather','Sandalwood'],
-    desc:"Often called the greatest American bourbon ever produced. Distilled in 1974 at the Pennco distillery in Pennsylvania.",
-    tags:['Pennsylvania','Pre-Prohibition Style','Legendary'] },
-
-  { id:8, emoji:'🥃', name:'W.L. Weller 12yr', distillery:'Buffalo Trace Distillery', type:'Bourbon', region:'Kentucky', age:'12 yr', proof:'90', vintage:'Current', rarity:'Hard to Find', value:'$50–150',
-    keywords:['weller','w.l. weller','wl weller','wheated','poor man pappy'],
-    flavors:['Caramel','Vanilla','Coconut','Peach','Light Oak'],
-    desc:"Often called the 'Poor Man's Pappy', W.L. Weller 12 Year shares the wheated mash bill of the Van Winkle family.",
-    tags:['Wheated','Buffalo Trace','Pappy Alternative'] },
-
-  { id:9, emoji:'🥃', name:"Maker's Mark", distillery:"Maker's Mark Distillery", type:'Bourbon', region:'Kentucky', age:'NAS', proof:'90', vintage:'Current', rarity:'Common', value:'$30–40',
-    keywords:["maker's mark","makers mark","makers","red wax"],
-    flavors:['Caramel','Vanilla','Wheat','Fruit','Light Spice'],
-    desc:"Kentucky's most recognizable wheated bourbon, hand-dipped in signature red wax. Soft and approachable with consistent quality.",
-    tags:['Wheated','Kentucky','Classic'] },
-
-  { id:10, emoji:'🥃', name:'Jim Beam White Label', distillery:'Jim Beam Distillery', type:'Bourbon', region:'Kentucky', age:'4 yr', proof:'80', vintage:'Current', rarity:'Common', value:'$18–25',
-    keywords:['jim beam','beam','white label','jacob beam'],
-    flavors:['Corn','Caramel','Light Oak','Vanilla','Grain'],
-    desc:'The world\'s best-selling bourbon. Jim Beam White Label is a benchmark entry-level Kentucky straight bourbon produced at Clermont, KY.',
-    tags:['Kentucky','Classic','Everyday'] },
-
-  // ── MORE BOURBON ─────────────────────────────────────
-  { id:11, emoji:'🥃', name:"Blanton's Single Barrel", distillery:'Buffalo Trace Distillery', type:'Bourbon', region:'Kentucky', age:'NAS', proof:'93', vintage:'Current', rarity:'Hard to Find', value:'$60–120',
-    keywords:["blanton's","blantons","blanton","single barrel","horse stopper"],
-    flavors:['Orange Peel','Vanilla','Nutmeg','Honey','Oak'],
-    desc:"America's original single barrel bourbon. Blanton's is famous for its distinctive round bottle and horse-and-jockey stopper collectibles. Demand far outpaces supply at most retailers.",
-    tags:['Single Barrel','Buffalo Trace','Collectible'] },
-
-  { id:12, emoji:'🥃', name:'Elijah Craig Barrel Proof', distillery:'Heaven Hill Distillery', type:'Bourbon', region:'Kentucky', age:'12 yr', proof:'120–140', vintage:'Bi-Annual', rarity:'Scarce', value:'$60–100',
-    keywords:['elijah craig','barrel proof','ecbp','craig','heaven hill'],
-    flavors:['Dark Fruit','Chocolate','Oak','Cinnamon','Vanilla'],
-    desc:'Released three times a year in batches labeled A, B, and C, Elijah Craig Barrel Proof is one of the best-value cask-strength bourbons on the market. Each batch varies slightly in proof and flavor.',
-    tags:['Cask Strength','Heaven Hill','12 Year'] },
-
-  { id:13, emoji:'🥃', name:'Booker\'s Bourbon', distillery:'Jim Beam Distillery', type:'Bourbon', region:'Kentucky', age:'6–8 yr', proof:'121–130', vintage:'Current', rarity:'Moderate', value:'$80–100',
-    keywords:["booker's",'bookers','booker noe','small batch'],
-    flavors:['Vanilla','Caramel','Charred Oak','Dark Chocolate','Tobacco'],
-    desc:"Named after the late Booker Noe, Jim Beam's master distiller and grandson of Jim Beam himself. Booker's is uncut, unfiltered, and straight from the barrel — one of the original small batch bourbons.",
-    tags:['Cask Strength','Jim Beam','Unfiltered'] },
-
-  { id:14, emoji:'🥃', name:"Woodford Reserve", distillery:'Woodford Reserve Distillery', type:'Bourbon', region:'Kentucky', age:'NAS', proof:'90.4', vintage:'Current', rarity:'Common', value:'$35–45',
-    keywords:['woodford','woodford reserve','brown forman'],
-    flavors:['Dried Fruit','Vanilla','Toasted Oak','Spice','Chocolate'],
-    desc:"Kentucky's most awarded bourbon. Woodford Reserve is triple-distilled in copper pot stills at a historic limestone distillery, giving it a rich, complex character that punches well above its price.",
-    tags:['Kentucky','Triple Distilled','Award-Winning'] },
-
-  { id:15, emoji:'🥃', name:"Knob Creek 9yr", distillery:'Jim Beam Distillery', type:'Bourbon', region:'Kentucky', age:'9 yr', proof:'100', vintage:'Current', rarity:'Common', value:'$35–45',
-    keywords:['knob creek','knob','9 year','small batch'],
-    flavors:['Oak','Caramel','Vanilla','Dried Fruit','Nuts'],
-    desc:'Part of the Jim Beam Small Batch Collection, Knob Creek 9 Year is aged longer and bottled at a higher proof than most mainstream bourbons, delivering a robust, full-flavored experience.',
-    tags:['Kentucky','Small Batch','100 Proof'] },
-
-  { id:16, emoji:'🥃', name:"Angel's Envy", distillery:"Angel's Envy Distillery", type:'Bourbon', region:'Kentucky', age:'NAS', proof:'86.6', vintage:'Current', rarity:'Common', value:'$40–55',
-    keywords:["angel's envy","angels envy","port finish","lincoln henderson"],
-    flavors:['Port Wine','Vanilla','Maple','Dark Fruit','Oak'],
-    desc:"Finished in ruby port wine casks, Angel's Envy has a uniquely approachable and sweet profile. Created by the legendary Lincoln Henderson in his final chapter, it pioneered the finishing trend in American whiskey.",
-    tags:['Port Finish','Louisville','Finished'] },
-
-  { id:17, emoji:'🥃', name:'Buffalo Trace', distillery:'Buffalo Trace Distillery', type:'Bourbon', region:'Kentucky', age:'NAS', proof:'90', vintage:'Current', rarity:'Moderate', value:'$25–40',
-    keywords:['buffalo trace','buffalo','btd','sazerac'],
-    flavors:['Vanilla','Mint','Caramel','Molasses','Oak'],
-    desc:'The flagship bourbon from one of the most decorated distilleries in the world. Buffalo Trace is a workhorse bourbon with exceptional quality at an approachable price — when you can find it.',
-    tags:['Kentucky','Buffalo Trace','Award-Winning'] },
-
-  { id:18, emoji:'🥃', name:'Old Forester 1920', distillery:'Brown-Forman Distillery', type:'Bourbon', region:'Kentucky', age:'NAS', proof:'115', vintage:'Current', rarity:'Common', value:'$50–60',
-    keywords:['old forester','forester','1920','prohibition style','brown forman'],
-    flavors:['Dark Chocolate','Dried Fruit','Oak','Coffee','Vanilla'],
-    desc:'Inspired by Old Forester\'s Prohibition-era medicinal whiskey, the 1920 is bottled at 115 proof and showcases a bold, rich flavor profile. One of the best high-proof bourbons at its price point.',
-    tags:['Kentucky','High Proof','Prohibition'] },
-
-  { id:19, emoji:'🥃', name:"Larceny Small Batch", distillery:'Heaven Hill Distillery', type:'Bourbon', region:'Kentucky', age:'NAS', proof:'92', vintage:'Current', rarity:'Common', value:'$25–35',
-    keywords:['larceny','wheat','wheated','heaven hill','john e fitzgerald'],
-    flavors:['Honey','Butterscotch','Caramel','Wheat','Light Oak'],
-    desc:'A wheated bourbon named after John E. Fitzgerald, who had legendary access to the Stitzel-Weller warehouses. Larceny offers Old Fitzgerald-style softness at an everyday price point.',
-    tags:['Wheated','Heaven Hill','Everyday'] },
-
-  { id:20, emoji:'🥃', name:"Henry McKenna 10yr BiB", distillery:'Heaven Hill Distillery', type:'Bourbon', region:'Kentucky', age:'10 yr', proof:'100', vintage:'Current', rarity:'Moderate', value:'$35–55',
-    keywords:['henry mckenna','mckenna','bib','bottled in bond','single barrel'],
-    flavors:['Caramel','Oak','Leather','Vanilla','Spice'],
-    desc:'Winner of the San Francisco World Spirits Best in Show, Henry McKenna 10 Year Single Barrel Bottled-in-Bond offers remarkable quality at a fraction of comparable aged bourbons. A true collector value.',
-    tags:['Single Barrel','Bottled-in-Bond','Heaven Hill'] },
-
-  // ── RYE WHISKEY ──────────────────────────────────────
-  { id:21, emoji:'🌾', name:'Sazerac Rye 18yr', distillery:'Buffalo Trace Distillery', type:'Rye', region:'Kentucky', age:'18 yr', proof:'90', vintage:'Annual BTAC', rarity:'Very Rare', value:'$500–900',
-    keywords:['sazerac','sazerac rye','18 year','btac','buffalo trace antique'],
-    flavors:['Clove','Mint','Caramel','Dried Herb','Oak'],
-    desc:'The oldest rye in the Buffalo Trace Antique Collection. Sazerac 18 Year is a masterclass in aged rye whiskey, with a complexity and balance rarely seen at this age statement.',
-    tags:['BTAC','Rye','Ultra-Aged'] },
-
-  { id:22, emoji:'🌾', name:'Thomas H. Handy Sazerac', distillery:'Buffalo Trace Distillery', type:'Rye', region:'Kentucky', age:'6 yr', proof:'125–135', vintage:'Annual BTAC', rarity:'Very Rare', value:'$400–700',
-    keywords:['thomas handy','handy','sazerac','btac','cask strength rye'],
-    flavors:['Cinnamon','Mint','Vanilla','Pepper','Dark Fruit'],
-    desc:'The cask-strength entry in the BTAC rye lineup. Thomas H. Handy is named after the man who popularized the Sazerac cocktail in New Orleans and delivers an intense, unfiltered rye experience.',
-    tags:['BTAC','Rye','Cask Strength'] },
-
-  { id:23, emoji:'🌾', name:'Rittenhouse Rye BiB', distillery:'Heaven Hill Distillery', type:'Rye', region:'Kentucky', age:'4 yr', proof:'100', vintage:'Current', rarity:'Common', value:'$25–35',
-    keywords:['rittenhouse','rye','bottled in bond','heaven hill'],
-    flavors:['Pepper','Rye Bread','Caramel','Fruit','Spice'],
-    desc:'The bartender\'s choice for classic cocktails. Rittenhouse Bottled-in-Bond delivers bold rye character at an unbeatable price, making it the gold standard for Manhattans and Old Fashioneds.',
-    tags:['Rye','Bottled-in-Bond','Cocktail Classic'] },
-
-  { id:24, emoji:'🌾', name:"WhistlePig 10yr", distillery:'WhistlePig Farm', type:'Rye', region:'Vermont', age:'10 yr', proof:'100', vintage:'Current', rarity:'Moderate', value:'$55–70',
-    keywords:['whistlepig','whistle pig','10 year','vermont','rye'],
-    flavors:['Caramel','Vanilla','Toasted Oak','Baking Spice','Dark Fruit'],
-    desc:'Vermont farm whiskey with a bold rye-forward character. WhistlePig 10 Year put farm distilleries on the map and remains one of the most respected rye whiskeys in the world.',
-    tags:['Rye','Vermont','Farm Distillery'] },
-
-  { id:25, emoji:'🌾', name:"WhistlePig 15yr", distillery:'WhistlePig Farm', type:'Rye', region:'Vermont', age:'15 yr', proof:'92', vintage:'Current', rarity:'Scarce', value:'$130–160',
-    keywords:['whistlepig','whistle pig','15 year','vermont','boss hog'],
-    flavors:['Dried Apricot','Toasted Oak','Honey','Baking Spice','Leather'],
-    desc:'Aged 15 years and finished in Vermont oak barrels, WhistlePig 15 Year showcases extraordinary complexity. The extra aging rounds the rye spice into a silky, rich profile.',
-    tags:['Rye','Vermont','15 Year'] },
-
-  { id:26, emoji:'🌾', name:"Michter's US*1 Rye", distillery:"Michter's Distillery", type:'Rye', region:'Kentucky', age:'NAS', proof:'84.8', vintage:'Current', rarity:'Common', value:'$40–50',
-    keywords:["michter's","michters","us1","rye","single barrel"],
-    flavors:['Pepper','Caramel','Fruit','Oak','Baking Spice'],
-    desc:"Michter's single barrel rye is aged until the master distiller decides it's ready — no age statement, just quality. The result is a approachable, balanced rye with exceptional character.",
-    tags:['Rye','Single Barrel','Kentucky'] },
-
-  { id:27, emoji:'🌾', name:'High West Rendezvous Rye', distillery:'High West Distillery', type:'Rye', region:'Utah', age:'NAS', proof:'92', vintage:'Current', rarity:'Common', value:'$45–55',
-    keywords:['high west','rendezvous','utah','rye','blend'],
-    flavors:['Pepper','Mint','Vanilla','Caramel','Dried Fruit'],
-    desc:'A blend of straight rye whiskeys from Utah. High West Rendezvous pioneered the craft blended rye category and remains a beloved expression known for its balance and cocktail versatility.',
-    tags:['Rye','Utah','Blended'] },
-
-  { id:28, emoji:'🌾', name:'Van Winkle Family Reserve Rye 13yr', distillery:'Buffalo Trace Distillery', type:'Rye', region:'Kentucky', age:'13 yr', proof:'95.6', vintage:'Annual', rarity:'Unicorn', value:'$500–1,200',
-    keywords:['van winkle rye','pappy rye','family reserve rye','13 year'],
-    flavors:['Clove','Leather','Dried Fruit','Honey','Oak'],
-    desc:'The rarest rye in the Van Winkle lineup. The Family Reserve Rye 13 Year uses a unique 95% rye mash bill aged over a decade. Fewer bottles exist than any other Van Winkle expression.',
-    tags:['Rye','Van Winkle','Ultra-Rare'] },
-
-  // ── TENNESSEE WHISKEY ─────────────────────────────────
-  { id:29, emoji:'🥃', name:"Jack Daniel's Old No. 7", distillery:"Jack Daniel's Distillery", type:'Tennessee', region:'Tennessee', age:'NAS', proof:'80', vintage:'Current', rarity:'Common', value:'$25–35',
-    keywords:["jack daniel's","jack daniels","jack","old no 7","no. 7","tennessee","lem motlow"],
-    flavors:['Maple','Vanilla','Caramel','Charcoal','Banana'],
-    desc:"The world's most recognized whiskey. Jack Daniel's is charcoal-mellowed through sugar maple before aging, a process called the Lincoln County Process that defines Tennessee whiskey.",
-    tags:['Tennessee','Charcoal Mellowed','Iconic'] },
-
-  { id:30, emoji:'🥃', name:"Jack Daniel's Single Barrel", distillery:"Jack Daniel's Distillery", type:'Tennessee', region:'Tennessee', age:'NAS', proof:'94', vintage:'Current', rarity:'Moderate', value:'$45–55',
-    keywords:["jack daniel's single barrel","jack single barrel","jd single"],
-    flavors:['Toasted Oak','Vanilla','Caramel','Banana','Spice'],
-    desc:"Pulled from the highest reaches of the rickhouse where temperature swings are most dramatic, Jack Daniel's Single Barrel is a significant step up in complexity from the standard expression.",
-    tags:['Tennessee','Single Barrel','Premium'] },
-
-  { id:31, emoji:'🥃', name:'George Dickel No. 12', distillery:'George Dickel Distillery', type:'Tennessee', region:'Tennessee', age:'NAS', proof:'90', vintage:'Current', rarity:'Common', value:'$25–35',
-    keywords:['george dickel','dickel','no 12','no. 12','cascade','tennessee'],
-    flavors:['Mellow Oak','Caramel','Vanilla','Grain','Light Spice'],
-    desc:"Jack Daniel's lesser-known but equally storied Tennessee rival. George Dickel is also charcoal mellowed but at a colder temperature, resulting in a smoother, mellower character.",
-    tags:['Tennessee','Charcoal Mellowed','Classic'] },
-
-  { id:32, emoji:'🥃', name:"Uncle Nearest 1856", distillery:'Uncle Nearest Distillery', type:'Tennessee', region:'Tennessee', age:'NAS', proof:'100', vintage:'Current', rarity:'Moderate', value:'$50–65',
-    keywords:['uncle nearest','nearest green','1856','tennessee'],
-    flavors:['Caramel','Vanilla','Honey','Oak','Warm Spice'],
-    desc:"Named after Nearest Green, the first African-American master distiller on record who taught Jack Daniel the art of whiskey-making. Uncle Nearest has become one of the fastest-growing American whiskey brands.",
-    tags:['Tennessee','Historical','Award-Winning'] },
-
-  // ── SCOTCH WHISKY ─────────────────────────────────────
-  { id:33, emoji:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', name:'Macallan 12yr Sherry Oak', distillery:'Macallan Distillery', type:'Scotch', region:'Speyside', age:'12 yr', proof:'86', vintage:'Current', rarity:'Common', value:'$60–75',
-    keywords:['macallan','12 year','sherry oak','speyside','scotland'],
-    flavors:['Dried Fruit','Sherry','Vanilla','Ginger','Cinnamon'],
-    desc:'The benchmark Speyside single malt. Macallan 12 Year Sherry Oak is matured exclusively in sherry-seasoned oak casks, producing a rich, fruit-forward whisky that introduced millions to Scotch.',
-    tags:['Scotch','Speyside','Sherry Cask'] },
-
-  { id:34, emoji:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', name:'Macallan 18yr Sherry Oak', distillery:'Macallan Distillery', type:'Scotch', region:'Speyside', age:'18 yr', proof:'86', vintage:'Current', rarity:'Scarce', value:'$250–350',
-    keywords:['macallan','18 year','sherry oak','speyside','scotland'],
-    flavors:['Dried Fruit','Rich Sherry','Dark Chocolate','Clove','Orange Peel'],
-    desc:'Six more years of maturation transforms the Macallan 12 into something extraordinary. The 18 Year Sherry Oak is deep, complex, and endlessly rewarding — one of Scotland\'s most iconic expressions.',
-    tags:['Scotch','Speyside','Sherry Cask'] },
-
-  { id:35, emoji:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', name:'Ardbeg 10yr', distillery:'Ardbeg Distillery', type:'Scotch', region:'Islay', age:'10 yr', proof:'92', vintage:'Current', rarity:'Common', value:'$45–55',
-    keywords:['ardbeg','10 year','islay','peated','scotland'],
-    flavors:['Peat Smoke','Sea Salt','Lemon','Vanilla','Pepper'],
-    desc:'The peatiest, smokiest whisky made at Ardbeg. The 10 Year is widely considered the best introduction to heavily peated Islay Scotch — intense but surprisingly well-balanced.',
-    tags:['Scotch','Islay','Heavily Peated'] },
-
-  { id:36, emoji:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', name:'Lagavulin 16yr', distillery:'Lagavulin Distillery', type:'Scotch', region:'Islay', age:'16 yr', proof:'86', vintage:'Current', rarity:'Common', value:'$75–90',
-    keywords:['lagavulin','16 year','islay','peated','scotland','lagavulin 16'],
-    flavors:['Peat','Dried Fruit','Seaweed','Malt','Smoke'],
-    desc:"One of the world's most beloved Scotches. Lagavulin 16 balances intense Islay peat smoke with a surprisingly rich, sweet maltiness developed over 16 years. Ron Swanson's favorite.",
-    tags:['Scotch','Islay','Peated'] },
-
-  { id:37, emoji:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', name:'Laphroaig 10yr', distillery:'Laphroaig Distillery', type:'Scotch', region:'Islay', age:'10 yr', proof:'86', vintage:'Current', rarity:'Common', value:'$40–55',
-    keywords:['laphroaig','10 year','islay','peated','scotland','medicinal'],
-    flavors:['Medicinal','Seaweed','Peat','Vanilla','Salt'],
-    desc:"Love it or hate it — Laphroaig polarizes like no other whisky. Its intensely medicinal, smoky, and briny character is unmistakable. The Royal Warrant on the bottle means it's a favorite of King Charles III.",
-    tags:['Scotch','Islay','Royal Warrant'] },
-
-  { id:38, emoji:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', name:'Glenfiddich 18yr', distillery:'Glenfiddich Distillery', type:'Scotch', region:'Speyside', age:'18 yr', proof:'80', vintage:'Current', rarity:'Common', value:'$80–100',
-    keywords:['glenfiddich','18 year','speyside','scotland','grant'],
-    flavors:['Dried Fruit','Toffee','Oak','Cinnamon','Malt'],
-    desc:"Glenfiddich pioneered the single malt category. The 18 Year is matured in American bourbon and European sherry casks, then married in small batches for extra complexity. A Speyside benchmark.",
-    tags:['Scotch','Speyside','18 Year'] },
-
-  { id:39, emoji:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', name:'Highland Park 18yr', distillery:'Highland Park Distillery', type:'Scotch', region:'Highland', age:'18 yr', proof:'86', vintage:'Current', rarity:'Moderate', value:'$100–130',
-    keywords:['highland park','18 year','orkney','scotland','viking'],
-    flavors:['Heather Honey','Peat','Dried Fruit','Dark Chocolate','Clove'],
-    desc:'From the Orkney Islands at the northern tip of Scotland. Highland Park 18 balances gentle Orcadian peat smoke with heather honey sweetness from sherry casks — a whisky of extraordinary balance.',
-    tags:['Scotch','Highland','Orkney'] },
-
-  { id:40, emoji:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', name:'Springbank 15yr', distillery:'Springbank Distillery', type:'Scotch', region:'Campbeltown', age:'15 yr', proof:'92', vintage:'Current', rarity:'Scarce', value:'$90–130',
-    keywords:['springbank','15 year','campbeltown','scotland','j&a mitchell'],
-    flavors:['Sherry','Toffee','Peat','Brine','Oak'],
-    desc:"Campbeltown's most celebrated distillery. Springbank is one of the few Scottish distilleries that still floor-malts, distills, matures, and bottles entirely on site. The 15 Year is their masterpiece.",
-    tags:['Scotch','Campbeltown','Traditional'] },
-
-  { id:41, emoji:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', name:'Oban 14yr', distillery:'Oban Distillery', type:'Scotch', region:'Highland', age:'14 yr', proof:'86', vintage:'Current', rarity:'Common', value:'$55–70',
-    keywords:['oban','14 year','highland','scotland','coastal'],
-    flavors:['Sea Salt','Dried Fruit','Honey','Malt','Light Smoke'],
-    desc:'From a tiny distillery on the Scottish coast, Oban 14 bridges the gap between Highland malt and Islay smoke. Light brine and fruit with the gentlest hint of peat make it one of the most food-friendly Scotches.',
-    tags:['Scotch','Highland','Coastal'] },
-
-  { id:42, emoji:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', name:'GlenDronach 18yr', distillery:'GlenDronach Distillery', type:'Scotch', region:'Highland', age:'18 yr', proof:'92', vintage:'Current', rarity:'Moderate', value:'$100–140',
-    keywords:['glendronach','18 year','highland','scotland','allardice','sherry'],
-    flavors:['Rich Sherry','Dark Fruit','Walnut','Chocolate','Clove'],
-    desc:"GlenDronach has been aging whisky in hand-selected sherry casks since 1826. The 18 Year Allardice is matured entirely in Oloroso sherry puncheons, producing one of Scotland's most richly sherried whiskies.",
-    tags:['Scotch','Highland','Sherry Cask'] },
-
-  { id:43, emoji:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', name:'Glenfarclas 105', distillery:'Glenfarclas Distillery', type:'Scotch', region:'Speyside', age:'NAS', proof:'120', vintage:'Current', rarity:'Moderate', value:'$60–80',
-    keywords:['glenfarclas','105','cask strength','speyside','scotland','grant'],
-    flavors:['Sherry','Dark Fruit','Marzipan','Cinnamon','Oak'],
-    desc:'One of the original cask-strength Scotches. Glenfarclas 105 is bottled at a whopping 60% ABV (105 proof British) and matured in first-fill sherry casks. Family owned since 1865 with no outside investors.',
-    tags:['Scotch','Speyside','Cask Strength'] }
-];
-
 const QUOTES = [
   { text:"Too much of anything is bad, but too much good whiskey is barely enough.", author:"Mark Twain" },
   { text:"Whiskey is liquid sunshine.", author:"George Bernard Shaw" },
@@ -862,19 +588,32 @@ const QUOTES = [
   { text:"Bourbon is like a symphony, and every bottle tells a different story.", author:"Unknown" },
   { text:"I have never in my life seen a Kentuckian who didn't have a gun, a pack of cards, and a jug of whiskey.", author:"Andrew Jackson" },
 ];
-const FILTERS = ['All','Bourbon','Rye','Scotch','Tennessee','Rare','BTAC'];
+const FILTERS = ['All','Bourbon','Scotch','Irish','Japanese','Rye'];
+const FILTER_PARAMS = {
+  'All':      {},
+  'Bourbon':  { type: 'bourbon' },
+  'Scotch':   { country: 'scotland' },
+  'Irish':    { country: 'ireland' },
+  'Japanese': { country: 'japan' },
+  'Rye':      { type: 'rye' }
+};
 
 // ═══════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════
-function distilleryLink(b) {
-  const q = encodeURIComponent(b.distillery + ', ' + b.region);
-  return `<a class="distillery-link" href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${b.distillery}</a>`;
-}
-let activeScreen = 'scan', activeFilter = 'All', searchQuery = '';
-let collection = JSON.parse(localStorage.getItem('bs-collection') || '[]');
-let notes      = JSON.parse(localStorage.getItem('bs-notes')      || '[]');
-let editingNote = null, noteRating = 0, detailBottleId = null;
+let activeScreen = 'scan', activeFilter = 'All', searchQuery = '', browseItems = [], browseSearchTimer = null;
+
+// Collection now stores full bottle objects (not just IDs).
+// Migrate old format (array of numbers) automatically.
+let collection = (() => {
+  const raw = JSON.parse(localStorage.getItem('bs-collection') || '[]');
+  if (raw.length && typeof raw[0] === 'number') {
+    localStorage.removeItem('bs-collection'); return [];
+  }
+  return raw;
+})();
+let notes = JSON.parse(localStorage.getItem('bs-notes') || '[]');
+let editingNote = null, noteRating = 0;
 
 // ═══════════════════════════════════════════════════════
 // API KEY MANAGEMENT
@@ -953,14 +692,14 @@ function handleImageCapture(input) {
   }
 
   if (demoMode && !apiKey) {
-    // Demo mode: pick a random bottle after a fake delay
-    setTimeout(() => {
-      document.getElementById('scanning-label').textContent = 'Matching labels…';
-    }, 600);
-    setTimeout(() => {
-      const bottle = BOTTLES[Math.floor(Math.random() * BOTTLES.length)];
-      showResult(bottle, 72 + Math.floor(Math.random() * 20), ['bourbon','whiskey','bottle','label','distillery'], true);
-    }, 2200);
+    // Demo mode: fetch a random bottle from WHISKY:EDITION
+    setTimeout(() => { document.getElementById('scanning-label').textContent = 'Loading demo…'; }, 600);
+    const demoQueries = ['macallan','wild turkey','glenfiddich','buffalo trace','maker mark','ardbeg','jack daniels'];
+    const dq = demoQueries[Math.floor(Math.random() * demoQueries.length)];
+    searchWhiskyEditionAPI(dq).then(items => {
+      if (items.length) showApiResult(items[0], ['bourbon','whiskey','bottle','demo'], true);
+      else showNoMatch(['demo'], '');
+    }).catch(() => showNoMatch([], ''));
     return;
   }
 
@@ -996,59 +735,44 @@ function handleImageCapture(input) {
       }
 
       const data = await response.json();
-      document.getElementById('scanning-label').textContent = 'Matching labels…';
+      document.getElementById('scanning-label').textContent = 'Searching database…';
 
       const result = data.responses[0];
 
-      // Gather all text signals from Vision
-      const signals = [];
-      (result.labelAnnotations  || []).forEach(l => signals.push(l.description.toLowerCase()));
-      (result.logoAnnotations   || []).forEach(l => signals.push(l.description.toLowerCase()));
-      (result.webDetection?.webEntities || []).forEach(e => { if(e.description) signals.push(e.description.toLowerCase()); });
-      const ocrText = (result.textAnnotations?.[0]?.description || '').toLowerCase();
-      signals.push(ocrText);
+      // Build best query from Vision results — prioritize OCR (label text) then web entities
+      const ocrText = (result.textAnnotations?.[0]?.description || '');
+      const webEntities = (result.webDetection?.webEntities || [])
+        .filter(e => e.score > 0.5 && e.description)
+        .map(e => e.description);
+      const labelAnnotations = (result.labelAnnotations || []).slice(0, 8).map(l => l.description);
+      const logoAnnotations  = (result.logoAnnotations  || []).map(l => l.description);
+      const labelChips = [...new Set([...labelAnnotations, ...logoAnnotations])];
 
-      const allText = signals.join(' ');
+      // Best query: first line of OCR (usually the bottle name) or top web entity
+      const ocrFirstLine = ocrText.trim().split('\n')[0].trim().slice(0, 80);
+      const apiQuery = ocrFirstLine || webEntities[0] || labelAnnotations[0] || '';
 
-      // Score each bottle against the signals
-      let bestMatch = null, bestScore = 0;
-      BOTTLES.forEach(bottle => {
-        let score = 0;
-        bottle.keywords.forEach(kw => {
-          if (allText.includes(kw)) score += 10;
-        });
-        // Bonus for whiskey/bourbon being detected at all
-        if (allText.includes('bourbon') || allText.includes('whiskey') || allText.includes('whisky')) score += 3;
-        if (allText.includes('bottle') || allText.includes('distillery')) score += 1;
-        if (score > bestScore) { bestScore = score; bestMatch = bottle; }
-      });
-
-      const labelChips = [...new Set(
-        [...(result.labelAnnotations||[]).slice(0,8).map(l=>l.description),
-         ...(result.logoAnnotations||[]).map(l=>l.description)]
-      )];
-
-      if (bestMatch && bestScore >= 10) {
-        const confidence = Math.min(97, 55 + bestScore * 2);
-        showResult(bestMatch, confidence, labelChips, false);
+      if (!apiQuery) {
+        showNoMatch(labelChips, ocrText.toLowerCase());
       } else {
-        // No local match — try WHISKY:EDITION live API using OCR text or top label
-        const apiQuery = ocrText.trim().split('\n')[0].trim().slice(0, 60) ||
-                         (labelChips[0] || '');
-        if (apiQuery) {
-          document.getElementById('scanning-label').textContent = 'Searching online database…';
-          try {
-            const apiItems = await searchWhiskyEditionAPI(apiQuery);
-            if (apiItems.length > 0) {
-              showApiResult(apiItems[0], labelChips);
+        document.getElementById('scanning-label').textContent = 'Searching WHISKY:EDITION…';
+        try {
+          const apiItems = await searchWhiskyEditionAPI(apiQuery);
+          if (apiItems.length > 0) {
+            showApiResult(apiItems[0], labelChips, false);
+          } else {
+            // Try a shorter/simpler query if first attempt found nothing
+            const shortQuery = webEntities[0] || ocrText.trim().split(/\s+/).slice(0,3).join(' ');
+            if (shortQuery && shortQuery !== apiQuery) {
+              const retry = await searchWhiskyEditionAPI(shortQuery);
+              if (retry.length > 0) { showApiResult(retry[0], labelChips, false); }
+              else { showNoMatch(labelChips, ocrText.toLowerCase()); }
             } else {
-              showNoMatch(labelChips, ocrText);
+              showNoMatch(labelChips, ocrText.toLowerCase());
             }
-          } catch(_) {
-            showNoMatch(labelChips, ocrText);
           }
-        } else {
-          showNoMatch(labelChips, ocrText);
+        } catch(_) {
+          showNoMatch(labelChips, ocrText.toLowerCase());
         }
       }
 
@@ -1070,69 +794,6 @@ function handleImageCapture(input) {
   input.value = '';
 }
 
-function showResult(bottle, confidence, labelChips, isDemo) {
-  const scanning = document.getElementById('result-scanning');
-  const content  = document.getElementById('result-content');
-  const inCol    = collection.includes(bottle.id);
-  const rarityBadge = ['Unicorn','Legendary'].includes(bottle.rarity) ? 'badge-gold' : bottle.rarity==='Very Rare' ? 'badge-amber' : 'badge-cream';
-
-  content.innerHTML = `
-    <div class="result-match-header">
-      <div class="result-bottle-img">${bottle.emoji}</div>
-      <div class="result-meta">
-        <div class="result-name">${bottle.name}</div>
-        <div class="result-distillery">${distilleryLink(bottle)}</div>
-        <div class="result-badges">
-          <span class="badge badge-amber">${bottle.type}</span>
-          <span class="badge ${rarityBadge}">${bottle.rarity}</span>
-          ${isDemo ? '<span class="badge badge-cream">Demo</span>' : ''}
-        </div>
-      </div>
-    </div>
-
-    <div class="confidence-bar">
-      <div class="confidence-label">
-        <span>${isDemo ? 'Demo Match' : 'Match Confidence'}</span>
-        <strong>${confidence}%</strong>
-      </div>
-      <div class="confidence-track"><div class="confidence-fill" id="conf-fill" style="width:0%"></div></div>
-    </div>
-
-    <div class="result-details-grid">
-      <div class="detail-cell"><div class="detail-label">Age</div><div class="detail-value accent">${bottle.age}</div></div>
-      <div class="detail-cell"><div class="detail-label">Proof</div><div class="detail-value accent">${bottle.proof}°</div></div>
-      <div class="detail-cell"><div class="detail-label">Region</div><div class="detail-value">${bottle.region}</div></div>
-      <div class="detail-cell"><div class="detail-label">Est. Value</div><div class="detail-value accent">${bottle.value}</div></div>
-    </div>
-
-    ${labelChips.length ? `
-    <div class="vision-labels">
-      <div class="vision-labels-title">Vision detected</div>
-      <div class="vision-label-chips">${labelChips.map(l=>`<span class="vision-label-chip">${l}</span>`).join('')}</div>
-    </div>` : ''}
-
-    <div class="flavor-section">
-      <div class="flavor-title">Flavor Profile</div>
-      <div class="flavor-tags">${bottle.flavors.map(f=>`<span class="flavor-tag">${f}</span>`).join('')}</div>
-    </div>
-
-    <div class="result-desc">${bottle.desc}</div>
-
-    <div class="result-actions">
-      <button class="btn-primary" id="cellar-btn" onclick="addToCollectionFromResult(${bottle.id})">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M5 3h10v2l-2 12H7L5 5V3z"/><path d="M3 3h14"/></svg>
-        ${inCol ? 'In Cellar ✓' : 'Add to Cellar'}
-      </button>
-      <button class="btn-secondary" onclick="closeResult(); openNoteEditor('${bottle.name.replace(/'/g,"\\'")}')">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6l-2-4z"/></svg>
-        Add Note
-      </button>
-    </div>`;
-
-  scanning.style.display = 'none';
-  content.classList.add('show');
-  setTimeout(() => { const f=document.getElementById('conf-fill'); if(f) f.style.width=confidence+'%'; }, 100);
-}
 
 function showNoMatch(labelChips, ocrText) {
   const scanning = document.getElementById('result-scanning');
@@ -1204,7 +865,9 @@ function mapApiItem(item) {
   };
 }
 
-function showApiResult(item, labelChips) {
+let currentScanItem = null;
+function showApiResult(item, labelChips, isDemo) {
+  currentScanItem = item;
   const scanning = document.getElementById('result-scanning');
   const content  = document.getElementById('result-content');
   const b = mapApiItem(item);
@@ -1221,7 +884,7 @@ function showApiResult(item, labelChips) {
         <div class="result-distillery">${b.distillery}</div>
         <div class="result-badges">
           <span class="badge badge-amber">${b.type}</span>
-          <span class="badge badge-gold" style="background:rgba(200,113,10,.2)">🌐 Online Match</span>
+          ${isDemo ? '<span class="badge badge-cream">Demo</span>' : '<span class="badge badge-gold" style="background:rgba(200,113,10,.2)">🌐 WHISKY:EDITION</span>'}
         </div>
       </div>
     </div>
@@ -1262,16 +925,16 @@ function showApiResult(item, labelChips) {
     <div class="result-desc">${b.desc}</div>
 
     <div class="result-actions">
-      <button class="btn-secondary" onclick="closeResult()">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M15 19H5a2 2 0 0 1-2-2V7l5-5h7a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2z"/></svg>
-        Close
+      <button class="btn-primary" id="cellar-btn" onclick="addToCollectionFromScan(currentScanItem)">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M5 3h10v2l-2 12H7L5 5V3z"/><path d="M3 3h14"/></svg>
+        ${collection.find(c=>c.slug===b.slug) ? 'In Cellar ✓' : 'Add to Cellar'}
       </button>
-      ${b.url ? `<button class="btn-primary" onclick="window.open('https://thewhiskyedition.com${b.url}','_blank')">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 3h3v3m0-3L10 10M8 5H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-3"/></svg>
-        Full Review
-      </button>` : ''}
+      <button class="btn-secondary" onclick="closeResult(); openNoteEditor('${b.name.replace(/'/g,"\\'")}')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6l-2-4z"/></svg>
+        Add Note
+      </button>
     </div>
-
+    ${b.url ? `<button class="btn-online-search" style="margin:8px 20px 0;width:calc(100% - 40px)" onclick="window.open('https://thewhiskyedition.com${b.url}','_blank')">Full Review on WHISKY:EDITION ↗</button>` : ''}
     <div class="attribution-line">Data from <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a> · CC 4.0</div>`;
 
   scanning.style.display = 'none';
@@ -1281,56 +944,22 @@ function showApiResult(item, labelChips) {
   }
 }
 
-async function searchBrowseOnline() {
-  if (!searchQuery || searchQuery.length < 2) return;
-  const btn = document.getElementById('online-search-btn');
-  const container = document.getElementById('online-results-container');
-  btn.disabled = true;
-  btn.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite;margin-right:6px">⏳</span> Searching…`;
-  container.innerHTML = `<div class="online-searching">Searching WHISKY:EDITION…</div>`;
-  try {
-    const items = await searchWhiskyEditionAPI(searchQuery);
-    if (!items.length) {
-      container.innerHTML = `<div class="online-searching">No online results found for "${searchQuery}"</div>`;
-      btn.innerHTML = `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/></svg> Search Again`;
-      btn.disabled = false;
-      return;
-    }
-    container.innerHTML = `
-      <div class="online-results-list">
-        ${items.map(item => {
-          const b = mapApiItem(item);
-          const rating = b.ratingAvg !== null ? `⭐ ${b.ratingAvg}/100` : '';
-          return `<div class="online-result-row" onclick="window.open('https://thewhiskyedition.com${b.url}','_blank')">
-            ${b.imageUrl
-              ? `<img class="online-result-img" src="${b.imageUrl}" alt="${b.name}">`
-              : `<div class="online-result-img-placeholder">🥃</div>`}
-            <div class="online-result-info">
-              <div class="online-badge">🌐 WHISKY:EDITION</div>
-              <div class="online-result-name">${b.name}</div>
-              <div class="online-result-meta">${b.distillery} · ${b.region} · ${b.age}</div>
-              ${rating ? `<div class="online-result-rating">${rating}</div>` : ''}
-            </div>
-            <div class="bottle-chevron"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 5l5 5-5 5"/></svg></div>
-          </div>`;
-        }).join('')}
-      </div>
-      <div class="attribution-line">Results from <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a> · CC 4.0</div>`;
-    btn.style.display = 'none';
-  } catch(err) {
-    container.innerHTML = `<div class="online-searching" style="color:var(--amber)">Couldn't reach online database. Check your connection.</div>`;
-    btn.innerHTML = `Retry Search`;
-    btn.disabled = false;
-  }
+function addToCollectionFromScan(item) {
+  if (!item) return;
+  addToCollection(item);
+  const btn = document.getElementById('cellar-btn');
+  if (btn) btn.innerHTML = `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M5 3h10v2l-2 12H7L5 5V3z"/><path d="M3 3h14"/></svg> In Cellar ✓`;
 }
 
-function addToCollectionFromResult(id) {
-  if (!collection.includes(id)) {
-    collection.push(id); localStorage.setItem('bs-collection', JSON.stringify(collection));
-    showToast('Added to your Cellar 🥃');
-    const btn=document.getElementById('cellar-btn');
-    if(btn) btn.innerHTML=`<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M5 3h10v2l-2 12H7L5 5V3z"/><path d="M3 3h14"/></svg> In Cellar ✓`;
-  } else { showToast('Already in your Cellar'); }
+function addToCollection(item) {
+  const b = mapApiItem(item);
+  if (collection.find(c => c.slug === b.slug)) { showToast('Already in your Cellar'); return; }
+  collection.unshift({ slug:b.slug, name:b.name, distillery:b.distillery, type:b.type,
+    region:b.region, age:b.age, abvDisplay: b.proof ? (b.proof/2).toFixed(1)+'%' : 'N/A',
+    imageUrl:b.imageUrl, url:b.url, nose:b.nose, palate:b.palate, finish:b.finish,
+    ratingAvg:b.ratingAvg, savedAt:new Date().toLocaleDateString() });
+  localStorage.setItem('bs-collection', JSON.stringify(collection));
+  showToast('Added to your Cellar 🥃');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1348,108 +977,188 @@ function navTo(screen) {
 }
 
 // ═══════════════════════════════════════════════════════
-// BROWSE
+// BROWSE (API-driven)
 // ═══════════════════════════════════════════════════════
-function renderBrowse() {
+async function renderBrowse() {
   document.getElementById('filter-chips').innerHTML = FILTERS.map(f=>`<button class="chip ${f===activeFilter?'active':''}" onclick="setFilter('${f}')">${f}</button>`).join('');
-  const q = searchQuery.toLowerCase();
-  const filtered = BOTTLES.filter(b => {
-    const matchQ = !q || b.name.toLowerCase().includes(q) || b.distillery.toLowerCase().includes(q) || b.flavors.some(f=>f.toLowerCase().includes(q)) || b.tags.some(t=>t.toLowerCase().includes(q));
-    const matchF = activeFilter==='All'||(activeFilter==='Bourbon'&&b.type==='Bourbon')||(activeFilter==='Rye'&&b.type==='Rye')||(activeFilter==='Scotch'&&b.type==='Scotch')||(activeFilter==='Tennessee'&&b.type==='Tennessee')||(activeFilter==='Vintage'&&b.vintage!=='Current')||(activeFilter==='Rare'&&['Scarce','Very Rare','Unicorn','Legendary'].includes(b.rarity))||(activeFilter==='BTAC'&&b.tags.includes('BTAC'));
-    return matchQ && matchF;
-  });
   const listEl = document.getElementById('bottle-list');
-  const onlineSection = document.getElementById('online-search-section');
-  const onlineContainer = document.getElementById('online-results-container');
-  // Show online search section when user has typed something
-  if (onlineSection) {
-    onlineSection.style.display = searchQuery.length >= 2 ? '' : 'none';
-    if (onlineContainer && searchQuery.length >= 2) {
-      // Reset online results when search query changes
-      onlineContainer.innerHTML = '';
-      document.getElementById('online-search-btn').textContent = '';
-      document.getElementById('online-search-btn').innerHTML = `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/></svg> Search WHISKY:EDITION Database`;
-      document.getElementById('online-search-btn').disabled = false;
-    }
+  listEl.innerHTML = `<div class="online-searching">⏳ Loading…</div>`;
+  try {
+    const params = new URLSearchParams({ per_page: 16 });
+    const fp = FILTER_PARAMS[activeFilter] || {};
+    Object.entries(fp).forEach(([k,v]) => params.set(k, v));
+    if (searchQuery) params.set('q', searchQuery);
+    const resp = await fetch(`https://thewhiskyedition.com/api/whisky-reviews?${params}`);
+    const data = await resp.json();
+    browseItems = (data.items || []).filter(i => i.lang === 'en');
+    renderBrowseList(listEl);
+  } catch(e) {
+    listEl.innerHTML = `<div class="online-searching" style="color:var(--amber)">Couldn't load — check your connection and try again.</div>`;
   }
-  if (!filtered.length) { listEl.innerHTML=`<div style="text-align:center;padding:20px 20px 4px;color:var(--muted2);font-size:14px">No local bottles match — try searching online ↓</div>`; return; }
-  listEl.innerHTML = filtered.map(b=>`
-    <div class="bottle-row" onclick="openDetail(${b.id})">
-      <div class="bottle-emoji">${b.emoji}</div>
-      <div class="bottle-info">
-        <div class="bottle-name">${b.name}</div>
-        <div class="bottle-distillery">${distilleryLink(b)}</div>
-        <div class="bottle-stats"><span class="bottle-stat"><strong>${b.age}</strong></span><span class="bottle-stat"><strong>${b.proof}°</strong> proof</span><span class="bottle-stat">${b.rarity}</span></div>
-      </div>
-      <div class="bottle-chevron"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 5l5 5-5 5"/></svg></div>
-    </div>`).join('');
-}
-function setFilter(f) { activeFilter=f; renderBrowse(); }
-function filterBottles(q) { searchQuery=q; document.getElementById('search-clear').classList.toggle('visible',q.length>0); renderBrowse(); }
-function clearSearch() {
-  document.getElementById('browse-input').value='';
-  filterBottles('');
-  const s = document.getElementById('online-search-section');
-  if (s) s.style.display = 'none';
 }
 
+function renderBrowseList(listEl) {
+  if (!browseItems.length) {
+    listEl.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--muted2);font-size:14px">No results found</div>`;
+    return;
+  }
+  listEl.innerHTML = browseItems.map((item, idx) => {
+    const b = mapApiItem(item);
+    const rating = b.ratingAvg !== null ? `⭐ ${b.ratingAvg}/100` : '';
+    return `<div class="online-result-row" onclick="openBrowseDetail(${idx})">
+      ${b.imageUrl
+        ? `<img class="online-result-img" src="${b.imageUrl}" alt="${b.name}">`
+        : `<div class="online-result-img-placeholder">🥃</div>`}
+      <div class="online-result-info">
+        <div class="online-result-name">${b.name}</div>
+        <div class="online-result-meta">${b.distillery}${b.region ? ' · ' + b.region : ''} · ${b.age}</div>
+        ${rating ? `<div class="online-result-rating">${rating}</div>` : ''}
+      </div>
+      <div class="bottle-chevron"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 5l5 5-5 5"/></svg></div>
+    </div>`;
+  }).join('');
+}
+
+function setFilter(f) { activeFilter = f; renderBrowse(); }
+function filterBottles(q) {
+  searchQuery = q;
+  document.getElementById('search-clear').classList.toggle('visible', q.length > 0);
+  clearTimeout(browseSearchTimer);
+  browseSearchTimer = setTimeout(renderBrowse, 500);
+}
+function clearSearch() { document.getElementById('browse-input').value = ''; searchQuery = ''; document.getElementById('search-clear').classList.remove('visible'); renderBrowse(); }
+
 // ═══════════════════════════════════════════════════════
-// DETAIL
+// BROWSE DETAIL
 // ═══════════════════════════════════════════════════════
-function openDetail(id) {
-  const b=BOTTLES.find(b=>b.id===id); if(!b) return;
-  detailBottleId=id;
-  document.getElementById('detail-title').textContent=b.name;
-  const inCol=collection.includes(id);
-  document.getElementById('detail-collect-btn').style.color=inCol?'var(--amber-glow)':'';
-  const rarityBadge=['Unicorn','Legendary'].includes(b.rarity)?'badge-gold':b.rarity==='Very Rare'?'badge-amber':'badge-cream';
-  document.getElementById('detail-body').innerHTML=`
+let detailItem = null;
+function openBrowseDetail(idx) {
+  detailItem = browseItems[idx];
+  const b = mapApiItem(detailItem);
+  const inCol = !!collection.find(c => c.slug === b.slug);
+  document.getElementById('detail-title').textContent = b.name;
+  document.getElementById('detail-collect-btn').style.color = inCol ? 'var(--amber-glow)' : '';
+  document.getElementById('detail-body').innerHTML = `
     <div class="detail-hero">
-      <div class="detail-bottle-icon">${b.emoji}</div>
+      <div class="detail-bottle-icon">
+        ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.name}" style="width:80px;height:100px;object-fit:contain;border-radius:8px">` : '🥃'}
+      </div>
       <div class="detail-name">${b.name}</div>
-      <div class="detail-distillery">${distilleryLink(b)}</div>
-      <div class="result-badges"><span class="badge badge-amber">${b.type}</span><span class="badge ${rarityBadge}">${b.rarity}</span><span class="badge badge-cream">${b.region}</span></div>
+      <div class="detail-distillery">${b.distillery}</div>
+      <div class="result-badges">
+        <span class="badge badge-amber">${b.type}</span>
+        <span class="badge badge-cream">${b.region}</span>
+        ${b.ratingAvg ? `<span class="badge badge-gold">⭐ ${b.ratingAvg}/100</span>` : ''}
+      </div>
     </div>
     <div class="detail-body">
       <div class="result-details-grid">
         <div class="detail-cell"><div class="detail-label">Age</div><div class="detail-value accent">${b.age}</div></div>
-        <div class="detail-cell"><div class="detail-label">Proof</div><div class="detail-value accent">${b.proof}°</div></div>
-        <div class="detail-cell"><div class="detail-label">Vintage</div><div class="detail-value">${b.vintage}</div></div>
-        <div class="detail-cell"><div class="detail-label">Est. Value</div><div class="detail-value accent">${b.value}</div></div>
+        <div class="detail-cell"><div class="detail-label">ABV</div><div class="detail-value accent">${b.proof ? (b.proof/2).toFixed(1)+'%' : 'N/A'}</div></div>
       </div>
-      <div class="flavor-section"><div class="flavor-title">Flavor Profile</div><div class="flavor-tags">${b.flavors.map(f=>`<span class="flavor-tag">${f}</span>`).join('')}</div></div>
+      ${b.nose || b.palate || b.finish ? `
+      <div class="flavor-section">
+        <div class="flavor-title">Tasting Notes</div>
+        ${b.nose   ? `<div style="margin-bottom:6px"><span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em">Nose · </span><span style="font-size:13px;color:var(--text2)">${b.nose}</span></div>` : ''}
+        ${b.palate ? `<div style="margin-bottom:6px"><span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em">Palate · </span><span style="font-size:13px;color:var(--text2)">${b.palate}</span></div>` : ''}
+        ${b.finish ? `<div><span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em">Finish · </span><span style="font-size:13px;color:var(--text2)">${b.finish}</span></div>` : ''}
+      </div>` : ''}
       <div class="result-desc">${b.desc}</div>
       <div class="result-actions" style="margin-top:8px">
-        <button class="btn-primary" onclick="toggleCollectionFromDetail()">${inCol?'✓ In Your Cellar':'+ Add to Cellar'}</button>
+        <button class="btn-primary" id="detail-cellar-btn" onclick="toggleCollectionFromDetail()">
+          ${inCol ? '✓ In Your Cellar' : '+ Add to Cellar'}
+        </button>
         <button class="btn-secondary" onclick="closeDetail(); openNoteEditor('${b.name.replace(/'/g,"\\'")}')">+ Tasting Note</button>
       </div>
+      ${b.url ? `<button class="btn-online-search" style="margin:8px 0 0;width:100%" onclick="window.open('https://thewhiskyedition.com${b.url}','_blank')">Full Review on WHISKY:EDITION ↗</button>` : ''}
+      <div class="attribution-line">Data from <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a> · CC 4.0</div>
     </div>`;
   document.getElementById('detail-overlay').classList.add('show');
 }
-function closeDetail() { document.getElementById('detail-overlay').classList.remove('show'); detailBottleId=null; }
+function closeDetail() { document.getElementById('detail-overlay').classList.remove('show'); detailItem = null; }
 function toggleCollectionFromDetail() {
-  if (!detailBottleId) return;
-  const idx=collection.indexOf(detailBottleId);
-  if (idx===-1) { collection.push(detailBottleId); showToast('Added to your Cellar 🥃'); }
-  else { collection.splice(idx,1); showToast('Removed from Cellar'); }
-  localStorage.setItem('bs-collection',JSON.stringify(collection));
-  openDetail(detailBottleId);
+  if (!detailItem) return;
+  const b = mapApiItem(detailItem);
+  const idx = collection.findIndex(c => c.slug === b.slug);
+  if (idx === -1) { addToCollection(detailItem); }
+  else { collection.splice(idx, 1); localStorage.setItem('bs-collection', JSON.stringify(collection)); showToast('Removed from Cellar'); }
+  openBrowseDetail(browseItems.indexOf(detailItem));
 }
 
 // ═══════════════════════════════════════════════════════
 // COLLECTION
 // ═══════════════════════════════════════════════════════
 function renderCollection() {
-  const bottles=BOTTLES.filter(b=>collection.includes(b.id));
-  document.getElementById('stat-bottles').textContent=bottles.length;
-  document.getElementById('stat-distilleries').textContent=new Set(bottles.map(b=>b.distillery)).size;
-  const ages=bottles.map(b=>parseInt(b.age)).filter(n=>!isNaN(n));
-  document.getElementById('stat-avg-age').textContent=ages.length?Math.round(ages.reduce((a,b)=>a+b,0)/ages.length)+'yr':'—';
-  const content=document.getElementById('collection-content');
-  if (!bottles.length) { content.innerHTML=`<div class="collection-empty"><svg viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 10h30v5l-4 35H19L15 15V10z"/><path d="M10 10h40"/></svg><p><strong style="color:var(--amber);display:block;font-size:17px;margin-bottom:8px">Your cellar is empty</strong>Scan a bottle or browse the database</p></div>`; return; }
-  content.innerHTML=`<div class="collection-grid">${bottles.map(b=>`<div class="collection-card" onclick="openDetail(${b.id})"><div class="collection-card-img">${b.emoji}</div><div class="collection-card-body"><div class="collection-card-name">${b.name}</div><div class="collection-card-year">${b.vintage} · ${b.age}</div></div><button class="collection-card-remove" onclick="removeFromCollection(event,${b.id})"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M3 3l10 10M13 3L3 13"/></svg></button></div>`).join('')}</div>`;
+  document.getElementById('stat-bottles').textContent = collection.length;
+  document.getElementById('stat-distilleries').textContent = new Set(collection.map(b => b.distillery)).size;
+  const ages = collection.map(b => parseInt(b.age)).filter(n => !isNaN(n));
+  document.getElementById('stat-avg-age').textContent = ages.length ? Math.round(ages.reduce((a,b)=>a+b,0)/ages.length)+'yr' : '—';
+  const content = document.getElementById('collection-content');
+  if (!collection.length) {
+    content.innerHTML = `<div class="collection-empty"><svg viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 10h30v5l-4 35H19L15 15V10z"/><path d="M10 10h40"/></svg><p><strong style="color:var(--amber);display:block;font-size:17px;margin-bottom:8px">Your cellar is empty</strong>Scan a bottle or browse the database to add bottles</p></div>`;
+    return;
+  }
+  content.innerHTML = `<div class="collection-grid">${collection.map((b, i) => `
+    <div class="collection-card" onclick="openCellarDetail(${i})">
+      <div class="collection-card-img">
+        ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.name}" style="width:48px;height:60px;object-fit:contain;border-radius:4px">` : '🥃'}
+      </div>
+      <div class="collection-card-body">
+        <div class="collection-card-name">${b.name}</div>
+        <div class="collection-card-year">${b.type} · ${b.age}</div>
+      </div>
+      <button class="collection-card-remove" onclick="removeFromCollection(event,${i})">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M3 3l10 10M13 3L3 13"/></svg>
+      </button>
+    </div>`).join('')}</div>`;
 }
-function removeFromCollection(e,id) { e.stopPropagation(); collection=collection.filter(c=>c!==id); localStorage.setItem('bs-collection',JSON.stringify(collection)); renderCollection(); showToast('Removed from Cellar'); }
+
+function removeFromCollection(e, idx) {
+  e.stopPropagation();
+  collection.splice(idx, 1);
+  localStorage.setItem('bs-collection', JSON.stringify(collection));
+  renderCollection();
+  showToast('Removed from Cellar');
+}
+
+function openCellarDetail(idx) {
+  const b = collection[idx];
+  document.getElementById('detail-title').textContent = b.name;
+  document.getElementById('detail-collect-btn').style.color = 'var(--amber-glow)';
+  document.getElementById('detail-body').innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-bottle-icon">
+        ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.name}" style="width:80px;height:100px;object-fit:contain;border-radius:8px">` : '🥃'}
+      </div>
+      <div class="detail-name">${b.name}</div>
+      <div class="detail-distillery">${b.distillery}</div>
+      <div class="result-badges">
+        <span class="badge badge-amber">${b.type}</span>
+        <span class="badge badge-cream">${b.region}</span>
+        ${b.ratingAvg ? `<span class="badge badge-gold">⭐ ${b.ratingAvg}/100</span>` : ''}
+      </div>
+    </div>
+    <div class="detail-body">
+      <div class="result-details-grid">
+        <div class="detail-cell"><div class="detail-label">Age</div><div class="detail-value accent">${b.age}</div></div>
+        <div class="detail-cell"><div class="detail-label">ABV</div><div class="detail-value accent">${b.abvDisplay || 'N/A'}</div></div>
+        <div class="detail-cell"><div class="detail-label">Added</div><div class="detail-value">${b.savedAt || '—'}</div></div>
+      </div>
+      ${b.nose || b.palate || b.finish ? `
+      <div class="flavor-section">
+        <div class="flavor-title">Tasting Notes</div>
+        ${b.nose   ? `<div style="margin-bottom:6px"><span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em">Nose · </span><span style="font-size:13px;color:var(--text2)">${b.nose}</span></div>` : ''}
+        ${b.palate ? `<div style="margin-bottom:6px"><span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em">Palate · </span><span style="font-size:13px;color:var(--text2)">${b.palate}</span></div>` : ''}
+        ${b.finish ? `<div><span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em">Finish · </span><span style="font-size:13px;color:var(--text2)">${b.finish}</span></div>` : ''}
+      </div>` : ''}
+      <div class="result-actions" style="margin-top:8px">
+        <button class="btn-primary" style="background:var(--bg3);color:var(--amber)" onclick="removeFromCollection(event,${idx}); closeDetail()">Remove from Cellar</button>
+        <button class="btn-secondary" onclick="closeDetail(); openNoteEditor('${b.name.replace(/'/g,"\\'")}')">+ Tasting Note</button>
+      </div>
+      ${b.url ? `<button class="btn-online-search" style="margin:8px 0 0;width:100%" onclick="window.open('https://thewhiskyedition.com${b.url}','_blank')">Full Review on WHISKY:EDITION ↗</button>` : ''}
+    </div>`;
+  document.getElementById('detail-overlay').classList.add('show');
+}
 
 // ═══════════════════════════════════════════════════════
 // NOTES
@@ -1487,13 +1196,44 @@ function showToast(msg) { const t=document.getElementById('toast'); t.textConten
 // ═══════════════════════════════════════════════════════
 function init() {
   initApiKeyUI();
-  const q=QUOTES[new Date().getDate()%QUOTES.length];
-  document.getElementById('daily-quote').textContent=`"${q.text}"`;
-  document.getElementById('daily-quote-author').textContent=`— ${q.author}`;
-  const recents=[...BOTTLES].sort(()=>Math.random()-.5).slice(0,5);
-  document.getElementById('recent-scroll').innerHTML=recents.map(b=>`<div class="recent-card" onclick="openDetail(${b.id})"><div class="recent-card-img">${b.emoji}</div><div class="recent-card-body"><div class="recent-card-name">${b.name}</div><div class="recent-card-year">${b.vintage}</div></div></div>`).join('');
-  renderBrowse(); renderNotes();
+  const q = QUOTES[new Date().getDate() % QUOTES.length];
+  document.getElementById('daily-quote').textContent = `"${q.text}"`;
+  document.getElementById('daily-quote-author').textContent = `— ${q.author}`;
+
+  // Load recent bottles from API for home screen
+  const recentEl = document.getElementById('recent-scroll');
+  recentEl.innerHTML = `<div style="color:var(--muted2);font-size:12px;padding:10px 4px">Loading…</div>`;
+  searchWhiskyEditionAPI('whisky').then(items => {
+    if (!items.length) { recentEl.innerHTML = ''; return; }
+    const shuffled = items.sort(() => Math.random() - 0.5).slice(0, 6);
+    recentEl.innerHTML = shuffled.map((item, idx) => {
+      const b = mapApiItem(item);
+      return `<div class="recent-card" onclick="openHomeDetail(${idx}, this)" data-idx="${idx}">
+        <div class="recent-card-img">
+          ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.name}" style="width:44px;height:52px;object-fit:contain;border-radius:4px">` : '🥃'}
+        </div>
+        <div class="recent-card-body">
+          <div class="recent-card-name">${b.name}</div>
+          <div class="recent-card-year">${b.type}</div>
+        </div>
+      </div>`;
+    }).join('');
+    // Store these items for detail viewing
+    window._homeItems = shuffled;
+  }).catch(() => { recentEl.innerHTML = ''; });
+
+  renderNotes();
 }
+
+function openHomeDetail(idx, el) {
+  const items = window._homeItems;
+  if (!items || !items[idx]) return;
+  // Temporarily put item in browseItems[0] so openBrowseDetail works
+  browseItems = [items[idx], ...browseItems];
+  openBrowseDetail(0);
+  browseItems = browseItems.slice(1);
+}
+
 init();
 </script>
 </body>
