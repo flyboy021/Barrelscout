@@ -185,6 +185,23 @@
     .chip{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;background:var(--card2);border:1px solid var(--border);color:var(--muted);transition:all .15s}
     .chip.active{background:rgba(200,113,10,.2);border-color:var(--amber);color:var(--amber-glow)}
     .bottle-list{display:flex;flex-direction:column;gap:10px}
+    .online-search-divider{display:flex;align-items:center;gap:10px;margin:18px 0 10px;color:var(--muted2);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+    .online-search-divider::before,.online-search-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+    .btn-online-search{width:100%;background:transparent;border:1px solid var(--amber);color:var(--amber-glow);font-size:14px;font-weight:700;padding:12px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+    .btn-online-search:active{background:rgba(200,113,10,.15)}
+    .online-results-list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+    .online-result-row{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;cursor:pointer;position:relative}
+    .online-result-row:active{background:var(--card2)}
+    .online-result-img{width:44px;height:60px;object-fit:contain;border-radius:6px;background:var(--bg3);flex-shrink:0}
+    .online-result-img-placeholder{width:44px;height:60px;border-radius:6px;background:var(--bg3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:26px}
+    .online-result-info{flex:1;min-width:0}
+    .online-result-name{font-size:14px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:4px}
+    .online-result-meta{font-size:12px;color:var(--muted);margin-bottom:6px}
+    .online-result-rating{font-size:12px;color:var(--amber-glow);font-weight:700}
+    .online-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:rgba(200,113,10,.15);border:1px solid var(--amber);color:var(--amber-glow);border-radius:4px;padding:2px 6px;margin-bottom:6px}
+    .attribution-line{font-size:11px;color:var(--muted2);text-align:center;padding:12px 0 4px}
+    .attribution-line a{color:var(--amber);text-decoration:none}
+    .online-searching{text-align:center;padding:20px;color:var(--muted2);font-size:13px}
     .bottle-row{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;cursor:pointer}
     .bottle-row:active{background:var(--card2);border-color:var(--border2)}
     .bottle-emoji{width:52px;height:68px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0}
@@ -403,6 +420,14 @@
       </div>
       <div class="filter-chips" id="filter-chips"></div>
       <div class="bottle-list" id="bottle-list"></div>
+      <div id="online-search-section" style="display:none">
+        <div class="online-search-divider">Online Search</div>
+        <button class="btn-online-search" id="online-search-btn" onclick="searchBrowseOnline()">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/></svg>
+          Search WHISKY:EDITION Database
+        </button>
+        <div id="online-results-container"></div>
+      </div>
     </section>
 
     <!-- COLLECTION -->
@@ -834,7 +859,7 @@ const QUOTES = [
   { text:"Bourbon is like a symphony, and every bottle tells a different story.", author:"Unknown" },
   { text:"I have never in my life seen a Kentuckian who didn't have a gun, a pack of cards, and a jug of whiskey.", author:"Andrew Jackson" },
 ];
-const FILTERS = ['All','Bourbon','Rye','Vintage','Rare','BTAC'];
+const FILTERS = ['All','Bourbon','Rye','Scotch','Tennessee','Rare','BTAC'];
 
 // ═══════════════════════════════════════════════════════
 // STATE
@@ -1004,8 +1029,24 @@ function handleImageCapture(input) {
         const confidence = Math.min(97, 55 + bestScore * 2);
         showResult(bestMatch, confidence, labelChips, false);
       } else {
-        // No strong match — show what Vision found
-        showNoMatch(labelChips, ocrText);
+        // No local match — try WHISKY:EDITION live API using OCR text or top label
+        const apiQuery = ocrText.trim().split('\n')[0].trim().slice(0, 60) ||
+                         (labelChips[0] || '');
+        if (apiQuery) {
+          document.getElementById('scanning-label').textContent = 'Searching online database…';
+          try {
+            const apiItems = await searchWhiskyEditionAPI(apiQuery);
+            if (apiItems.length > 0) {
+              showApiResult(apiItems[0], labelChips);
+            } else {
+              showNoMatch(labelChips, ocrText);
+            }
+          } catch(_) {
+            showNoMatch(labelChips, ocrText);
+          }
+        } else {
+          showNoMatch(labelChips, ocrText);
+        }
       }
 
     } catch (err) {
@@ -1120,6 +1161,166 @@ function closeResult() {
   // Don't hide preview — user may want to see what they scanned
 }
 
+// ═══════════════════════════════════════════════════════
+// WHISKY:EDITION LIVE API
+// ═══════════════════════════════════════════════════════
+async function searchWhiskyEditionAPI(query) {
+  const url = `https://thewhiskyedition.com/api/whisky-reviews?q=${encodeURIComponent(query)}&per_page=5`;
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error('WHISKY:EDITION API error');
+  const data = await resp.json();
+  return (data.items || []).filter(item => item.lang === 'en');
+}
+
+function mapApiItem(item) {
+  const m = item.metadata || {};
+  const abv = m.abv || 0;
+  const proof = abv ? (abv * 2).toFixed(1) : 'N/A';
+  const age = m.age ? `${m.age} yr` : 'NAS';
+  const country = m.country || '';
+  const region = m.region ? `${m.region}${country ? ', ' + country : ''}` : country;
+  const flavors = m.flavour ? m.flavour.split(/[,/]/).map(f => f.trim()).filter(Boolean) : [];
+  const t = item.tasting_notes || {};
+  const flavorText = [t.nose, t.palate].filter(Boolean).join(' · ');
+  return {
+    name: item.name,
+    distillery: m.distillery || 'Unknown Distillery',
+    type: m.type || 'Whisky',
+    region: region || 'Unknown',
+    age, proof,
+    desc: item.description || '',
+    flavors: flavors.length ? flavors : (flavorText ? [flavorText.slice(0, 60)] : ['See tasting notes']),
+    nose: t.nose || '',
+    palate: t.palate || '',
+    finish: t.finish || '',
+    url: item.url || '',
+    imageUrl: item.image?.url || '',
+    ratingMarcel: item.rating?.marcel,
+    ratingAvg: item.rating ? Math.round((item.rating.marcel + item.rating.sascha) / 2) : null,
+    slug: item.slug || ''
+  };
+}
+
+function showApiResult(item, labelChips) {
+  const scanning = document.getElementById('result-scanning');
+  const content  = document.getElementById('result-content');
+  const b = mapApiItem(item);
+
+  content.innerHTML = `
+    <div class="result-match-header">
+      <div class="result-bottle-img">
+        ${b.imageUrl
+          ? `<img src="${b.imageUrl}" alt="${b.name}" style="width:72px;height:88px;object-fit:contain;border-radius:6px">`
+          : '🥃'}
+      </div>
+      <div class="result-meta">
+        <div class="result-name">${b.name}</div>
+        <div class="result-distillery">${b.distillery}</div>
+        <div class="result-badges">
+          <span class="badge badge-amber">${b.type}</span>
+          <span class="badge badge-gold" style="background:rgba(200,113,10,.2)">🌐 Online Match</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="confidence-bar">
+      <div class="confidence-label">
+        <span>Online Match</span>
+        ${b.ratingAvg !== null ? `<strong>${b.ratingAvg}/100</strong>` : ''}
+      </div>
+      ${b.ratingAvg !== null ? `<div class="confidence-track"><div class="confidence-fill" id="conf-fill" style="width:0%"></div></div>` : ''}
+    </div>
+
+    <div class="result-details-grid">
+      <div class="detail-cell"><div class="detail-label">Age</div><div class="detail-value accent">${b.age}</div></div>
+      <div class="detail-cell"><div class="detail-label">ABV</div><div class="detail-value accent">${b.proof ? (b.proof/2).toFixed(1)+'%' : 'N/A'}</div></div>
+      <div class="detail-cell"><div class="detail-label">Region</div><div class="detail-value">${b.region}</div></div>
+      <div class="detail-cell"><div class="detail-label">Type</div><div class="detail-value">${b.type}</div></div>
+    </div>
+
+    ${labelChips.length ? `
+    <div class="vision-labels">
+      <div class="vision-labels-title">Vision detected</div>
+      <div class="vision-label-chips">${labelChips.map(l=>`<span class="vision-label-chip">${l}</span>`).join('')}</div>
+    </div>` : ''}
+
+    ${b.nose || b.palate || b.finish ? `
+    <div class="flavor-section">
+      <div class="flavor-title">Tasting Notes</div>
+      ${b.nose   ? `<div style="margin-bottom:6px"><span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em">Nose · </span><span style="font-size:13px;color:var(--text2)">${b.nose}</span></div>` : ''}
+      ${b.palate ? `<div style="margin-bottom:6px"><span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em">Palate · </span><span style="font-size:13px;color:var(--text2)">${b.palate}</span></div>` : ''}
+      ${b.finish ? `<div><span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em">Finish · </span><span style="font-size:13px;color:var(--text2)">${b.finish}</span></div>` : ''}
+    </div>` : `
+    <div class="flavor-section">
+      <div class="flavor-title">Flavor Profile</div>
+      <div class="flavor-tags">${b.flavors.map(f=>`<span class="flavor-tag">${f}</span>`).join('')}</div>
+    </div>`}
+
+    <div class="result-desc">${b.desc}</div>
+
+    <div class="result-actions">
+      <button class="btn-secondary" onclick="closeResult()">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M15 19H5a2 2 0 0 1-2-2V7l5-5h7a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2z"/></svg>
+        Close
+      </button>
+      ${b.url ? `<button class="btn-primary" onclick="window.open('https://thewhiskyedition.com${b.url}','_blank')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 3h3v3m0-3L10 10M8 5H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-3"/></svg>
+        Full Review
+      </button>` : ''}
+    </div>
+
+    <div class="attribution-line">Data from <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a> · CC 4.0</div>`;
+
+  scanning.style.display = 'none';
+  content.classList.add('show');
+  if (b.ratingAvg !== null) {
+    setTimeout(() => { const f=document.getElementById('conf-fill'); if(f) f.style.width=b.ratingAvg+'%'; }, 100);
+  }
+}
+
+async function searchBrowseOnline() {
+  if (!searchQuery || searchQuery.length < 2) return;
+  const btn = document.getElementById('online-search-btn');
+  const container = document.getElementById('online-results-container');
+  btn.disabled = true;
+  btn.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite;margin-right:6px">⏳</span> Searching…`;
+  container.innerHTML = `<div class="online-searching">Searching WHISKY:EDITION…</div>`;
+  try {
+    const items = await searchWhiskyEditionAPI(searchQuery);
+    if (!items.length) {
+      container.innerHTML = `<div class="online-searching">No online results found for "${searchQuery}"</div>`;
+      btn.innerHTML = `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/></svg> Search Again`;
+      btn.disabled = false;
+      return;
+    }
+    container.innerHTML = `
+      <div class="online-results-list">
+        ${items.map(item => {
+          const b = mapApiItem(item);
+          const rating = b.ratingAvg !== null ? `⭐ ${b.ratingAvg}/100` : '';
+          return `<div class="online-result-row" onclick="window.open('https://thewhiskyedition.com${b.url}','_blank')">
+            ${b.imageUrl
+              ? `<img class="online-result-img" src="${b.imageUrl}" alt="${b.name}">`
+              : `<div class="online-result-img-placeholder">🥃</div>`}
+            <div class="online-result-info">
+              <div class="online-badge">🌐 WHISKY:EDITION</div>
+              <div class="online-result-name">${b.name}</div>
+              <div class="online-result-meta">${b.distillery} · ${b.region} · ${b.age}</div>
+              ${rating ? `<div class="online-result-rating">${rating}</div>` : ''}
+            </div>
+            <div class="bottle-chevron"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 5l5 5-5 5"/></svg></div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="attribution-line">Results from <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a> · CC 4.0</div>`;
+    btn.style.display = 'none';
+  } catch(err) {
+    container.innerHTML = `<div class="online-searching" style="color:var(--amber)">Couldn't reach online database. Check your connection.</div>`;
+    btn.innerHTML = `Retry Search`;
+    btn.disabled = false;
+  }
+}
+
 function addToCollectionFromResult(id) {
   if (!collection.includes(id)) {
     collection.push(id); localStorage.setItem('bs-collection', JSON.stringify(collection));
@@ -1151,11 +1352,24 @@ function renderBrowse() {
   const q = searchQuery.toLowerCase();
   const filtered = BOTTLES.filter(b => {
     const matchQ = !q || b.name.toLowerCase().includes(q) || b.distillery.toLowerCase().includes(q) || b.flavors.some(f=>f.toLowerCase().includes(q)) || b.tags.some(t=>t.toLowerCase().includes(q));
-    const matchF = activeFilter==='All'||(activeFilter==='Bourbon'&&b.type==='Bourbon')||(activeFilter==='Rye'&&b.type==='Rye')||(activeFilter==='Vintage'&&b.vintage!=='Current')||(activeFilter==='Rare'&&['Scarce','Very Rare','Unicorn','Legendary'].includes(b.rarity))||(activeFilter==='BTAC'&&b.tags.includes('BTAC'));
+    const matchF = activeFilter==='All'||(activeFilter==='Bourbon'&&b.type==='Bourbon')||(activeFilter==='Rye'&&b.type==='Rye')||(activeFilter==='Scotch'&&b.type==='Scotch')||(activeFilter==='Tennessee'&&b.type==='Tennessee')||(activeFilter==='Vintage'&&b.vintage!=='Current')||(activeFilter==='Rare'&&['Scarce','Very Rare','Unicorn','Legendary'].includes(b.rarity))||(activeFilter==='BTAC'&&b.tags.includes('BTAC'));
     return matchQ && matchF;
   });
   const listEl = document.getElementById('bottle-list');
-  if (!filtered.length) { listEl.innerHTML=`<div style="text-align:center;padding:40px 20px;color:var(--muted2);font-size:14px">No bottles match</div>`; return; }
+  const onlineSection = document.getElementById('online-search-section');
+  const onlineContainer = document.getElementById('online-results-container');
+  // Show online search section when user has typed something
+  if (onlineSection) {
+    onlineSection.style.display = searchQuery.length >= 2 ? '' : 'none';
+    if (onlineContainer && searchQuery.length >= 2) {
+      // Reset online results when search query changes
+      onlineContainer.innerHTML = '';
+      document.getElementById('online-search-btn').textContent = '';
+      document.getElementById('online-search-btn').innerHTML = `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/></svg> Search WHISKY:EDITION Database`;
+      document.getElementById('online-search-btn').disabled = false;
+    }
+  }
+  if (!filtered.length) { listEl.innerHTML=`<div style="text-align:center;padding:20px 20px 4px;color:var(--muted2);font-size:14px">No local bottles match — try searching online ↓</div>`; return; }
   listEl.innerHTML = filtered.map(b=>`
     <div class="bottle-row" onclick="openDetail(${b.id})">
       <div class="bottle-emoji">${b.emoji}</div>
@@ -1169,7 +1383,12 @@ function renderBrowse() {
 }
 function setFilter(f) { activeFilter=f; renderBrowse(); }
 function filterBottles(q) { searchQuery=q; document.getElementById('search-clear').classList.toggle('visible',q.length>0); renderBrowse(); }
-function clearSearch() { document.getElementById('browse-input').value=''; filterBottles(''); }
+function clearSearch() {
+  document.getElementById('browse-input').value='';
+  filterBottles('');
+  const s = document.getElementById('online-search-section');
+  if (s) s.style.display = 'none';
+}
 
 // ═══════════════════════════════════════════════════════
 // DETAIL
