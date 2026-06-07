@@ -129,6 +129,8 @@
     .result-meta{flex:1}
     .result-name{font-family:var(--font);font-size:20px;color:var(--cream);line-height:1.2;margin-bottom:4px}
     .result-distillery{font-size:12px;color:var(--amber);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+    .distillery-link{color:inherit;text-decoration:underline;text-decoration-color:rgba(200,113,10,.4);text-underline-offset:2px}
+    .distillery-link:active{opacity:.7}
     .result-badges{display:flex;flex-wrap:wrap;gap:6px}
     .badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.04em}
     .badge-amber{background:rgba(200,113,10,.2);color:var(--amber-glow);border:1px solid rgba(200,113,10,.3)}
@@ -635,6 +637,10 @@ const FILTERS = ['All','Bourbon','Rye','Vintage','Rare','BTAC'];
 // ═══════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════
+function distilleryLink(b) {
+  const q = encodeURIComponent(b.distillery + ', ' + b.region);
+  return `<a class="distillery-link" href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${b.distillery}</a>`;
+}
 let activeScreen = 'scan', activeFilter = 'All', searchQuery = '';
 let collection = JSON.parse(localStorage.getItem('bs-collection') || '[]');
 let notes      = JSON.parse(localStorage.getItem('bs-notes')      || '[]');
@@ -829,7 +835,7 @@ function showResult(bottle, confidence, labelChips, isDemo) {
       <div class="result-bottle-img">${bottle.emoji}</div>
       <div class="result-meta">
         <div class="result-name">${bottle.name}</div>
-        <div class="result-distillery">${bottle.distillery}</div>
+        <div class="result-distillery">${distilleryLink(bottle)}</div>
         <div class="result-badges">
           <span class="badge badge-amber">${bottle.type}</span>
           <span class="badge ${rarityBadge}">${bottle.rarity}</span>
@@ -953,7 +959,7 @@ function renderBrowse() {
       <div class="bottle-emoji">${b.emoji}</div>
       <div class="bottle-info">
         <div class="bottle-name">${b.name}</div>
-        <div class="bottle-distillery">${b.distillery}</div>
+        <div class="bottle-distillery">${distilleryLink(b)}</div>
         <div class="bottle-stats"><span class="bottle-stat"><strong>${b.age}</strong></span><span class="bottle-stat"><strong>${b.proof}°</strong> proof</span><span class="bottle-stat">${b.rarity}</span></div>
       </div>
       <div class="bottle-chevron"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 5l5 5-5 5"/></svg></div>
@@ -977,7 +983,7 @@ function openDetail(id) {
     <div class="detail-hero">
       <div class="detail-bottle-icon">${b.emoji}</div>
       <div class="detail-name">${b.name}</div>
-      <div class="detail-distillery">${b.distillery}</div>
+      <div class="detail-distillery">${distilleryLink(b)}</div>
       <div class="result-badges"><span class="badge badge-amber">${b.type}</span><span class="badge ${rarityBadge}">${b.rarity}</span><span class="badge badge-cream">${b.region}</span></div>
     </div>
     <div class="detail-body">
