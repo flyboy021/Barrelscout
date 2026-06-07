@@ -494,8 +494,9 @@
         <button class="btn-primary" style="padding:10px;font-size:13px" onclick="applyFilters()">Apply Filters</button>
         <button class="btn-secondary" style="padding:8px;font-size:12px" onclick="resetFilters()">Reset</button>
       </div>
+      <div id="local-bottles-section" style="display:none"></div>
       <div class="bottle-list" id="bottle-list"></div>
-      <div class="attribution-line" style="padding:8px 0 16px">Powered by <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a></div>
+      <div class="attribution-line" style="padding:8px 0 16px">Powered by <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a> · Local DB</div>
     </section>
 
     <!-- COLLECTION -->
@@ -705,6 +706,153 @@ const FILTER_PARAMS = {
 };
 
 // ═══════════════════════════════════════════════════════
+// LOCAL BOTTLE DATABASE — top ~100 commonly owned bottles
+// Fallback when WHISKY:EDITION has no results (esp. American bourbon)
+// ═══════════════════════════════════════════════════════
+const LOCAL_BOTTLES = [
+  // ── AMERICAN BOURBON ──────────────────────────────────
+  { slug:'buffalo-trace', name:'Buffalo Trace Bourbon', distillery:'Buffalo Trace Distillery', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:45, proof:'90', desc:'The flagship of Buffalo Trace Distillery, aged in new charred oak barrels. One of the most decorated bourbons in the world.', flavors:['Vanilla','Caramel','Brown Sugar','Spice','Oak'], nose:'Vanilla, mint and molasses', palate:'Brown sugar, spice and hints of charred oak', finish:'Long and dry with smoke and a hint of spice', ratingAvg:88, valueForMoney:5, price:'~$30', searchTerms:['buffalo trace','buffalo','bt'] },
+  { slug:'eagle-rare-10', name:'Eagle Rare 10 Year Bourbon', distillery:'Buffalo Trace Distillery', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'10 yr', abv:45, proof:'90', desc:'A single barrel, 10-year-old bourbon that embodies the finest qualities of a great bourbon — complex, yet well balanced with a long, dry, satisfying finish.', flavors:['Toffee','Hints of orange','Herbs','Honey','Leather'], nose:'Rich aromas of toffee, herbs, and a hint of orange peel', palate:'Toffee, hints of dried fruit, herbs and honey', finish:'Dry, long with a hint of leather and oak', ratingAvg:90, valueForMoney:5, price:'~$40', searchTerms:['eagle rare','eagle','rare'] },
+  { slug:'blantons-original', name:"Blanton's Original Single Barrel", distillery:'Buffalo Trace Distillery', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:46.5, proof:'93', desc:"The original single barrel bourbon. Blanton's set the standard for the category when it launched in 1984 and remains one of the most sought-after bourbons.", flavors:['Citrus','Vanilla','Caramel','Nutmeg','Honey'], nose:'Citrus and floral notes with vanilla and caramel', palate:'Smooth and rich with citrus, vanilla and a hint of nutmeg', finish:'Long, pleasant finish with a hint of honey', ratingAvg:91, valueForMoney:4, price:'~$65', searchTerms:["blanton's",'blantons','blanton','single barrel'] },
+  { slug:'woodford-reserve', name:'Woodford Reserve Bourbon', distillery:'Woodford Reserve Distillery', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:45.2, proof:'90.4', desc:'A rich and robust bourbon crafted at the historic Woodford Reserve Distillery. Perfect balance of more than 200 detectable flavor notes.', flavors:['Dried Fruit','Vanilla','Toasted Oak','Spice','Chocolate'], nose:'Dried fruit, vanilla and hints of warm spice', palate:'Rich, full body with dried fruit, vanilla and toasted oak', finish:'Long and warming with chocolate and spice', ratingAvg:88, valueForMoney:4, price:'~$35', searchTerms:['woodford reserve','woodford','woodford reserve bourbon'] },
+  { slug:'woodford-double-oaked', name:'Woodford Reserve Double Oaked', distillery:'Woodford Reserve Distillery', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:43.2, proof:'86.4', desc:'Uniquely matured in a second, heavily toasted new oak barrel to produce an exceptionally smooth and uniquely rich bourbon.', flavors:['Caramel','Dark Fruit','Vanilla','Honey','Toasted Oak'], nose:'Sweet caramel, vanilla and dark fruit', palate:'Rich, creamy texture with caramel, honey and toasted oak', finish:'Long, warm and sweet with lingering vanilla', ratingAvg:90, valueForMoney:4, price:'~$45', searchTerms:['woodford double oaked','double oaked','woodford double'] },
+  { slug:'wild-turkey-101', name:'Wild Turkey 101 Bourbon', distillery:'Wild Turkey Distillery', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:50.5, proof:'101', desc:"Jimmy Russell's classic high-rye bourbon, aged in heavily charred barrels. Bold, spicy character with an incredibly long finish.", flavors:['Vanilla','Caramel','Spice','Oak','Dried Fruit'], nose:'Vanilla, caramel and rich spice', palate:'Bold spice, vanilla, caramel and a touch of dried fruit', finish:'Long, warm and spicy', ratingAvg:87, valueForMoney:5, price:'~$26', searchTerms:['wild turkey 101','wild turkey','turkey 101'] },
+  { slug:'wild-turkey-rare-breed', name:'Wild Turkey Rare Breed Barrel Proof', distillery:'Wild Turkey Distillery', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:58.4, proof:'116.8', desc:'A barrel proof blend of 6, 8 and 12 year old Wild Turkey bourbons. Complex and intensely flavored — a connoisseur\'s bourbon.', flavors:['Honey','Vanilla','Burnt Caramel','Oak Spice','Dried Fruit'], nose:'Honey, vanilla and rich caramel', palate:'Intense burnt caramel, vanilla and oak spice', finish:'Long, bold and warming', ratingAvg:92, valueForMoney:4, price:'~$55', searchTerms:['rare breed','wild turkey rare','wild turkey rare breed'] },
+  { slug:'makers-mark', name:"Maker's Mark Bourbon", distillery:"Maker's Mark Distillery", type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:45, proof:'90', desc:'The iconic red wax-dipped bottle. A wheated bourbon known for its sweet, smooth and approachable character. Made with soft red winter wheat instead of rye.', flavors:['Vanilla','Caramel','Wheat','Fruity','Soft Spice'], nose:'Sweet vanilla and caramel with a hint of fruit', palate:'Smooth wheat sweetness, vanilla and caramel', finish:'Soft, clean finish with a hint of oak', ratingAvg:85, valueForMoney:4, price:'~$30', searchTerms:["maker's mark",'makers mark','makers','maker'] },
+  { slug:'makers-46', name:"Maker's 46 Bourbon", distillery:"Maker's Mark Distillery", type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:47, proof:'94', desc:"Maker's Mark finished with seared French oak staves inserted into the barrel. More complex than the original with extra depth and spice.", flavors:['Vanilla','Caramel','Toasted Oak','Spice','Toffee'], nose:'Rich vanilla, caramel and toasted oak', palate:'Full-bodied with vanilla, toffee and warming spice', finish:'Long with lingering toasted oak and spice', ratingAvg:88, valueForMoney:4, price:'~$38', searchTerms:["maker's 46",'makers 46','46'] },
+  { slug:'bulleit-bourbon', name:'Bulleit Bourbon', distillery:'Bulleit Distilling Co.', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:45, proof:'90', desc:'A high-rye bourbon with a bold, spicy character. Light amber in color with a crisp, clean flavor palette that has made it a bartender favorite.', flavors:['Vanilla','Oak','Spice','Nutmeg','Maple'], nose:'Medium with notes of vanilla, oak and a little spice', palate:'Vanilla, light toffee, hints of oak and spice', finish:'Smooth, clean finish with a hint of maple', ratingAvg:83, valueForMoney:4, price:'~$28', searchTerms:['bulleit','bulleit bourbon'] },
+  { slug:'four-roses-small-batch', name:'Four Roses Small Batch Bourbon', distillery:'Four Roses Distillery', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:45, proof:'90', desc:'A carefully crafted blend of four of Four Roses exceptional Bourbons. Mellow and smooth with a wonderfully fruity character.', flavors:['Ripe Fruit','Caramel','Light Spice','Creamy','Vanilla'], nose:'Ripe fruit, caramel and a hint of spice', palate:'Mellow and smooth, fruity with caramel and vanilla', finish:'Long and smooth with a pleasant fruity finish', ratingAvg:88, valueForMoney:4, price:'~$35', searchTerms:['four roses small batch','four roses','4 roses'] },
+  { slug:'four-roses-single-barrel', name:'Four Roses Single Barrel Bourbon', distillery:'Four Roses Distillery', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:50, proof:'100', desc:'Robust and full-bodied, every bottle of Four Roses Single Barrel is selected by hand from one exceptional barrel. Rich fruit and floral aromas.', flavors:['Bold Fruit','Spice','Oak','Caramel','Vanilla'], nose:'Bold fruit and floral notes with spice and caramel', palate:'Full-bodied with rich fruit, spice and caramel', finish:'Long and spicy with a hint of dried fruit', ratingAvg:91, valueForMoney:4, price:'~$45', searchTerms:['four roses single barrel','four roses single'] },
+  { slug:'knob-creek-9', name:'Knob Creek 9 Year Small Batch', distillery:'Beam Suntory', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'9 yr', abv:50, proof:'100', desc:'Aged nine years and bottled at 100 proof, Knob Creek is a rich, full-flavored bourbon with deep oak character and a long, smooth finish.', flavors:['Oak','Vanilla','Caramel','Maple','Rich Spice'], nose:'Rich aromas of oak, vanilla and caramel', palate:'Full-flavored with oak, maple and sweet caramel', finish:'Long and smooth with deep oak notes', ratingAvg:88, valueForMoney:4, price:'~$35', searchTerms:['knob creek','knob creek 9','knob creek small batch'] },
+  { slug:'knob-creek-rye', name:'Knob Creek Rye Whiskey', distillery:'Beam Suntory', type:'Rye', country:'USA', region:'Kentucky, USA', age:'NAS', abv:50, proof:'100', desc:'A robust, full-flavored rye whiskey aged in deeply charred white oak barrels. Bold rye spice balanced with hints of vanilla and fruit.', flavors:['Rye Spice','Oak','Vanilla','Fruit','Pepper'], nose:'Bold rye spice, oak and vanilla', palate:'Rich rye grain, pepper and hints of fruit', finish:'Long and spicy with warming rye', ratingAvg:86, valueForMoney:4, price:'~$35', searchTerms:['knob creek rye','knob rye'] },
+  { slug:'jim-beam-white', name:'Jim Beam White Label Bourbon', distillery:'Beam Suntory', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'4 yr', abv:40, proof:'80', desc:"The world's best-selling bourbon whiskey. Aged for four years and made from the same Jim Beam family recipe for over 225 years.", flavors:['Vanilla','Grain','Caramel','Light Oak','Sweet'], nose:'Light vanilla and grain sweetness', palate:'Smooth and approachable with vanilla and light caramel', finish:'Clean, short and sweet', ratingAvg:78, valueForMoney:5, price:'~$20', searchTerms:['jim beam','jim beam white','jim beam bourbon'] },
+  { slug:'jim-beam-black', name:'Jim Beam Black Extra-Aged Bourbon', distillery:'Beam Suntory', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:43, proof:'86', desc:'Aged twice as long as Jim Beam White, Jim Beam Black delivers richer, bolder flavor with a satisfying finish.', flavors:['Rich Oak','Vanilla','Caramel','Dark Fruit','Spice'], nose:'Rich vanilla, oak and a hint of dark fruit', palate:'Smooth with vanilla, caramel and warming spice', finish:'Long, smooth and satisfying', ratingAvg:83, valueForMoney:5, price:'~$25', searchTerms:['jim beam black','beam black'] },
+  { slug:'basil-haydens', name:"Basil Hayden's Bourbon", distillery:'Beam Suntory', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:40, proof:'80', desc:'Named after a historical figure who was known for adding an unusually high proportion of rye. Light and approachable with a peppery kick.', flavors:['Pepper','Spice','Honey','Light Caramel','Grain'], nose:'Light with peppery spice and honey', palate:'Smooth, light-bodied with pepper and honey notes', finish:'Clean and mild with a hint of spice', ratingAvg:82, valueForMoney:3, price:'~$40', searchTerms:['basil hayden','basil haydens',"basil hayden's"] },
+  { slug:'bookers', name:"Booker's Bourbon", distillery:'Beam Suntory', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:63.5, proof:'127', desc:"Booker Noe's tribute to his grandfather Jim Beam. Uncut and unfiltered, bottled straight from the barrel at cask strength. Intense and complex.", flavors:['Bold Oak','Vanilla','Caramel','Dark Fruit','Intense Spice'], nose:'Intense vanilla, oak and caramel', palate:'Powerful and complex with dark fruit, caramel and bold oak', finish:'Very long, warming and intense', ratingAvg:92, valueForMoney:3, price:'~$75', searchTerms:["booker's",'bookers','booker noe','booker'] },
+  { slug:'angels-envy', name:"Angel's Envy Bourbon", distillery:"Angel's Envy Distillery", type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:43.3, proof:'86.6', desc:'Finished in port wine barrels for a period of three to six months. This finishing process adds a complex sweetness not commonly found in bourbon.', flavors:['Port Wine','Vanilla','Caramel','Dark Fruit','Toasted Oak'], nose:'Sweet port, vanilla and caramel', palate:'Rich with port wine sweetness, vanilla and dark fruit', finish:'Smooth and lingering with port and caramel', ratingAvg:90, valueForMoney:4, price:'~$45', searchTerms:["angel's envy",'angels envy','angel envy'] },
+  { slug:'elijah-craig-small-batch', name:'Elijah Craig Small Batch Bourbon', distillery:'Heaven Hill Distilleries', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:47, proof:'94', desc:'Named after the Reverend Elijah Craig, credited with first aging whiskey in charred oak barrels. A classic Kentucky straight bourbon with complex flavors.', flavors:['Brown Sugar','Cinnamon','Vanilla','Oak','Dried Fruit'], nose:'Brown sugar, cinnamon and vanilla', palate:'Rich and complex with caramel, vanilla and toasted oak', finish:'Long and dry with a hint of spice', ratingAvg:87, valueForMoney:4, price:'~$30', searchTerms:['elijah craig','elijah craig small batch','elijah'] },
+  { slug:'elijah-craig-barrel-proof', name:'Elijah Craig Barrel Proof Bourbon', distillery:'Heaven Hill Distilleries', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'12 yr', abv:67, proof:'134', desc:'A 12-year-old single barrel release bottled at full barrel proof. One of the most consistently rated barrel proof bourbons on the market.', flavors:['Intense Oak','Vanilla','Dark Caramel','Spice','Dried Fruit'], nose:'Intense oak, vanilla and dark caramel', palate:'Bold, complex with rich caramel, spice and dried fruit', finish:'Extraordinarily long and warming', ratingAvg:94, valueForMoney:5, price:'~$60', searchTerms:['elijah craig barrel proof','elijah craig bp','ecbp'] },
+  { slug:'old-forester-1920', name:'Old Forester 1920 Prohibition Style Bourbon', distillery:'Brown-Forman', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:57.5, proof:'115', desc:'Inspired by Old Forester\'s history as one of the few distilleries licensed to operate during Prohibition. Bold and full-flavored at 115 proof.', flavors:['Chocolate','Vanilla','Oak','Caramel','Spice'], nose:'Rich chocolate, vanilla and oak', palate:'Bold and full with chocolate, vanilla and warming spice', finish:'Long and bold with chocolate and oak', ratingAvg:91, valueForMoney:4, price:'~$55', searchTerms:['old forester 1920','1920','prohibition style'] },
+  { slug:'old-forester-86', name:'Old Forester 86 Proof Bourbon', distillery:'Brown-Forman', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:43, proof:'86', desc:"One of America's oldest bottled bourbon brands. A traditional Kentucky straight bourbon with approachable sweetness.", flavors:['Vanilla','Caramel','Light Spice','Oak','Grain'], nose:'Light vanilla and caramel', palate:'Smooth with caramel, vanilla and light spice', finish:'Clean and pleasant', ratingAvg:80, valueForMoney:4, price:'~$22', searchTerms:['old forester','old forester 86'] },
+  { slug:'evan-williams-black', name:'Evan Williams Black Label Bourbon', distillery:'Heaven Hill Distilleries', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'7 yr', abv:43, proof:'86', desc:"Kentucky's second best-selling bourbon. Aged a minimum of 7 years with classic bourbon flavors at an accessible price point.", flavors:['Caramel','Vanilla','Grain','Light Oak','Sweet'], nose:'Sweet caramel and vanilla', palate:'Smooth caramel and vanilla with light grain notes', finish:'Medium length with a hint of oak', ratingAvg:80, valueForMoney:5, price:'~$17', searchTerms:['evan williams','evan williams black','evan'] },
+  { slug:'larceny-small-batch', name:'Larceny Small Batch Bourbon', distillery:'Heaven Hill Distilleries', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:46, proof:'92', desc:'A wheated bourbon using wheat as the secondary grain instead of rye, creating a softer, sweeter character.', flavors:['Honey','Caramel','Light Oak','Vanilla','Wheat'], nose:'Soft honey, caramel and vanilla', palate:'Smooth and approachable with honey, caramel and a hint of oak', finish:'Light and sweet with a warm finish', ratingAvg:85, valueForMoney:5, price:'~$27', searchTerms:['larceny','larceny bourbon','larceny small batch'] },
+  { slug:'wl-weller-special', name:'W.L. Weller Special Reserve Bourbon', distillery:'Buffalo Trace Distillery', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:45, proof:'90', desc:'A wheated bourbon from Buffalo Trace. The "poor man\'s Pappy" — made from the same wheated mash bill as Pappy Van Winkle at a fraction of the cost.', flavors:['Wheat','Caramel','Vanilla','Honey','Light Spice'], nose:'Soft wheat sweetness with caramel and vanilla', palate:'Smooth, wheated sweetness with caramel and honey', finish:'Soft and clean with lingering vanilla', ratingAvg:86, valueForMoney:5, price:'~$30', searchTerms:['weller','wl weller','weller special','weller special reserve'] },
+  { slug:'wl-weller-12', name:'W.L. Weller 12 Year Bourbon', distillery:'Buffalo Trace Distillery', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'12 yr', abv:45, proof:'90', desc:'The 12-year-old expression of the iconic wheated bourbon. Smooth and complex with incredible depth for the price — when you can find it.', flavors:['Caramel','Oak','Wheat','Vanilla','Dark Fruit'], nose:'Rich caramel, toasted oak and vanilla', palate:'Complex with caramel, vanilla, wheat and hints of dark fruit', finish:'Long, smooth and warming', ratingAvg:92, valueForMoney:5, price:'~$45', searchTerms:['weller 12','wl weller 12','weller twelve'] },
+  { slug:'colonel-eh-taylor-small-batch', name:'Colonel E.H. Taylor Small Batch Bourbon', distillery:'Buffalo Trace Distillery', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:50, proof:'100', desc:'Named after E.H. Taylor Jr., a pioneer in bourbon industry. Bottled in bond at 100 proof, this is a complex and premium expression.', flavors:['Vanilla','Caramel','Baking Spices','Oak','Tobacco'], nose:'Rich vanilla, caramel and baking spices', palate:'Complex with vanilla, caramel, baking spices and oak', finish:'Long and satisfying with tobacco notes', ratingAvg:91, valueForMoney:4, price:'~$40', searchTerms:['colonel taylor','eh taylor','e.h. taylor','taylor small batch','colonel eh taylor'] },
+  { slug:'michters-us1-bourbon', name:"Michter's US*1 Bourbon", distillery:"Michter's Distillery", type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'NAS', abv:45.7, proof:'91.4', desc:"Michter's produces small batches to ensure quality, aging their bourbon in a cypress wood rick house. Rich and complex with exceptional smoothness.", flavors:['Caramel','Toasted Oak','Vanilla','Dried Fruit','Spice'], nose:'Rich caramel, toasted oak and vanilla', palate:'Smooth and complex with dried fruit and spice', finish:'Long and warming with lingering caramel', ratingAvg:89, valueForMoney:3, price:'~$50', searchTerms:["michter's",'michters','michter'] },
+  // ── TENNESSEE WHISKEY ──────────────────────────────────
+  { slug:'jack-daniels-old-no7', name:"Jack Daniel's Old No. 7", distillery:"Jack Daniel's Distillery", type:'Tennessee Whiskey', country:'USA', region:'Tennessee, USA', age:'NAS', abv:40, proof:'80', desc:"The world's best-selling American whiskey. Mellowed through 10 feet of sugar maple charcoal before aging — the Lincoln County Process.", flavors:['Vanilla','Caramel','Banana','Light Oak','Charcoal'], nose:'Sweet vanilla, banana and light caramel', palate:'Smooth with vanilla, caramel and a hint of charcoal', finish:'Clean and mellow with a light sweetness', ratingAvg:80, valueForMoney:4, price:'~$25', searchTerms:['jack daniels','jack daniel','jack','jd','no 7','number 7','old no 7'] },
+  { slug:'jack-daniels-gentleman-jack', name:"Jack Daniel's Gentleman Jack", distillery:"Jack Daniel's Distillery", type:'Tennessee Whiskey', country:'USA', region:'Tennessee, USA', age:'NAS', abv:40, proof:'80', desc:"Double mellowed through charcoal before and after aging, Gentleman Jack is exceptionally smooth and refined.", flavors:['Vanilla','Caramel','Fruit','Soft Oak','Honey'], nose:'Soft vanilla, caramel and fruit', palate:'Exceptionally smooth with vanilla and soft caramel', finish:'Smooth, clean and refined', ratingAvg:82, valueForMoney:3, price:'~$30', searchTerms:['gentleman jack','gentleman','jack gentleman'] },
+  { slug:'jack-daniels-single-barrel', name:"Jack Daniel's Single Barrel Select", distillery:"Jack Daniel's Distillery", type:'Tennessee Whiskey', country:'USA', region:'Tennessee, USA', age:'NAS', abv:47, proof:'94', desc:'Each bottle comes from a single barrel, hand-selected by the Jack Daniel\'s Master Distiller from the highest reaches of the barrel house.', flavors:['Toasted Oak','Vanilla','Caramel','Spice','Dark Fruit'], nose:'Toasted oak, vanilla and rich caramel', palate:'Bold with oak, vanilla, caramel and spice', finish:'Long and complex with dark fruit and oak', ratingAvg:88, valueForMoney:3, price:'~$45', searchTerms:['jack daniels single barrel','jack single barrel'] },
+  // ── AMERICAN RYE ──────────────────────────────────────
+  { slug:'rittenhouse-rye', name:'Rittenhouse Rye Whisky', distillery:'Heaven Hill Distilleries', type:'Rye', country:'USA', region:'Kentucky, USA', age:'NAS', abv:50, proof:'100', desc:'A classic straight rye whiskey, bottled in bond at 100 proof. Bold rye spice character with a full-bodied mouthfeel.', flavors:['Bold Rye','Spice','Vanilla','Oak','Cinnamon'], nose:'Bold rye grain, cinnamon and a hint of vanilla', palate:'Full-bodied rye spice, cinnamon and vanilla', finish:'Long, dry and spicy', ratingAvg:87, valueForMoney:5, price:'~$26', searchTerms:['rittenhouse','rittenhouse rye'] },
+  { slug:'bulleit-rye', name:'Bulleit 95 Rye Whiskey', distillery:'Bulleit Distilling Co.', type:'Rye', country:'USA', region:'USA', age:'NAS', abv:45, proof:'90', desc:"Made with a mash bill of 95% rye — one of the highest on the market. Bold, spicy character that made it a cocktail bartender's staple.", flavors:['Rye Spice','Pepper','Vanilla','Fruit','Oak'], nose:'Bold rye and pepper with hints of fruit', palate:'Spicy rye grain, pepper and vanilla', finish:'Long and dry with warming rye spice', ratingAvg:85, valueForMoney:4, price:'~$28', searchTerms:['bulleit rye','bulleit 95 rye'] },
+  { slug:'whistlepig-10', name:'WhistlePig 10 Year Rye Whiskey', distillery:'WhistlePig Farm', type:'Rye', country:'USA', region:'Vermont, USA', age:'10 yr', abv:50, proof:'100', desc:'Sourced and aged for a decade in American oak. WhistlePig set the standard for premium rye whiskey when it launched.', flavors:['Rich Rye','Spice','Vanilla','Caramel','Dried Fruit'], nose:'Rich rye spice, vanilla and dried fruit', palate:'Full-bodied with rye grain, caramel and warming spice', finish:'Long and complex with lingering rye', ratingAvg:92, valueForMoney:3, price:'~$70', searchTerms:['whistlepig','whistle pig','whistlepig 10'] },
+  { slug:'sazerac-rye', name:'Sazerac Rye Whiskey', distillery:'Buffalo Trace Distillery', type:'Rye', country:'USA', region:'Kentucky, USA', age:'NAS', abv:45, proof:'90', desc:"Buffalo Trace's baby rye — named after the famous New Orleans cocktail. One of the best introductory rye whiskeys on the market.", flavors:['Rye Spice','Vanilla','Fruit','Oak','Light Pepper'], nose:'Sweet rye grain with vanilla and light fruit', palate:'Smooth rye spice, vanilla and hints of fruit', finish:'Medium length with a dry rye finish', ratingAvg:84, valueForMoney:5, price:'~$30', searchTerms:['sazerac rye','sazerac','sazerac whiskey'] },
+  { slug:'high-west-double-rye', name:'High West Double Rye Whiskey', distillery:'High West Distillery', type:'Rye', country:'USA', region:'Utah, USA', age:'NAS', abv:46, proof:'92', desc:'A blend of two very different rye whiskeys creating something spicy and smooth at the same time. An iconic western rye.', flavors:['Rye Spice','Anise','Vanilla','Mint','Pepper'], nose:'Rye spice, anise and mint', palate:'Spicy and smooth with anise, pepper and vanilla', finish:'Long and warming with rye and mint', ratingAvg:88, valueForMoney:4, price:'~$35', searchTerms:['high west','high west rye','double rye'] },
+  { slug:'michters-rye', name:"Michter's US*1 Single Barrel Rye", distillery:"Michter's Distillery", type:'Rye', country:'USA', region:'Kentucky, USA', age:'NAS', abv:42.4, proof:'84.8', desc:"Michter's premium single barrel rye with a rich and complex flavor profile. Exceptionally smooth for a rye whiskey.", flavors:['Rye Grain','Spice','Vanilla','Caramel','Fruit'], nose:'Rye grain, spice and soft vanilla', palate:'Smooth rye with caramel, vanilla and light fruit', finish:'Long and pleasantly spicy', ratingAvg:88, valueForMoney:3, price:'~$50', searchTerms:["michter's rye",'michters rye'] },
+  // ── SCOTCH — SINGLE MALT ──────────────────────────────
+  { slug:'glenfiddich-12', name:'Glenfiddich 12 Year Old', distillery:'Glenfiddich Distillery', type:'Single Malt', country:'Scotland', region:'Speyside, Scotland', age:'12 yr', abv:40, proof:'80', desc:"The world's most awarded single malt. A beautifully fresh and fruity expression matured in American oak and European oak sherry casks.", flavors:['Fresh Pear','Creamy','Subtle Oak','Vanilla','Malt'], nose:'Fresh pear and subtle oak', palate:'Creamy with pear, apple and a hint of vanilla', finish:'Clean and smooth', ratingAvg:84, valueForMoney:4, price:'~$35', searchTerms:['glenfiddich 12','glenfiddich','fiddich 12'] },
+  { slug:'glenfiddich-15', name:'Glenfiddich 15 Year Old', distillery:'Glenfiddich Distillery', type:'Single Malt', country:'Scotland', region:'Speyside, Scotland', age:'15 yr', abv:40, proof:'80', desc:"Pioneered the 'Solera Vat' process in Scotch whisky. A complex, rich expression with sherry sweetness balanced by fresh fruity notes.", flavors:['Sherry','Marzipan','Vanilla','Cinnamon','Toffee'], nose:'Sherry sweetness, marzipan and cinnamon', palate:'Rich with sherry, vanilla and toffee', finish:'Warm with lingering sherry and spice', ratingAvg:87, valueForMoney:4, price:'~$50', searchTerms:['glenfiddich 15','fiddich 15'] },
+  { slug:'glenfiddich-18', name:'Glenfiddich 18 Year Old', distillery:'Glenfiddich Distillery', type:'Single Malt', country:'Scotland', region:'Speyside, Scotland', age:'18 yr', abv:40, proof:'80', desc:'Finished in small oak casks, this expression perfectly balances the richness of sherry with the elegant freshness of Speyside malt.', flavors:['Dried Fruit','Sherry','Dark Chocolate','Spice','Oak'], nose:'Dried fruit, sherry and a hint of spice', palate:'Rich and complex with dried fruit, chocolate and oak', finish:'Long and warming with lingering fruit', ratingAvg:90, valueForMoney:3, price:'~$80', searchTerms:['glenfiddich 18','fiddich 18'] },
+  { slug:'macallan-12-double-cask', name:'The Macallan 12 Year Double Cask', distillery:'The Macallan Distillery', type:'Single Malt', country:'Scotland', region:'Speyside, Scotland', age:'12 yr', abv:40, proof:'80', desc:'Matured in a combination of American and Spanish oak casks seasoned with sherry. A perfect introduction to the Macallan range.', flavors:['Vanilla','Dried Fruit','Caramel','Nutmeg','Light Sherry'], nose:'Vanilla, dried fruit and butterscotch', palate:'Vanilla sweetness with dried fruit, caramel and nutmeg', finish:'Long with vanilla and warming spice', ratingAvg:86, valueForMoney:3, price:'~$65', searchTerms:['macallan 12','macallan double cask','the macallan 12'] },
+  { slug:'macallan-12-sherry', name:'The Macallan 12 Year Sherry Oak', distillery:'The Macallan Distillery', type:'Single Malt', country:'Scotland', region:'Speyside, Scotland', age:'12 yr', abv:43, proof:'86', desc:'Matured exclusively in hand-picked sherry seasoned oak casks from Jerez, Spain. The quintessential Macallan expression.', flavors:['Sherry','Dried Fruit','Ginger','Rich Oak','Vanilla'], nose:'Rich sherry, dried fruit and ginger', palate:'Full and rich with sherry, dried fruit and warming spice', finish:'Long and warming with lingering sherry', ratingAvg:89, valueForMoney:3, price:'~$80', searchTerms:['macallan 12 sherry','macallan sherry oak','the macallan sherry'] },
+  { slug:'glenlivet-12', name:'The Glenlivet 12 Year Old', distillery:'The Glenlivet Distillery', type:'Single Malt', country:'Scotland', region:'Speyside, Scotland', age:'12 yr', abv:40, proof:'80', desc:"America's #1 selling single malt Scotch. The original Speyside malt — fruity, floral and approachable.", flavors:['Fruit','Vanilla','Floral','Honey','Oak'], nose:'Fresh fruit, vanilla and floral notes', palate:'Smooth and fruity with vanilla and honey', finish:'Clean and long with a fruity sweetness', ratingAvg:83, valueForMoney:4, price:'~$35', searchTerms:['glenlivet','glenlivet 12','the glenlivet'] },
+  { slug:'laphroaig-10', name:'Laphroaig 10 Year Old', distillery:'Laphroaig Distillery', type:'Single Malt', country:'Scotland', region:'Islay, Scotland', age:'10 yr', abv:40, proof:'80', desc:"An intensely flavored, smoky, peaty Scotch with medicinal notes and a distinctive sweetness underneath. HRH Prince Charles' favorite whisky.", flavors:['Peat','Smoke','Medicinal','Seaweed','Vanilla'], nose:'Intense peat smoke and medicinal notes', palate:'Powerful peat, smoke, seaweed and a surprising sweetness', finish:'Very long and smoky with a hint of sweetness', ratingAvg:88, valueForMoney:4, price:'~$40', searchTerms:['laphroaig','laphroaig 10','laphroaig ten'] },
+  { slug:'laphroaig-quarter-cask', name:'Laphroaig Quarter Cask', distillery:'Laphroaig Distillery', type:'Single Malt', country:'Scotland', region:'Islay, Scotland', age:'NAS', abv:48, proof:'96', desc:'Finished in quarter casks — smaller barrels that accelerate the maturation and add extra depth and richness to the classic Laphroaig peat smoke.', flavors:['Intense Peat','Vanilla','Sweet Smoke','Oak','Seaweed'], nose:'Intense peat with vanilla sweetness', palate:'Rich peat, vanilla and toasty oak', finish:'Long and smoky with a sweet, creamy finish', ratingAvg:90, valueForMoney:4, price:'~$45', searchTerms:['laphroaig quarter cask','quarter cask laphroaig'] },
+  { slug:'ardbeg-10', name:'Ardbeg 10 Year Old', distillery:'Ardbeg Distillery', type:'Single Malt', country:'Scotland', region:'Islay, Scotland', age:'10 yr', abv:46, proof:'92', desc:'One of the most heavily peated whiskies on the planet. Ardbeg 10 is complex and fiery with an incredible depth of flavor.', flavors:['Intense Smoke','Peat','Citrus','Vanilla','Sea Salt'], nose:'Massive smoke and peat with citrus and vanilla', palate:'Intense peaty smoke with lemon and vanilla notes', finish:'Extraordinarily long and smoky', ratingAvg:91, valueForMoney:4, price:'~$45', searchTerms:['ardbeg','ardbeg 10','ardbeg ten'] },
+  { slug:'balvenie-doublewood-12', name:'The Balvenie DoubleWood 12 Year Old', distillery:'Balvenie Distillery', type:'Single Malt', country:'Scotland', region:'Speyside, Scotland', age:'12 yr', abv:40, proof:'80', desc:'Matured in traditional Scotch whisky oak casks for 12 years and then transferred to first-fill European oak sherry casks.', flavors:['Honey','Vanilla','Fruit','Spice','Sherry'], nose:'Honey, vanilla and light sherry', palate:'Smooth and mellow with honey, fruit and a hint of sherry spice', finish:'Long and lingering with warming spice', ratingAvg:89, valueForMoney:4, price:'~$55', searchTerms:['balvenie','balvenie doublewood','balvenie 12'] },
+  { slug:'highland-park-12', name:'Highland Park 12 Year Old Viking Honour', distillery:'Highland Park Distillery', type:'Single Malt', country:'Scotland', region:'Orkney, Scotland', age:'12 yr', abv:40, proof:'80', desc:'The pride of Orkney. A beautifully balanced whisky combining heather honey sweetness with aromatic peat smoke and warming spice.', flavors:['Heather Honey','Aromatic Peat','Vanilla','Dried Fruit','Spice'], nose:'Heather honey, aromatic peat and vanilla', palate:'Honey sweetness balanced with smoke, dried fruit and spice', finish:'Long and complex with lingering peat and honey', ratingAvg:88, valueForMoney:4, price:'~$45', searchTerms:['highland park','highland park 12'] },
+  { slug:'oban-14', name:'Oban 14 Year Old', distillery:'Oban Distillery', type:'Single Malt', country:'Scotland', region:'Western Highlands, Scotland', age:'14 yr', abv:43, proof:'86', desc:'The gateway to the Classic Malts of Scotland. A perfectly balanced expression between light Speyside style and the heavier Western Highland malts.', flavors:['Honey','Dried Fruit','Hint of Smoke','Malt','Sea Salt'], nose:'Honey, dried fruit and a hint of sea salt', palate:'Rich malt with honey, dried fruit and a light smokiness', finish:'Long and warming with a smooth finish', ratingAvg:88, valueForMoney:3, price:'~$60', searchTerms:['oban','oban 14'] },
+  { slug:'dalmore-12', name:'The Dalmore 12 Year Old', distillery:'Dalmore Distillery', type:'Single Malt', country:'Scotland', region:'Highlands, Scotland', age:'12 yr', abv:40, proof:'80', desc:'A rich, complex single malt matured in American white oak ex-bourbon barrels then finished in rare Gonzalez Byass Apostoles sherry casks.', flavors:['Dark Chocolate','Rich Fruit','Spice','Vanilla','Orange Marmalade'], nose:'Dark chocolate, rich fruit and orange marmalade', palate:'Rich with dark chocolate, spice and citrus', finish:'Long and warming with chocolate and spice', ratingAvg:87, valueForMoney:3, price:'~$55', searchTerms:['dalmore','dalmore 12','the dalmore'] },
+  { slug:'glenmorangie-10', name:'Glenmorangie The Original 10 Year', distillery:'Glenmorangie Distillery', type:'Single Malt', country:'Scotland', region:'Highlands, Scotland', age:'10 yr', abv:40, proof:'80', desc:"Matured in 'extra tall' copper pot stills and American white oak ex-bourbon barrels. The best-selling single malt in Scotland.", flavors:['Peach','Vanilla','Citrus','Malt','Floral'], nose:'Peach, citrus and vanilla with floral notes', palate:'Light and fresh with peach, citrus and vanilla malt', finish:'Smooth, clean and long', ratingAvg:83, valueForMoney:4, price:'~$35', searchTerms:['glenmorangie','glenmorangie 10','glenmorangie original'] },
+  { slug:'lagavulin-16', name:'Lagavulin 16 Year Old', distillery:'Lagavulin Distillery', type:'Single Malt', country:'Scotland', region:'Islay, Scotland', age:'16 yr', abv:43, proof:'86', desc:'One of the world\'s most celebrated whiskies. Intensely peated with a deep, complex character that takes time to fully appreciate.', flavors:['Intense Peat','Seaweed','Dry Smoke','Dark Fruit','Malt'], nose:'Intense peat, seaweed and dark fruit', palate:'Huge peat and smoke with a surprising dried fruit sweetness', finish:'Famously long and smoky — one of the longest finishes in Scotch', ratingAvg:93, valueForMoney:3, price:'~$75', searchTerms:['lagavulin','lagavulin 16'] },
+  // ── SCOTCH — BLENDED ──────────────────────────────────
+  { slug:'johnnie-walker-black', name:'Johnnie Walker Black Label', distillery:'Diageo', type:'Blended Scotch', country:'Scotland', region:'Scotland', age:'12 yr', abv:40, proof:'80', desc:'The world\'s most widely distributed blended Scotch whisky. Aged for at least 12 years, it is smoky and complex with a lingering finish.', flavors:['Smoke','Vanilla','Dark Fruit','Spice','Malt'], nose:'Rich smoke, vanilla and dried fruit', palate:'Smooth and full-bodied with smoke, fruit and spice', finish:'Long, complex and satisfying', ratingAvg:85, valueForMoney:4, price:'~$30', searchTerms:['johnnie walker black','johnnie walker','johnny walker black','black label'] },
+  { slug:'johnnie-walker-blue', name:'Johnnie Walker Blue Label', distillery:'Diageo', type:'Blended Scotch', country:'Scotland', region:'Scotland', age:'NAS', abv:40, proof:'80', desc:'The pinnacle of blended Scotch whisky. One in every 10,000 casks is deemed exceptional enough for Blue Label. Silky smooth and extraordinarily rare.', flavors:['Honey','Dark Chocolate','Dried Fruit','Smoke','Spice'], nose:'Honey, dark chocolate and a whisper of smoke', palate:'Silky smooth with honey, dried fruit and subtle smoke', finish:'Extraordinarily long and complex', ratingAvg:92, valueForMoney:2, price:'~$200', searchTerms:['johnnie walker blue','blue label','johnnie blue'] },
+  { slug:'chivas-regal-12', name:'Chivas Regal 12 Year Old', distillery:'Chivas Brothers', type:'Blended Scotch', country:'Scotland', region:'Scotland', age:'12 yr', abv:40, proof:'80', desc:'The world\'s first luxury whisky — smooth, rich and generous with a long, lingering finish. A true icon of blended Scotch.', flavors:['Honey','Vanilla','Apple','Hazelnut','Butterscotch'], nose:'Honey, vanilla and apple', palate:'Rich with honey, vanilla, hazelnut and butterscotch', finish:'Long, smooth and lingering', ratingAvg:83, valueForMoney:4, price:'~$30', searchTerms:['chivas','chivas regal','chivas 12','chivas regal 12'] },
+  // ── IRISH WHISKEY ─────────────────────────────────────
+  { slug:'jameson', name:'Jameson Irish Whiskey', distillery:'Midleton Distillery', type:'Irish Whiskey', country:'Ireland', region:'Cork, Ireland', age:'NAS', abv:40, proof:'80', desc:"The world's most popular Irish whiskey. Triple distilled for exceptional smoothness with a perfectly balanced blend of grain and pot still whiskeys.", flavors:['Vanilla','Toasted Wood','Floral','Spice','Sherry'], nose:'Floral and light with vanilla and hints of spice', palate:'Smooth and well-rounded with vanilla and fruit', finish:'Smooth, medium length with toasted wood', ratingAvg:82, valueForMoney:4, price:'~$30', searchTerms:['jameson','jameson irish','jameson whiskey'] },
+  { slug:'jameson-black-barrel', name:'Jameson Black Barrel', distillery:'Midleton Distillery', type:'Irish Whiskey', country:'Ireland', region:'Cork, Ireland', age:'NAS', abv:40, proof:'80', desc:'Double charred American bourbon barrels give this expression extra vanilla sweetness and a hint of spice.', flavors:['Vanilla','Caramel','Spice','Oak','Toasted Grain'], nose:'Rich vanilla, caramel and toasted grain', palate:'Sweet vanilla and caramel with warming spice', finish:'Long and sweet with vanilla and spice', ratingAvg:86, valueForMoney:4, price:'~$35', searchTerms:['jameson black barrel','black barrel jameson'] },
+  { slug:'redbreast-12', name:'Redbreast 12 Year Old', distillery:'Midleton Distillery', type:'Irish Whiskey', country:'Ireland', region:'Cork, Ireland', age:'12 yr', abv:40, proof:'80', desc:'The best-selling single pot still Irish whiskey in the world. A rich and complex expression with dried fruit, fresh spices and creamy milk chocolate.', flavors:['Dried Fruit','Spice','Cream','Toasted Oak','Nuts'], nose:'Dried fruit, nuts and spices with a hint of cream', palate:'Complex and full with dried fruit, cream and toasted oak', finish:'Long and complex with fresh fruit and spice', ratingAvg:91, valueForMoney:4, price:'~$60', searchTerms:['redbreast','redbreast 12','red breast'] },
+  { slug:'redbreast-15', name:'Redbreast 15 Year Old', distillery:'Midleton Distillery', type:'Irish Whiskey', country:'Ireland', region:'Cork, Ireland', age:'15 yr', abv:46, proof:'92', desc:'A single pot still Irish whiskey of exceptional complexity and depth. The extra maturation adds wonderful richness and depth.', flavors:['Dark Fruit','Sherry','Spice','Rich Oak','Cream'], nose:'Rich dark fruit, sherry and warming spice', palate:'Full and complex with dark fruit, cream and rich oak', finish:'Very long and complex', ratingAvg:93, valueForMoney:4, price:'~$90', searchTerms:['redbreast 15','red breast 15'] },
+  { slug:'green-spot', name:'Green Spot Single Pot Still Irish Whiskey', distillery:'Midleton Distillery', type:'Irish Whiskey', country:'Ireland', region:'Cork, Ireland', age:'NAS', abv:40, proof:'80', desc:'One of the last surviving pot still whiskeys bottled by an independent merchant. Fresh and fruity with classic pot still spice.', flavors:['Green Apple','Barley','Spice','Honeysuckle','Oak'], nose:'Fresh green apple, barley and floral notes', palate:'Light and fresh with green fruit, barley and gentle spice', finish:'Clean and refreshing', ratingAvg:87, valueForMoney:4, price:'~$45', searchTerms:['green spot','green spot irish'] },
+  { slug:'tullamore-dew', name:'Tullamore D.E.W. Original', distillery:'Tullamore Distillery', type:'Irish Whiskey', country:'Ireland', region:'Offaly, Ireland', age:'NAS', abv:40, proof:'80', desc:'A triple distilled blend of grain, malt and pot still whiskeys. Light, fruity and perfectly smooth.', flavors:['Light Fruit','Grain','Vanilla','Herb','Honey'], nose:'Light fruit, grain and vanilla', palate:'Smooth and mellow with fruit and light grain sweetness', finish:'Clean and refreshing', ratingAvg:80, valueForMoney:4, price:'~$28', searchTerms:['tullamore','tullamore dew','tullamore d.e.w.'] },
+  { slug:'bushmills-original', name:"Bushmills Original Irish Whiskey", distillery:"Old Bushmills Distillery", type:'Irish Whiskey', country:'Ireland', region:'Antrim, Northern Ireland', age:'NAS', abv:40, proof:'80', desc:"From the world's oldest licensed distillery, established 1608. A classic blended Irish whiskey — smooth, accessible and reliable.", flavors:['Light Malt','Honey','Vanilla','Spice','Grain'], nose:'Light malt, honey and vanilla', palate:'Smooth and mild with honey and light malt', finish:'Short and clean', ratingAvg:78, valueForMoney:4, price:'~$25', searchTerms:['bushmills','bushmills original','bushmills irish'] },
+  // ── JAPANESE WHISKY ───────────────────────────────────
+  { slug:'hibiki-harmony', name:'Hibiki Harmony', distillery:'Suntory', type:'Japanese Whisky', country:'Japan', region:'Japan', age:'NAS', abv:43, proof:'86', desc:"A blend of malt whiskies from Suntory's Yamazaki and Hakushu distilleries, and grain whisky from the Chita distillery. Silky smooth and harmonious.", flavors:['Rose','Lychee','Honey','Light Oak','White Chocolate'], nose:'Delicate rose, lychee and honey', palate:'Silky smooth with honey, white chocolate and light oak', finish:'Long and elegant with lingering floral notes', ratingAvg:90, valueForMoney:2, price:'~$80', searchTerms:['hibiki','hibiki harmony','hibiki japanese harmony'] },
+  { slug:'yamazaki-12', name:'Yamazaki 12 Year Old', distillery:'Yamazaki Distillery', type:'Japanese Whisky', country:'Japan', region:'Kyoto, Japan', age:'12 yr', abv:43, proof:'86', desc:"Japan's first and most iconic single malt distillery. Yamazaki 12 is the expression that put Japanese whisky on the world map.", flavors:['Peach','Pineapple','Vanilla','Coconut','Clove'], nose:'Peach, pineapple and coconut', palate:'Fruity and elegant with peach, vanilla and a hint of clove', finish:'Long and delicate with fruit and wood spice', ratingAvg:91, valueForMoney:2, price:'~$150', searchTerms:['yamazaki','yamazaki 12','yamazaki twelve'] },
+  { slug:'hakushu-12', name:'Hakushu 12 Year Old', distillery:'Hakushu Distillery', type:'Japanese Whisky', country:'Japan', region:'Yamanashi, Japan', age:'12 yr', abv:43, proof:'86', desc:"The 'Mountain Distillery' whisky. Fresh and herbal with a smoky undertone — quite unlike any other Japanese whisky.", flavors:['Fresh Herbs','Green Apple','Light Smoke','Mint','Grapefruit'], nose:'Fresh and herbal with green apple and mint', palate:'Light and refreshing with herbs, apple and gentle smoke', finish:'Clean and slightly smoky', ratingAvg:90, valueForMoney:2, price:'~$130', searchTerms:['hakushu','hakushu 12'] },
+  { slug:'nikka-from-the-barrel', name:'Nikka From the Barrel', distillery:'Nikka Whisky', type:'Japanese Whisky', country:'Japan', region:'Japan', age:'NAS', abv:51.4, proof:'102.8', desc:'A blend of malt and grain whiskies from Miyagikyo and Yoichi distilleries, bottled at cask strength. The best value Japanese whisky you can buy.', flavors:['Rich Malt','Vanilla','Dried Fruit','Spice','Smoke'], nose:'Rich malt, vanilla and dried fruit', palate:'Complex and robust with malt, spice and dried fruit', finish:'Long and complex with lingering smoke and spice', ratingAvg:92, valueForMoney:5, price:'~$45', searchTerms:['nikka','nikka from the barrel','nikka barrel'] },
+  { slug:'toki-suntory', name:'Suntory Toki Japanese Whisky', distillery:'Suntory', type:'Japanese Whisky', country:'Japan', region:'Japan', age:'NAS', abv:43, proof:'86', desc:'A blend of Hakushu and Yamazaki malt whiskies with Chita grain. A light, approachable introduction to Japanese whisky.', flavors:['Basil','Green Apple','Honey','Grapefruit','White Pepper'], nose:'Light and fresh with basil, grapefruit and honey', palate:'Smooth with green apple, honey and white pepper', finish:'Clean, light and refreshing', ratingAvg:84, valueForMoney:4, price:'~$35', searchTerms:['toki','suntory toki','toki whisky'] },
+  // ── CANADIAN ──────────────────────────────────────────
+  { slug:'crown-royal', name:'Crown Royal Canadian Whisky', distillery:'Crown Royal Distillery', type:'Canadian Whisky', country:'Canada', region:'Manitoba, Canada', age:'NAS', abv:40, proof:'80', desc:"Canada's most popular whisky. Originally created for a visit by King George VI and Queen Elizabeth in 1939. Smooth and versatile.", flavors:['Vanilla','Fruit','Light Grain','Caramel','Soft Spice'], nose:'Vanilla, fruit and light grain sweetness', palate:'Smooth and creamy with vanilla and soft grain', finish:'Light, smooth and clean', ratingAvg:79, valueForMoney:4, price:'~$27', searchTerms:['crown royal','crown','crown royal canadian'] },
+  { slug:'crown-royal-northern-harvest-rye', name:'Crown Royal Northern Harvest Rye', distillery:'Crown Royal Distillery', type:'Canadian Whisky', country:'Canada', region:'Manitoba, Canada', age:'NAS', abv:45, proof:'90', desc:"Jim Murray's 2016 Whisky Bible World Whisky of the Year. A full-flavored rye-forward expression that surprised the whisky world.", flavors:['Rye Spice','Vanilla','Oak','Fruit','Cinnamon'], nose:'Rye spice, vanilla and fruit', palate:'Rich rye grain with vanilla, cinnamon and oak', finish:'Long and spicy', ratingAvg:90, valueForMoney:5, price:'~$30', searchTerms:['crown royal rye','northern harvest rye','crown royal northern harvest'] },
+];
+
+// Search local bottles by query string
+function searchLocalBottles(query) {
+  if (!query) return [];
+  const q = query.toLowerCase().trim();
+  const words = q.split(/\s+/);
+  return LOCAL_BOTTLES.filter(b => {
+    const haystack = [b.name, b.distillery, b.type, ...(b.searchTerms || [])].join(' ').toLowerCase();
+    return b.searchTerms?.some(t => q.includes(t) || t.includes(q)) ||
+           words.every(w => haystack.includes(w)) ||
+           haystack.includes(q);
+  }).slice(0, 5);
+}
+
+// Map local bottle to the same shape as mapApiItem output (so we can reuse rendering)
+function localToMapped(b) {
+  return { ...b, flavourRaw: b.flavors.join(', '), conclusionMarcel:'', conclusionSascha:'',
+    url:'', bottler:null };
+}
+
+// ═══════════════════════════════════════════════════════
+// WIKIPEDIA FALLBACK API
+// ═══════════════════════════════════════════════════════
+async function searchWikipedia(query) {
+  try {
+    const searchUrl = `https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query + ' whisky')}&limit=3&format=json&origin=*`;
+    const r = await fetch(searchUrl);
+    const [, titles, , urls] = await r.json();
+    if (!titles.length) return null;
+    const title = encodeURIComponent(titles[0].replace(/ /g, '_'));
+    const r2 = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${title}`);
+    if (!r2.ok) return null;
+    return await r2.json();
+  } catch(e) { return null; }
+}
+
+function showWikipediaResult(wiki, labelChips) {
+  currentScanItem = null;
+  const scanning = document.getElementById('result-scanning');
+  const content  = document.getElementById('result-content');
+  const img = wiki.thumbnail?.source || '';
+  content.innerHTML = `
+    <div class="result-match-header">
+      <div class="result-bottle-img">
+        ${img ? `<img src="${img}" alt="${wiki.title}" style="width:72px;height:88px;object-fit:contain;border-radius:6px">` : '🥃'}
+      </div>
+      <div class="result-meta">
+        <div class="result-name">${wiki.title}</div>
+        ${wiki.description ? `<div class="result-distillery" style="color:var(--muted)">${wiki.description}</div>` : ''}
+        <div class="result-badges"><span class="badge badge-cream">Wikipedia</span></div>
+      </div>
+    </div>
+    ${wiki.extract ? `<div style="padding:12px 0 4px;font-size:13px;color:var(--text2);line-height:1.5">${wiki.extract.split('. ').slice(0,3).join('. ')}.</div>` : ''}
+    <div class="result-actions" style="margin-top:10px">
+      <button class="btn-primary" onclick="window.open('${wiki.content_urls?.desktop?.page || ''}','_blank')">Read on Wikipedia ↗</button>
+      <button class="btn-secondary" onclick="closeResult()">Close</button>
+    </div>
+    <div class="attribution-line">From <a href="https://en.wikipedia.org" target="_blank">Wikipedia</a> · CC BY-SA</div>`;
+  scanning.style.display = 'none';
+  content.classList.add('show');
+  document.getElementById('result-sheet').classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════
 let activeScreen = 'scan', activeFilter = 'All', searchQuery = '', browseItems = [], browseSearchTimer = null;
@@ -877,14 +1025,29 @@ function handleImageCapture(input) {
               if (retry.length > 0) { showApiResult(retry[0], labelChips, false); found = true; }
             }
             if (!found) {
-              // Fallback: try Open Food Facts
+              // Fallback 1: Local bottle database (great for common American bourbons)
+              document.getElementById('scanning-label').textContent = 'Checking local database…';
+              const localHits = searchLocalBottles(apiQuery);
+              if (!localHits.length && shortQuery) localHits.push(...searchLocalBottles(shortQuery));
+              if (localHits.length) {
+                showLocalResult(localToMapped(localHits[0]), labelChips); found = true;
+              }
+            }
+            if (!found) {
+              // Fallback 2: Open Food Facts
               document.getElementById('scanning-label').textContent = 'Trying Open Food Facts…';
               try {
                 const offItems = await searchOpenFoodFacts(apiQuery);
                 if (offItems.length > 0) { showOffResult(offItems[0], labelChips); found = true; }
               } catch(_) {}
-              if (!found) showNoMatch(labelChips, ocrText.toLowerCase());
             }
+            if (!found) {
+              // Fallback 3: Wikipedia
+              document.getElementById('scanning-label').textContent = 'Searching Wikipedia…';
+              const wiki = await searchWikipedia(apiQuery);
+              if (wiki && wiki.title) { showWikipediaResult(wiki, labelChips); found = true; }
+            }
+            if (!found) showNoMatch(labelChips, ocrText.toLowerCase());
           }
         } catch(_) {
           showNoMatch(labelChips, ocrText.toLowerCase());
@@ -1156,6 +1319,55 @@ async function renderBrowse() {
   } catch(e) {
     listEl.innerHTML = `<div class="online-searching" style="color:var(--amber)">Couldn't load — check your connection and try again.</div>`;
   }
+  // Show local bottles section for filters where WHISKY:EDITION is weak
+  renderLocalBottlesSection();
+}
+
+function renderLocalBottlesSection() {
+  const el = document.getElementById('local-bottles-section');
+  if (!el) return;
+  const typeMap = { 'Bourbon':'Bourbon', 'Rye':'Rye', 'Irish':'Irish Whiskey',
+                    'Japanese':'Japanese Whisky', 'All':null, 'Scotch':null };
+  const filterType = typeMap[activeFilter];
+  let matches = LOCAL_BOTTLES;
+  if (filterType) matches = LOCAL_BOTTLES.filter(b => b.type === filterType || b.type.includes(filterType));
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    matches = LOCAL_BOTTLES.filter(b => b.name.toLowerCase().includes(q) || b.distillery.toLowerCase().includes(q) || (b.searchTerms||[]).some(t=>t.includes(q)));
+  }
+  if (!matches.length) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 0 8px">📚 Common Bottles</div>
+    ${matches.slice(0,20).map((b,idx) => {
+      const inCol = !!collection.find(c => c.slug === b.slug);
+      return `<div class="online-result-row" onclick="openLocalDetail('${b.slug}')">
+        <div class="online-result-img-placeholder">🥃</div>
+        <div class="online-result-info">
+          <div class="online-result-name">${b.name}</div>
+          <div class="online-result-meta">${b.distillery} · ${b.region} · ${b.age}${b.abv?' · '+b.abv+'%':''}</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:3px">
+            ${b.ratingAvg?`<span style="font-size:12px;color:var(--amber-glow);font-weight:700">⭐ ${b.ratingAvg}/100</span>`:''}
+            ${b.valueForMoney?`<span class="vfm-stars">${vfmStars(b.valueForMoney)}</span>`:''}
+            ${b.price?`<span class="price-badge">${b.price}</span>`:''}
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+    <div style="font-size:10px;color:var(--muted2);text-align:center;padding:8px 0">Curated local database</div>`;
+}
+
+function openLocalDetail(slug) {
+  const b = LOCAL_BOTTLES.find(x => x.slug === slug);
+  if (!b) return;
+  const mapped = localToMapped(b);
+  const inCol = !!collection.find(c => c.slug === b.slug);
+  document.getElementById('detail-title').textContent = mapped.name;
+  document.getElementById('detail-collect-btn').style.color = inCol ? 'var(--amber-glow)' : '';
+  document.getElementById('detail-body').innerHTML = renderDetailBody(mapped, inCol);
+  document.getElementById('detail-overlay').classList.add('show');
+  // Override the cellar button to use local add
+  detailItem = { _local: true, _mapped: mapped };
 }
 
 function renderBrowseList(listEl) {
@@ -1376,6 +1588,58 @@ async function searchOpenFoodFacts(query) {
   );
 }
 
+function showLocalResult(b, labelChips) {
+  currentScanItem = { _local: true, _mapped: b };
+  const scanning = document.getElementById('result-scanning');
+  const content  = document.getElementById('result-content');
+  const inCol = !!collection.find(c => c.slug === b.slug);
+  const rating = b.ratingAvg ? `<span class="badge badge-gold">⭐ ${b.ratingAvg}/100</span>` : '';
+  const vfm = b.valueForMoney ? `<span class="vfm-stars" style="font-size:13px">${vfmStars(b.valueForMoney)}</span>` : '';
+  const price = b.price ? `<span style="color:var(--amber);font-size:13px;font-weight:700">${b.price}</span>` : '';
+  content.innerHTML = `
+    <div class="result-match-header">
+      <div class="result-bottle-img">
+        ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.name}" style="width:72px;height:88px;object-fit:contain;border-radius:6px">` : '🥃'}
+      </div>
+      <div class="result-meta">
+        <div class="result-name">${b.name}</div>
+        <div class="result-distillery"><button class="distillery-link" onclick="openDistillerySheet('${b.distillery.replace(/'/g,"\\'")}','${(b.country||'').replace(/'/g,"\\'")}','${(b.region||'').replace(/'/g,"\\'")}')">🏭 ${b.distillery}</button></div>
+        <div class="result-badges">
+          <span class="badge badge-amber">${b.type}</span>
+          <span class="badge badge-cream" style="background:rgba(255,255,255,.08)">📚 Local DB</span>
+        </div>
+      </div>
+    </div>
+    <div class="confidence-bar">
+      <div class="confidence-label"><span>${b.region}</span>${b.ratingAvg !== null ? `<strong>${b.ratingAvg}/100</strong>` : ''}</div>
+      ${b.ratingAvg !== null ? `<div class="confidence-track"><div class="confidence-fill" id="conf-fill" style="width:0%"></div></div>` : ''}
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0">${rating}${vfm}${price}</div>
+    ${b.flavors?.length ? `<div class="flavor-tags" style="margin:8px 0">${b.flavors.map(f=>`<span class="flavor-tag">${f}</span>`).join('')}</div>` : ''}
+    <div class="result-desc">${b.desc}</div>
+    <div class="result-actions">
+      <button class="btn-primary" id="result-collect-btn" onclick="addLocalToCollection()">${inCol ? '✓ In Your Cellar' : '+ Add to Cellar'}</button>
+      <button class="btn-secondary" onclick="closeResult(); openNoteEditor('${b.name.replace(/'/g,"\\'")}')">+ Tasting Note</button>
+    </div>`;
+  scanning.style.display = 'none';
+  content.classList.add('show');
+  document.getElementById('result-sheet').classList.add('show');
+  if (b.ratingAvg) setTimeout(() => { const f = document.getElementById('conf-fill'); if(f) f.style.width = b.ratingAvg + '%'; }, 100);
+}
+
+function addLocalToCollection() {
+  if (!currentScanItem?._local) return;
+  const b = currentScanItem._mapped;
+  if (collection.find(c => c.slug === b.slug)) { showToast('Already in your Cellar'); return; }
+  collection.unshift({ slug:b.slug, name:b.name, distillery:b.distillery, type:b.type,
+    region:b.region, age:b.age, abvDisplay: b.abv ? b.abv+'%' : 'N/A',
+    imageUrl:b.imageUrl||'', url:'', nose:b.nose, palate:b.palate, finish:b.finish,
+    ratingAvg:b.ratingAvg, savedAt:new Date().toLocaleDateString() });
+  localStorage.setItem('bs-collection', JSON.stringify(collection));
+  showToast('Added to your Cellar 🥃');
+  document.getElementById('result-collect-btn').textContent = '✓ In Your Cellar';
+}
+
 function showOffResult(product, labelChips) {
   currentScanItem = null;
   const scanning = document.getElementById('result-scanning');
@@ -1477,6 +1741,23 @@ function distilleryWikipedia() {
 }
 function toggleCollectionFromDetail() {
   if (!detailItem) return;
+  // Handle local bottles
+  if (detailItem._local) {
+    const b = detailItem._mapped;
+    const idx = collection.findIndex(c => c.slug === b.slug);
+    if (idx === -1) {
+      collection.unshift({ slug:b.slug, name:b.name, distillery:b.distillery, type:b.type,
+        region:b.region, age:b.age, abvDisplay:b.abv?b.abv+'%':'N/A',
+        imageUrl:b.imageUrl||'', url:'', nose:b.nose, palate:b.palate, finish:b.finish,
+        ratingAvg:b.ratingAvg, savedAt:new Date().toLocaleDateString() });
+      localStorage.setItem('bs-collection', JSON.stringify(collection));
+      showToast('Added to your Cellar 🥃');
+    } else {
+      collection.splice(idx, 1); localStorage.setItem('bs-collection', JSON.stringify(collection)); showToast('Removed from Cellar');
+    }
+    openLocalDetail(b.slug);
+    return;
+  }
   const b = mapApiItem(detailItem);
   const idx = collection.findIndex(c => c.slug === b.slug);
   if (idx === -1) { addToCollection(detailItem); }
