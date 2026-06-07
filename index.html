@@ -147,6 +147,13 @@
     .ds-btn-icon{font-size:22px;width:32px;text-align:center;flex-shrink:0}
     .ds-btn-label{flex:1}
     .ds-btn-label small{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:2px}
+    .ds-market{padding:0 16px 4px;margin-top:4px}
+    .ds-market-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;padding-top:16px;border-top:1px solid var(--border)}
+    .ds-market-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+    .ds-market-cell{background:var(--card2);border-radius:10px;padding:10px 6px;text-align:center}
+    .ds-market-value{font-size:14px;font-weight:700;color:var(--cream);margin-bottom:2px;white-space:nowrap}
+    .ds-market-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+    .ds-market-loading{font-size:12px;color:var(--muted2);text-align:center;padding:16px 0}
     .result-badges{display:flex;flex-wrap:wrap;gap:6px}
     .badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.04em}
     .badge-amber{background:rgba(200,113,10,.2);color:var(--amber-glow);border:1px solid rgba(200,113,10,.3)}
@@ -636,6 +643,10 @@
         <span style="color:var(--muted)">›</span>
       </button>
     </div>
+    <div class="ds-market" id="ds-market" style="display:none">
+      <div class="ds-market-title">🔨 Auction Market · WhiskyHunter</div>
+      <div id="ds-market-content"><div class="ds-market-loading">Loading…</div></div>
+    </div>
   </div>
 </div>
 
@@ -860,12 +871,19 @@ function handleImageCapture(input) {
           } else {
             // Try a shorter/simpler query if first attempt found nothing
             const shortQuery = webEntities[0] || ocrText.trim().split(/\s+/).slice(0,3).join(' ');
+            let found = false;
             if (shortQuery && shortQuery !== apiQuery) {
               const retry = await searchWhiskyEditionAPI(shortQuery);
-              if (retry.length > 0) { showApiResult(retry[0], labelChips, false); }
-              else { showNoMatch(labelChips, ocrText.toLowerCase()); }
-            } else {
-              showNoMatch(labelChips, ocrText.toLowerCase());
+              if (retry.length > 0) { showApiResult(retry[0], labelChips, false); found = true; }
+            }
+            if (!found) {
+              // Fallback: try Open Food Facts
+              document.getElementById('scanning-label').textContent = 'Trying Open Food Facts…';
+              try {
+                const offItems = await searchOpenFoodFacts(apiQuery);
+                if (offItems.length > 0) { showOffResult(offItems[0], labelChips); found = true; }
+              } catch(_) {}
+              if (!found) showNoMatch(labelChips, ocrText.toLowerCase());
             }
           }
         } catch(_) {
@@ -980,7 +998,7 @@ function mapApiItem(item) {
     conclusionMarcel: item.conclusion?.marcel || '',
     conclusionSascha: item.conclusion?.sascha || '',
     url: item.url || '',
-    imageUrl: item.image?.url || '',
+    imageUrl: item.image?.url ? (item.image.url.startsWith('http') ? item.image.url : 'https://thewhiskyedition.com' + item.image.url) : '',
     ratingMarcel: item.rating?.marcel ?? null,
     ratingAvg: item.rating ? Math.round((item.rating.marcel + item.rating.sascha) / 2) : null,
     valueForMoney: item.rating?.value_for_money ?? null,
@@ -1305,36 +1323,156 @@ async function openBrowseDetail(idx) {
 function closeDetail() { document.getElementById('detail-overlay').classList.remove('show'); detailItem = null; }
 
 // ═══════════════════════════════════════════════════════
+// WHISKYHUNTER API
+// ═══════════════════════════════════════════════════════
+async function whFetch(path) {
+  const target = 'https://whiskyhunter.net' + path;
+  const urls = [
+    target,
+    'https://corsproxy.io/?' + encodeURIComponent(target),
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(target),
+  ];
+  let lastErr;
+  for (const url of urls) {
+    try {
+      const r = await fetch(url);
+      if (r.ok) return r;
+      lastErr = new Error(`HTTP ${r.status}`);
+    } catch(e) { lastErr = e; }
+  }
+  throw lastErr;
+}
+
+let _whDistilleries = null;
+async function getWhDistilleries() {
+  if (_whDistilleries) return _whDistilleries;
+  const r = await whFetch('/api/distilleries_info/?format=json');
+  _whDistilleries = await r.json();
+  return _whDistilleries;
+}
+
+function whSlugFor(name) {
+  if (!_whDistilleries) return null;
+  const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+  const n = norm(name);
+  return (
+    _whDistilleries.find(d => d.slug === name.toLowerCase().replace(/\s+/g,'_')) ||
+    _whDistilleries.find(d => norm(d.name) === n) ||
+    _whDistilleries.find(d => norm(d.name).includes(n) || n.includes(norm(d.name)))
+  )?.slug || null;
+}
+
+// ═══════════════════════════════════════════════════════
+// OPEN FOOD FACTS API (scan fallback)
+// ═══════════════════════════════════════════════════════
+async function searchOpenFoodFacts(query) {
+  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&action=process&json=1&page_size=8&fields=product_name,brands,image_url,quantity,categories_tags`;
+  const r = await fetch(url, { headers: { 'User-Agent': 'BarrelScout/1.0' } });
+  if (!r.ok) throw new Error('OFF error');
+  const d = await r.json();
+  return (d.products || []).filter(p =>
+    p.product_name &&
+    (p.categories_tags || []).some(t => /whisky|whiskey|bourbon|scotch|rye/i.test(t))
+  );
+}
+
+function showOffResult(product, labelChips) {
+  currentScanItem = null;
+  const scanning = document.getElementById('result-scanning');
+  const content  = document.getElementById('result-content');
+  const name  = product.product_name || 'Unknown Whiskey';
+  const brand = product.brands || '';
+  const img   = product.image_url || '';
+  content.innerHTML = `
+    <div class="result-match-header">
+      <div class="result-bottle-img">
+        ${img ? `<img src="${img}" alt="${name}" style="width:72px;height:88px;object-fit:contain;border-radius:6px">` : '🥃'}
+      </div>
+      <div class="result-meta">
+        <div class="result-name">${name}</div>
+        ${brand ? `<div class="result-distillery" style="color:var(--muted)">${brand}</div>` : ''}
+        <div class="result-badges">
+          <span class="badge badge-cream">Open Food Facts</span>
+        </div>
+      </div>
+    </div>
+    <div style="padding:14px 0 4px;color:var(--muted);font-size:13px;text-align:center">
+      Basic product match — no tasting notes available
+    </div>
+    ${labelChips.length ? `<div class="confidence-bar"><div class="confidence-label"><span>Detected labels</span></div></div><div class="label-chips">${labelChips.slice(0,6).map(c=>`<span class="chip">${c}</span>`).join('')}</div>` : ''}
+    <div class="result-actions" style="margin-top:12px">
+      <button class="btn-secondary" style="width:100%" onclick="closeResult()">Close</button>
+    </div>
+    <div class="attribution-line">Data from <a href="https://world.openfoodfacts.org" target="_blank">Open Food Facts</a> · CC BY-SA</div>`;
+  scanning.style.display = 'none';
+  content.classList.add('show');
+  document.getElementById('result-sheet').classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════════
 // DISTILLERY SHEET
 // ═══════════════════════════════════════════════════════
 let _dsName = '', _dsCountry = '', _dsRegion = '';
-function openDistillerySheet(name, country, region) {
+async function openDistillerySheet(name, country, region) {
   _dsName = name; _dsCountry = country; _dsRegion = region;
   document.getElementById('ds-name').textContent = name;
-  const sub = [region, country].filter(Boolean).join(', ');
-  document.getElementById('ds-sub').textContent = sub || 'Distillery';
+  document.getElementById('ds-sub').textContent = [region, country].filter(Boolean).join(', ') || 'Distillery';
+  // Reset market panel
+  const mktEl = document.getElementById('ds-market');
+  document.getElementById('ds-market-content').innerHTML = '<div class="ds-market-loading">Loading…</div>';
+  mktEl.style.display = 'block';
   document.getElementById('distillery-sheet').classList.add('show');
+  // Fetch WhiskyHunter data in background
+  try {
+    await getWhDistilleries();
+    const slug = whSlugFor(name);
+    if (!slug) { mktEl.style.display = 'none'; return; }
+    const r = await whFetch(`/api/distillery_data/${slug}/?format=json`);
+    const months = await r.json();
+    if (!months.length) { mktEl.style.display = 'none'; return; }
+    const latest = months[0], prev = months[1];
+    const trend = prev ? (latest.winning_bid_mean >= prev.winning_bid_mean ? '📈' : '📉') : '';
+    const fmt = n => n >= 1000 ? `£${(n/1000).toFixed(1)}k` : `£${Math.round(n)}`;
+    const mo = new Date(latest.dt).toLocaleString('default', { month: 'short', year: 'numeric' });
+    document.getElementById('ds-market-content').innerHTML = `
+      <div class="ds-market-grid">
+        <div class="ds-market-cell">
+          <div class="ds-market-value">${fmt(latest.winning_bid_mean)} ${trend}</div>
+          <div class="ds-market-label">Avg Bid</div>
+        </div>
+        <div class="ds-market-cell">
+          <div class="ds-market-value">${latest.lots_count.toLocaleString()}</div>
+          <div class="ds-market-label">Lots / Mo</div>
+        </div>
+        <div class="ds-market-cell">
+          <div class="ds-market-value">${fmt(latest.winning_bid_min)}–${fmt(latest.winning_bid_max)}</div>
+          <div class="ds-market-label">Range</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--muted2);text-align:right;margin-top:4px">
+        ${mo} · <a href="https://whiskyhunter.net/distillery/${slug}/" target="_blank" style="color:var(--muted2)">More on WhiskyHunter ↗</a>
+      </div>`;
+  } catch(e) {
+    mktEl.style.display = 'none';
+  }
 }
 function closeDistillerySheet() {
   document.getElementById('distillery-sheet').classList.remove('show');
 }
 function distilleryOpenMap() {
-  const query = encodeURIComponent(_dsName + ' distillery');
-  window.open('https://maps.google.com/maps?q=' + query, '_blank');
+  window.open('https://maps.google.com/maps?q=' + encodeURIComponent(_dsName + ' distillery'), '_blank');
   closeDistillerySheet();
 }
 function distilleryMoreBottles() {
   closeDistillerySheet();
   closeDetail();
-  // Close scan result sheet too if open
   const rs = document.getElementById('result-sheet');
   if (rs) rs.classList.remove('show');
   searchQuery = _dsName;
   navTo('browse');
 }
 function distilleryWikipedia() {
-  const query = encodeURIComponent(_dsName + ' distillery whisky');
-  window.open('https://en.wikipedia.org/wiki/Special:Search?search=' + query, '_blank');
+  window.open('https://en.wikipedia.org/wiki/Special:Search?search=' + encodeURIComponent(_dsName + ' distillery whisky'), '_blank');
   closeDistillerySheet();
 }
 function toggleCollectionFromDetail() {
