@@ -1699,7 +1699,7 @@ function showResult(bottle, confidence) {
   const rarityBadge = ['Unicorn','Legendary'].includes(bottle.rarity) ? 'badge-gold' : bottle.rarity === 'Very Rare' ? 'badge-amber' : 'badge-cream';
   content.innerHTML = `
     <div class="result-match-header">
-      <div class="result-bottle-img"><img src="${bottle.photo}" alt="${bottle.name}"/></div>
+      <div class="result-bottle-img">${bottle.emoji}</div>
       <div class="result-meta">
         <div class="result-name">${bottle.name}</div>
         <div class="result-distillery">${bottle.distillery}</div>
@@ -1766,7 +1766,7 @@ function renderBrowse() {
   if (!filtered.length) { listEl.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--muted2);font-size:14px;">No bottles match your search</div>`; return; }
   listEl.innerHTML = filtered.map(b => `
     <div class="bottle-row" onclick="openDetail(${b.id})">
-      <div class="bottle-emoji"><img src="${b.photo}" alt="${b.name}"/></div>
+      <div class="bottle-emoji">${b.emoji}</div>
       <div class="bottle-info">
         <div class="bottle-name">${b.name}</div>
         <div class="bottle-distillery">${b.distillery}</div>
@@ -1789,7 +1789,7 @@ function openDetail(id) {
   const rarityBadge = ['Unicorn','Legendary'].includes(b.rarity) ? 'badge-gold' : b.rarity==='Very Rare' ? 'badge-amber' : 'badge-cream';
   document.getElementById('detail-body').innerHTML = `
     <div class="detail-hero">
-      <div class="detail-bottle-icon" style="font-size:0"><img src="${b.photo}" alt="${b.name}" style="width:120px;height:160px;object-fit:cover;object-position:center top;border-radius:10px;border:1px solid var(--border)"/></div>
+      <div class="detail-bottle-icon">${b.emoji}</div>
       <div class="detail-name">${b.name}</div>
       <div class="detail-distillery">${b.distillery}</div>
       <div class="result-badges"><span class="badge badge-amber">${b.type}</span><span class="badge ${rarityBadge}">${b.rarity}</span><span class="badge badge-cream">${b.region}</span></div>
@@ -1831,7 +1831,7 @@ function renderCollection() {
   document.getElementById('stat-avg-age').textContent = ages.length ? Math.round(ages.reduce((a,b)=>a+b,0)/ages.length)+'yr' : '—';
   const content = document.getElementById('collection-content');
   if (!bottles.length) { content.innerHTML=`<div class="collection-empty"><svg viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 10h30v5l-4 35H19L15 15V10z"/><path d="M10 10h40"/></svg><strong>Your cellar is empty</strong><p>Scan a bottle or browse the database to start your collection</p></div>`; return; }
-  content.innerHTML = `<div class="collection-grid">${bottles.map(b=>`<div class="collection-card" onclick="openDetail(${b.id})"><div class="collection-card-img"><img src="${b.photo}" alt="${b.name}"/></div><div class="collection-card-body"><div class="collection-card-name">${b.name}</div><div class="collection-card-year">${b.vintage} · ${b.age}</div></div><button class="collection-card-remove" onclick="removeFromCollection(event,${b.id})"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M3 3l10 10M13 3L3 13"/></svg></button></div>`).join('')}</div>`;
+  content.innerHTML = `<div class="collection-grid">${bottles.map(b=>`<div class="collection-card" onclick="openDetail(${b.id})"><div class="collection-card-img">${b.emoji}</div><div class="collection-card-body"><div class="collection-card-name">${b.name}</div><div class="collection-card-year">${b.vintage} · ${b.age}</div></div><button class="collection-card-remove" onclick="removeFromCollection(event,${b.id})"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M3 3l10 10M13 3L3 13"/></svg></button></div>`).join('')}</div>`;
 }
 
 function removeFromCollection(e, id) { e.stopPropagation(); collection=collection.filter(c=>c!==id); localStorage.setItem('bs-collection',JSON.stringify(collection)); renderCollection(); showToast('Removed from Cellar'); }
@@ -1866,7 +1866,7 @@ function init() {
   document.getElementById('daily-quote').textContent = `"${q.text}"`;
   document.getElementById('daily-quote-author').textContent = `— ${q.author}`;
   const recents = [...BOTTLES].sort(()=>Math.random()-0.5).slice(0,5);
-  document.getElementById('recent-scroll').innerHTML = recents.map(b=>`<div class="recent-card" onclick="openDetail(${b.id})"><div class="recent-card-img"><img src="${b.photo}" alt="${b.name}"/></div><div class="recent-card-body"><div class="recent-card-name">${b.name}</div><div class="recent-card-year">${b.vintage}</div></div></div>`).join('');
+  document.getElementById('recent-scroll').innerHTML = recents.map(b=>`<div class="recent-card" onclick="openDetail(${b.id})"><div class="recent-card-img">${b.emoji}</div><div class="recent-card-body"><div class="recent-card-name">${b.name}</div><div class="recent-card-year">${b.vintage}</div></div></div>`).join('');
   renderBrowse(); renderNotes();
 }
 init();
