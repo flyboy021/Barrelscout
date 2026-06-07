@@ -881,11 +881,17 @@ function closeResult() {
 
 // ═══════════════════════════════════════════════════════
 // WHISKY:EDITION LIVE API
+// Route through CORS proxy so GitHub Pages fetch() is allowed.
+// window.open() links to thewhiskyedition.com do NOT need this.
 // ═══════════════════════════════════════════════════════
+function weUrl(apiPath) {
+  return 'https://corsproxy.io/?' + encodeURIComponent('https://thewhiskyedition.com' + apiPath);
+}
+
 async function searchWhiskyEditionAPI(query) {
-  const url = `https://thewhiskyedition.com/api/whisky-reviews?q=${encodeURIComponent(query)}&per_page=5`;
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error('WHISKY:EDITION API error');
+  const path = `/api/whisky-reviews?q=${encodeURIComponent(query)}&per_page=5`;
+  const resp = await fetch(weUrl(path));
+  if (!resp.ok) throw new Error(`API ${resp.status}`);
   const data = await resp.json();
   return (data.items || []).filter(item => item.lang === 'en');
 }
@@ -1071,7 +1077,7 @@ async function renderBrowse() {
     if (filterMaxAge < 30) params.set('max_age', filterMaxAge);
     if (filterMinAbv > 40) params.set('min_abv', filterMinAbv);
     if (filterMaxAbv < 70) params.set('max_abv', filterMaxAbv);
-    const resp = await fetch(`https://thewhiskyedition.com/api/whisky-reviews?${params}`);
+    const resp = await fetch(weUrl(`/api/whisky-reviews?${params}`));
     const data = await resp.json();
     browseItems = (data.items || []).filter(i => i.lang === 'en');
     renderBrowseList(listEl);
@@ -1220,7 +1226,7 @@ async function openBrowseDetail(idx) {
   // Fetch full detail for conclusions if not already present
   if (!b.conclusionMarcel && !b.conclusionSascha && b.slug) {
     try {
-      const resp = await fetch(`https://thewhiskyedition.com/api/whisky-reviews/${b.slug}`);
+      const resp = await fetch(weUrl(`/api/whisky-reviews/${b.slug}`));
       if (resp.ok) {
         const full = await resp.json();
         const fullB = mapApiItem(full);
