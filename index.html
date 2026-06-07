@@ -129,8 +129,24 @@
     .result-meta{flex:1}
     .result-name{font-family:var(--font);font-size:20px;color:var(--cream);line-height:1.2;margin-bottom:4px}
     .result-distillery{font-size:12px;color:var(--amber);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
-    .distillery-link{color:inherit;text-decoration:underline;text-decoration-color:rgba(200,113,10,.4);text-underline-offset:2px}
+    .distillery-link{color:inherit;text-decoration:underline;text-decoration-color:rgba(200,113,10,.4);text-underline-offset:2px;background:none;border:none;padding:0;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}
     .distillery-link:active{opacity:.7}
+    /* DISTILLERY SHEET */
+    #distillery-sheet{position:fixed;inset:0;z-index:400;display:flex;flex-direction:column;justify-content:flex-end;pointer-events:none}
+    #distillery-sheet.show{pointer-events:all}
+    #distillery-sheet .ds-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0);transition:background .3s}
+    #distillery-sheet.show .ds-backdrop{background:rgba(0,0,0,.55)}
+    #distillery-sheet .ds-card{background:var(--bg2);border-radius:20px 20px 0 0;padding:0 0 calc(16px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);position:relative}
+    #distillery-sheet.show .ds-card{transform:translateY(0)}
+    .ds-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:12px auto 16px}
+    .ds-name{font-family:var(--font);font-size:22px;color:var(--cream);text-align:center;padding:0 20px 4px;line-height:1.2}
+    .ds-sub{font-size:12px;color:var(--muted);text-align:center;padding:0 20px 20px;text-transform:uppercase;letter-spacing:.08em}
+    .ds-actions{display:flex;flex-direction:column;gap:10px;padding:0 16px}
+    .ds-btn{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--card2);border:1px solid var(--border);border-radius:14px;color:var(--text2);font-size:15px;font-weight:600;width:100%;text-align:left;cursor:pointer}
+    .ds-btn:active{opacity:.7}
+    .ds-btn-icon{font-size:22px;width:32px;text-align:center;flex-shrink:0}
+    .ds-btn-label{flex:1}
+    .ds-btn-label small{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:2px}
     .result-badges{display:flex;flex-wrap:wrap;gap:6px}
     .badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.04em}
     .badge-amber{background:rgba(200,113,10,.2);color:var(--amber-glow);border:1px solid rgba(200,113,10,.3)}
@@ -596,6 +612,33 @@
   </div>
 </div>
 
+<!-- DISTILLERY SHEET -->
+<div id="distillery-sheet">
+  <div class="ds-backdrop" onclick="closeDistillerySheet()"></div>
+  <div class="ds-card">
+    <div class="ds-handle"></div>
+    <div class="ds-name" id="ds-name">Distillery</div>
+    <div class="ds-sub" id="ds-sub"></div>
+    <div class="ds-actions">
+      <button class="ds-btn" id="ds-map-btn" onclick="distilleryOpenMap()">
+        <span class="ds-btn-icon">📍</span>
+        <span class="ds-btn-label">View on Map<small>Open in Maps app</small></span>
+        <span style="color:var(--muted)">›</span>
+      </button>
+      <button class="ds-btn" onclick="distilleryMoreBottles()">
+        <span class="ds-btn-icon">🥃</span>
+        <span class="ds-btn-label">More from this Distillery<small>Browse all bottles</small></span>
+        <span style="color:var(--muted)">›</span>
+      </button>
+      <button class="ds-btn" onclick="distilleryWikipedia()">
+        <span class="ds-btn-icon">🌐</span>
+        <span class="ds-btn-label">Wikipedia<small>Distillery history &amp; info</small></span>
+        <span style="color:var(--muted)">›</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- DETAIL OVERLAY -->
 <div id="detail-overlay">
   <div class="detail-topbar">
@@ -881,17 +924,28 @@ function closeResult() {
 
 // ═══════════════════════════════════════════════════════
 // WHISKY:EDITION LIVE API
-// Route through CORS proxy so GitHub Pages fetch() is allowed.
-// window.open() links to thewhiskyedition.com do NOT need this.
+// Tries two public CORS proxies in order so a single proxy outage
+// doesn't break the app. window.open() links do NOT need this.
 // ═══════════════════════════════════════════════════════
-function weUrl(apiPath) {
-  return 'https://corsproxy.io/?' + encodeURIComponent('https://thewhiskyedition.com' + apiPath);
+async function weFetch(apiPath) {
+  const target = 'https://thewhiskyedition.com' + apiPath;
+  const proxies = [
+    'https://corsproxy.io/?' + encodeURIComponent(target),
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(target),
+  ];
+  let lastErr;
+  for (const url of proxies) {
+    try {
+      const resp = await fetch(url);
+      if (resp.ok) return resp;
+      lastErr = new Error(`HTTP ${resp.status}`);
+    } catch(e) { lastErr = e; }
+  }
+  throw lastErr || new Error('All proxies failed');
 }
 
 async function searchWhiskyEditionAPI(query) {
-  const path = `/api/whisky-reviews?q=${encodeURIComponent(query)}&per_page=5`;
-  const resp = await fetch(weUrl(path));
-  if (!resp.ok) throw new Error(`API ${resp.status}`);
+  const resp = await weFetch(`/api/whisky-reviews?q=${encodeURIComponent(query)}&per_page=5`);
   const data = await resp.json();
   return (data.items || []).filter(item => item.lang === 'en');
 }
@@ -961,7 +1015,7 @@ function showApiResult(item, labelChips, isDemo) {
       </div>
       <div class="result-meta">
         <div class="result-name">${b.name}</div>
-        <div class="result-distillery">${b.distillery}</div>
+        <div class="result-distillery"><button class="distillery-link" onclick="openDistillerySheet('${b.distillery.replace(/'/g,"\\'")}','${(b.country||'').replace(/'/g,"\\'")}','${(b.region||'').replace(/'/g,"\\'")}')">🏭 ${b.distillery}</button></div>
         <div class="result-badges">
           <span class="badge badge-amber">${b.type}</span>
           ${isDemo ? '<span class="badge badge-cream">Demo</span>' : '<span class="badge badge-gold" style="background:rgba(200,113,10,.2)">🌐 WHISKY:EDITION</span>'}
@@ -1077,7 +1131,7 @@ async function renderBrowse() {
     if (filterMaxAge < 30) params.set('max_age', filterMaxAge);
     if (filterMinAbv > 40) params.set('min_abv', filterMinAbv);
     if (filterMaxAbv < 70) params.set('max_abv', filterMaxAbv);
-    const resp = await fetch(weUrl(`/api/whisky-reviews?${params}`));
+    const resp = await weFetch(`/api/whisky-reviews?${params}`);
     const data = await resp.json();
     browseItems = (data.items || []).filter(i => i.lang === 'en');
     renderBrowseList(listEl);
@@ -1170,7 +1224,7 @@ function renderDetailBody(b, inCol) {
         ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.name}" style="width:80px;height:100px;object-fit:contain;border-radius:8px">` : '🥃'}
       </div>
       <div class="detail-name">${b.name}</div>
-      <div class="detail-distillery">${b.distillery}${b.bottler ? ` <span style="color:var(--muted);font-size:12px">(${b.bottler})</span>` : ''}</div>
+      <div class="detail-distillery"><button class="distillery-link" onclick="openDistillerySheet('${b.distillery.replace(/'/g,"\\'")}','${(b.country||'').replace(/'/g,"\\'")}','${(b.region||'').replace(/'/g,"\\'")}')">🏭 ${b.distillery}</button>${b.bottler ? ` <span style="color:var(--muted);font-size:12px">(${b.bottler})</span>` : ''}</div>
       <div class="result-badges">
         <span class="badge badge-amber">${b.type}</span>
         <span class="badge badge-cream">${b.region}</span>
@@ -1226,7 +1280,7 @@ async function openBrowseDetail(idx) {
   // Fetch full detail for conclusions if not already present
   if (!b.conclusionMarcel && !b.conclusionSascha && b.slug) {
     try {
-      const resp = await fetch(weUrl(`/api/whisky-reviews/${b.slug}`));
+      const resp = await weFetch(`/api/whisky-reviews/${b.slug}`);
       if (resp.ok) {
         const full = await resp.json();
         const fullB = mapApiItem(full);
@@ -1249,6 +1303,40 @@ async function openBrowseDetail(idx) {
   }
 }
 function closeDetail() { document.getElementById('detail-overlay').classList.remove('show'); detailItem = null; }
+
+// ═══════════════════════════════════════════════════════
+// DISTILLERY SHEET
+// ═══════════════════════════════════════════════════════
+let _dsName = '', _dsCountry = '', _dsRegion = '';
+function openDistillerySheet(name, country, region) {
+  _dsName = name; _dsCountry = country; _dsRegion = region;
+  document.getElementById('ds-name').textContent = name;
+  const sub = [region, country].filter(Boolean).join(', ');
+  document.getElementById('ds-sub').textContent = sub || 'Distillery';
+  document.getElementById('distillery-sheet').classList.add('show');
+}
+function closeDistillerySheet() {
+  document.getElementById('distillery-sheet').classList.remove('show');
+}
+function distilleryOpenMap() {
+  const query = encodeURIComponent(_dsName + ' distillery');
+  window.open('https://maps.google.com/maps?q=' + query, '_blank');
+  closeDistillerySheet();
+}
+function distilleryMoreBottles() {
+  closeDistillerySheet();
+  closeDetail();
+  // Close scan result sheet too if open
+  const rs = document.getElementById('result-sheet');
+  if (rs) rs.classList.remove('show');
+  searchQuery = _dsName;
+  navTo('browse');
+}
+function distilleryWikipedia() {
+  const query = encodeURIComponent(_dsName + ' distillery whisky');
+  window.open('https://en.wikipedia.org/wiki/Special:Search?search=' + query, '_blank');
+  closeDistillerySheet();
+}
 function toggleCollectionFromDetail() {
   if (!detailItem) return;
   const b = mapApiItem(detailItem);
