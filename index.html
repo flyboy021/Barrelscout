@@ -1330,8 +1330,11 @@ async function renderBrowse() {
   // Render flavour chips
   const fc = document.getElementById('flavour-chips');
   if (fc) fc.innerHTML = FLAVOUR_OPTIONS.map(f=>`<button class="chip ${f===activeFlavour?'active':''}" onclick="setFlavour('${f}')">${f}</button>`).join('');
+  // Render local results immediately (synchronous — no wait)
+  renderLocalBottlesSection();
+
   const listEl = document.getElementById('bottle-list');
-  listEl.innerHTML = `<div class="online-searching">⏳ Loading…</div>`;
+  listEl.innerHTML = `<div class="online-searching">⏳ Loading from WHISKY:EDITION…</div>`;
   try {
     const params = new URLSearchParams({ per_page: 16 });
     const fp = FILTER_PARAMS[activeFilter] || {};
@@ -1349,8 +1352,6 @@ async function renderBrowse() {
   } catch(e) {
     listEl.innerHTML = `<div class="online-searching" style="color:var(--amber)">Couldn't load — check your connection and try again.</div>`;
   }
-  // Show local bottles section for filters where WHISKY:EDITION is weak
-  renderLocalBottlesSection();
 }
 
 function renderLocalBottlesSection() {
@@ -1405,7 +1406,8 @@ function renderBrowseList(listEl) {
     listEl.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--muted2);font-size:14px">No results found</div>`;
     return;
   }
-  listEl.innerHTML = browseItems.map((item, idx) => {
+  const header = `<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 0 8px">🌐 WHISKY:EDITION</div>`;
+  listEl.innerHTML = header + browseItems.map((item, idx) => {
     const b = mapApiItem(item);
     const rating = b.ratingAvg !== null ? `<span style="font-size:12px;color:var(--amber-glow);font-weight:700">⭐ ${b.ratingAvg}/100</span>` : '';
     const vfm    = b.valueForMoney ? `<span class="vfm-stars">${vfmStars(b.valueForMoney)}</span>` : '';
