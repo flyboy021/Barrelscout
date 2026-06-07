@@ -185,6 +185,30 @@
     .chip{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;background:var(--card2);border:1px solid var(--border);color:var(--muted);transition:all .15s}
     .chip.active{background:rgba(200,113,10,.2);border-color:var(--amber);color:var(--amber-glow)}
     .bottle-list{display:flex;flex-direction:column;gap:10px}
+    /* Filter panel */
+    .filter-toggle-btn{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:12px;font-weight:700;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;transition:color .15s}
+    .filter-toggle-btn.active{color:var(--amber-glow);border-color:var(--amber)}
+    .filter-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;display:none;flex-direction:column;gap:14px}
+    .filter-panel.open{display:flex}
+    .filter-panel-row{display:flex;flex-direction:column;gap:6px}
+    .filter-panel-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;display:flex;justify-content:space-between}
+    .filter-panel-label span{color:var(--amber-glow);font-weight:700}
+    .range-wrap{display:flex;gap:8px;align-items:center}
+    .range-input{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;background:var(--border);outline:none}
+    .range-input::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--amber-glow);border:2px solid var(--bg);cursor:pointer}
+    .range-val{font-size:12px;color:var(--text2);font-weight:700;min-width:36px;text-align:right}
+    .flavour-chips{display:flex;flex-wrap:wrap;gap:6px}
+    /* Value for money */
+    .vfm-stars{color:var(--gold);font-size:11px;letter-spacing:1px}
+    .vfm-stars .empty{color:var(--border2)}
+    /* Price badge */
+    .price-badge{font-size:12px;color:var(--amber-glow);font-weight:700}
+    /* Reviewer conclusions */
+    .conclusion-section{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+    .conclusion-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+    .conclusion-reviewer{margin-bottom:10px}
+    .conclusion-name{font-size:11px;color:var(--amber);font-weight:700;margin-bottom:3px}
+    .conclusion-text{font-size:13px;color:var(--text2);line-height:1.5}
     .online-search-divider{display:flex;align-items:center;gap:10px;margin:18px 0 10px;color:var(--muted2);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
     .online-search-divider::before,.online-search-divider::after{content:'';flex:1;height:1px;background:var(--border)}
     .btn-online-search{width:100%;background:transparent;border:1px solid var(--amber);color:var(--amber-glow);font-size:14px;font-weight:700;padding:12px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
@@ -419,6 +443,34 @@
         </button>
       </div>
       <div class="filter-chips" id="filter-chips"></div>
+      <button class="filter-toggle-btn" id="filter-toggle" onclick="toggleFilterPanel()">
+        <span>🎛 Filters &amp; Range</span>
+        <span id="filter-toggle-indicator">▾</span>
+      </button>
+      <div class="filter-panel" id="filter-panel">
+        <div class="filter-panel-row">
+          <div class="filter-panel-label">Flavor Style</div>
+          <div class="flavour-chips" id="flavour-chips"></div>
+        </div>
+        <div class="filter-panel-row">
+          <div class="filter-panel-label">Age <span id="age-label">Any</span></div>
+          <div class="range-wrap">
+            <input class="range-input" id="min-age" type="range" min="0" max="30" value="0" oninput="updateRangeLabel()">
+            <span>–</span>
+            <input class="range-input" id="max-age" type="range" min="0" max="30" value="30" oninput="updateRangeLabel()">
+          </div>
+        </div>
+        <div class="filter-panel-row">
+          <div class="filter-panel-label">ABV % <span id="abv-label">Any</span></div>
+          <div class="range-wrap">
+            <input class="range-input" id="min-abv" type="range" min="40" max="70" value="40" oninput="updateRangeLabel()">
+            <span>–</span>
+            <input class="range-input" id="max-abv" type="range" min="40" max="70" value="70" oninput="updateRangeLabel()">
+          </div>
+        </div>
+        <button class="btn-primary" style="padding:10px;font-size:13px" onclick="applyFilters()">Apply Filters</button>
+        <button class="btn-secondary" style="padding:8px;font-size:12px" onclick="resetFilters()">Reset</button>
+      </div>
       <div class="bottle-list" id="bottle-list"></div>
       <div class="attribution-line" style="padding:8px 0 16px">Powered by <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a></div>
     </section>
@@ -602,6 +654,8 @@ const FILTER_PARAMS = {
 // STATE
 // ═══════════════════════════════════════════════════════
 let activeScreen = 'scan', activeFilter = 'All', searchQuery = '', browseItems = [], browseSearchTimer = null;
+let activeFlavour = '', filterMinAge = 0, filterMaxAge = 30, filterMinAbv = 40, filterMaxAbv = 70, filterPanelOpen = false;
+const FLAVOUR_OPTIONS = ['Smoky','Peaty','Fruity','Spicy','Sweet','Floral','Rich','Light','Nutty','Sherried'];
 
 // Collection now stores full bottle objects (not just IDs).
 // Migrate old format (array of numbers) automatically.
@@ -846,23 +900,43 @@ function mapApiItem(item) {
   const flavors = m.flavour ? m.flavour.split(/[,/]/).map(f => f.trim()).filter(Boolean) : [];
   const t = item.tasting_notes || {};
   const flavorText = [t.nose, t.palate].filter(Boolean).join(' · ');
+  const pricePerLiter = m.price_per_liter || null;
+  const priceBottle = pricePerLiter ? `~$${Math.round(pricePerLiter * 0.7)}` : null;
   return {
     name: item.name,
     distillery: m.distillery || 'Unknown Distillery',
+    bottler: m.bottler || null,
     type: m.type || 'Whisky',
     region: region || 'Unknown',
+    country: country,
     age, proof,
+    abv: abv || null,
     desc: item.description || '',
     flavors: flavors.length ? flavors : (flavorText ? [flavorText.slice(0, 60)] : ['See tasting notes']),
+    flavourRaw: m.flavour || '',
     nose: t.nose || '',
     palate: t.palate || '',
     finish: t.finish || '',
+    conclusionMarcel: item.conclusion?.marcel || '',
+    conclusionSascha: item.conclusion?.sascha || '',
     url: item.url || '',
     imageUrl: item.image?.url || '',
-    ratingMarcel: item.rating?.marcel,
+    ratingMarcel: item.rating?.marcel ?? null,
     ratingAvg: item.rating ? Math.round((item.rating.marcel + item.rating.sascha) / 2) : null,
+    valueForMoney: item.rating?.value_for_money ?? null,
+    price: priceBottle,
     slug: item.slug || ''
   };
+}
+
+function vfmStars(n) {
+  if (!n) return '';
+  return [1,2,3,4,5].map(i => `<span class="${i<=n?'':'empty'}">★</span>`).join('');
+}
+
+function priceDisplay(b) {
+  if (!b.price) return '';
+  return `<span class="price-badge">${b.price}/btl</span>`;
 }
 
 let currentScanItem = null;
@@ -899,10 +973,11 @@ function showApiResult(item, labelChips, isDemo) {
 
     <div class="result-details-grid">
       <div class="detail-cell"><div class="detail-label">Age</div><div class="detail-value accent">${b.age}</div></div>
-      <div class="detail-cell"><div class="detail-label">ABV</div><div class="detail-value accent">${b.proof ? (b.proof/2).toFixed(1)+'%' : 'N/A'}</div></div>
+      <div class="detail-cell"><div class="detail-label">ABV</div><div class="detail-value accent">${b.abv ? b.abv+'%' : 'N/A'}</div></div>
       <div class="detail-cell"><div class="detail-label">Region</div><div class="detail-value">${b.region}</div></div>
-      <div class="detail-cell"><div class="detail-label">Type</div><div class="detail-value">${b.type}</div></div>
+      ${b.price ? `<div class="detail-cell"><div class="detail-label">Price</div><div class="detail-value accent">${b.price}</div></div>` : `<div class="detail-cell"><div class="detail-label">Type</div><div class="detail-value">${b.type}</div></div>`}
     </div>
+    ${b.valueForMoney ? `<div style="padding:0 20px 4px;display:flex;align-items:center;gap:8px"><span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Value for Money</span><span class="vfm-stars">${vfmStars(b.valueForMoney)}</span></div>` : ''}
 
     ${labelChips.length ? `
     <div class="vision-labels">
@@ -981,6 +1056,9 @@ function navTo(screen) {
 // ═══════════════════════════════════════════════════════
 async function renderBrowse() {
   document.getElementById('filter-chips').innerHTML = FILTERS.map(f=>`<button class="chip ${f===activeFilter?'active':''}" onclick="setFilter('${f}')">${f}</button>`).join('');
+  // Render flavour chips
+  const fc = document.getElementById('flavour-chips');
+  if (fc) fc.innerHTML = FLAVOUR_OPTIONS.map(f=>`<button class="chip ${f===activeFlavour?'active':''}" onclick="setFlavour('${f}')">${f}</button>`).join('');
   const listEl = document.getElementById('bottle-list');
   listEl.innerHTML = `<div class="online-searching">⏳ Loading…</div>`;
   try {
@@ -988,6 +1066,11 @@ async function renderBrowse() {
     const fp = FILTER_PARAMS[activeFilter] || {};
     Object.entries(fp).forEach(([k,v]) => params.set(k, v));
     if (searchQuery) params.set('q', searchQuery);
+    if (activeFlavour) params.set('flavour', activeFlavour.toLowerCase());
+    if (filterMinAge > 0)  params.set('min_age', filterMinAge);
+    if (filterMaxAge < 30) params.set('max_age', filterMaxAge);
+    if (filterMinAbv > 40) params.set('min_abv', filterMinAbv);
+    if (filterMaxAbv < 70) params.set('max_abv', filterMaxAbv);
     const resp = await fetch(`https://thewhiskyedition.com/api/whisky-reviews?${params}`);
     const data = await resp.json();
     browseItems = (data.items || []).filter(i => i.lang === 'en');
@@ -1004,15 +1087,19 @@ function renderBrowseList(listEl) {
   }
   listEl.innerHTML = browseItems.map((item, idx) => {
     const b = mapApiItem(item);
-    const rating = b.ratingAvg !== null ? `⭐ ${b.ratingAvg}/100` : '';
+    const rating = b.ratingAvg !== null ? `<span style="font-size:12px;color:var(--amber-glow);font-weight:700">⭐ ${b.ratingAvg}/100</span>` : '';
+    const vfm    = b.valueForMoney ? `<span class="vfm-stars">${vfmStars(b.valueForMoney)}</span>` : '';
+    const price  = b.price ? `<span class="price-badge">${b.price}</span>` : '';
     return `<div class="online-result-row" onclick="openBrowseDetail(${idx})">
       ${b.imageUrl
         ? `<img class="online-result-img" src="${b.imageUrl}" alt="${b.name}">`
         : `<div class="online-result-img-placeholder">🥃</div>`}
       <div class="online-result-info">
         <div class="online-result-name">${b.name}</div>
-        <div class="online-result-meta">${b.distillery}${b.region ? ' · ' + b.region : ''} · ${b.age}</div>
-        ${rating ? `<div class="online-result-rating">${rating}</div>` : ''}
+        <div class="online-result-meta">${b.distillery}${b.region ? ' · ' + b.region : ''} · ${b.age}${b.abv ? ' · ' + b.abv + '%' : ''}</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:3px">
+          ${rating}${vfm}${price}
+        </div>
       </div>
       <div class="bottle-chevron"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 5l5 5-5 5"/></svg></div>
     </div>`;
@@ -1028,23 +1115,56 @@ function filterBottles(q) {
 }
 function clearSearch() { document.getElementById('browse-input').value = ''; searchQuery = ''; document.getElementById('search-clear').classList.remove('visible'); renderBrowse(); }
 
+function toggleFilterPanel() {
+  filterPanelOpen = !filterPanelOpen;
+  document.getElementById('filter-panel').classList.toggle('open', filterPanelOpen);
+  document.getElementById('filter-toggle').classList.toggle('active', filterPanelOpen);
+  document.getElementById('filter-toggle-indicator').textContent = filterPanelOpen ? '▴' : '▾';
+  updateRangeLabel();
+}
+
+function updateRangeLabel() {
+  const minA = parseInt(document.getElementById('min-age')?.value || 0);
+  const maxA = parseInt(document.getElementById('max-age')?.value || 30);
+  const minV = parseInt(document.getElementById('min-abv')?.value || 40);
+  const maxV = parseInt(document.getElementById('max-abv')?.value || 70);
+  const ageEl = document.getElementById('age-label');
+  const abvEl = document.getElementById('abv-label');
+  if (ageEl) ageEl.textContent = (minA===0 && maxA===30) ? 'Any' : `${minA}–${maxA} yr`;
+  if (abvEl) abvEl.textContent = (minV===40 && maxV===70) ? 'Any' : `${minV}–${maxV}%`;
+}
+
+function applyFilters() {
+  filterMinAge = parseInt(document.getElementById('min-age')?.value || 0);
+  filterMaxAge = parseInt(document.getElementById('max-age')?.value || 30);
+  filterMinAbv = parseInt(document.getElementById('min-abv')?.value || 40);
+  filterMaxAbv = parseInt(document.getElementById('max-abv')?.value || 70);
+  renderBrowse();
+}
+
+function resetFilters() {
+  activeFlavour = ''; filterMinAge = 0; filterMaxAge = 30; filterMinAbv = 40; filterMaxAbv = 70;
+  const els = ['min-age','max-age','min-abv','max-abv'];
+  const defaults = [0, 30, 40, 70];
+  els.forEach((id, i) => { const el = document.getElementById(id); if (el) el.value = defaults[i]; });
+  updateRangeLabel();
+  renderBrowse();
+}
+
+function setFlavour(f) { activeFlavour = activeFlavour === f ? '' : f; renderBrowse(); }
+
 // ═══════════════════════════════════════════════════════
 // BROWSE DETAIL
 // ═══════════════════════════════════════════════════════
 let detailItem = null;
-function openBrowseDetail(idx) {
-  detailItem = browseItems[idx];
-  const b = mapApiItem(detailItem);
-  const inCol = !!collection.find(c => c.slug === b.slug);
-  document.getElementById('detail-title').textContent = b.name;
-  document.getElementById('detail-collect-btn').style.color = inCol ? 'var(--amber-glow)' : '';
-  document.getElementById('detail-body').innerHTML = `
+function renderDetailBody(b, inCol) {
+  return `
     <div class="detail-hero">
       <div class="detail-bottle-icon">
         ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.name}" style="width:80px;height:100px;object-fit:contain;border-radius:8px">` : '🥃'}
       </div>
       <div class="detail-name">${b.name}</div>
-      <div class="detail-distillery">${b.distillery}</div>
+      <div class="detail-distillery">${b.distillery}${b.bottler ? ` <span style="color:var(--muted);font-size:12px">(${b.bottler})</span>` : ''}</div>
       <div class="result-badges">
         <span class="badge badge-amber">${b.type}</span>
         <span class="badge badge-cream">${b.region}</span>
@@ -1054,8 +1174,15 @@ function openBrowseDetail(idx) {
     <div class="detail-body">
       <div class="result-details-grid">
         <div class="detail-cell"><div class="detail-label">Age</div><div class="detail-value accent">${b.age}</div></div>
-        <div class="detail-cell"><div class="detail-label">ABV</div><div class="detail-value accent">${b.proof ? (b.proof/2).toFixed(1)+'%' : 'N/A'}</div></div>
+        <div class="detail-cell"><div class="detail-label">ABV</div><div class="detail-value accent">${b.abv ? b.abv+'%' : 'N/A'}</div></div>
+        ${b.valueForMoney ? `<div class="detail-cell"><div class="detail-label">Value</div><div class="detail-value"><span class="vfm-stars">${vfmStars(b.valueForMoney)}</span></div></div>` : ''}
+        ${b.price ? `<div class="detail-cell"><div class="detail-label">Price</div><div class="detail-value accent">${b.price}</div></div>` : ''}
       </div>
+      ${b.flavors.length ? `
+      <div class="flavor-section">
+        <div class="flavor-title">Flavor Profile</div>
+        <div class="flavor-tags">${b.flavors.map(f=>`<span class="flavor-tag">${f}</span>`).join('')}</div>
+      </div>` : ''}
       ${b.nose || b.palate || b.finish ? `
       <div class="flavor-section">
         <div class="flavor-title">Tasting Notes</div>
@@ -1064,7 +1191,13 @@ function openBrowseDetail(idx) {
         ${b.finish ? `<div><span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em">Finish · </span><span style="font-size:13px;color:var(--text2)">${b.finish}</span></div>` : ''}
       </div>` : ''}
       <div class="result-desc">${b.desc}</div>
-      <div class="result-actions" style="margin-top:8px">
+      ${b.conclusionMarcel || b.conclusionSascha ? `
+      <div class="conclusion-section">
+        <div class="conclusion-title">Reviewer Verdict</div>
+        ${b.conclusionMarcel ? `<div class="conclusion-reviewer"><div class="conclusion-name">Marcel</div><div class="conclusion-text">${b.conclusionMarcel}</div></div>` : ''}
+        ${b.conclusionSascha ? `<div class="conclusion-reviewer"><div class="conclusion-name">Sascha</div><div class="conclusion-text">${b.conclusionSascha}</div></div>` : ''}
+      </div>` : `<div id="conclusion-placeholder" style="padding:10px 0;color:var(--muted2);font-size:12px;text-align:center">Loading reviewer verdict…</div>`}
+      <div class="result-actions" style="margin-top:12px">
         <button class="btn-primary" id="detail-cellar-btn" onclick="toggleCollectionFromDetail()">
           ${inCol ? '✓ In Your Cellar' : '+ Add to Cellar'}
         </button>
@@ -1073,7 +1206,41 @@ function openBrowseDetail(idx) {
       ${b.url ? `<button class="btn-online-search" style="margin:8px 0 0;width:100%" onclick="window.open('https://thewhiskyedition.com${b.url}','_blank')">Full Review on WHISKY:EDITION ↗</button>` : ''}
       <div class="attribution-line">Data from <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a> · CC 4.0</div>
     </div>`;
+}
+
+async function openBrowseDetail(idx) {
+  detailItem = browseItems[idx];
+  const b = mapApiItem(detailItem);
+  const inCol = !!collection.find(c => c.slug === b.slug);
+  document.getElementById('detail-title').textContent = b.name;
+  document.getElementById('detail-collect-btn').style.color = inCol ? 'var(--amber-glow)' : '';
+  document.getElementById('detail-body').innerHTML = renderDetailBody(b, inCol);
   document.getElementById('detail-overlay').classList.add('show');
+
+  // Fetch full detail for conclusions if not already present
+  if (!b.conclusionMarcel && !b.conclusionSascha && b.slug) {
+    try {
+      const resp = await fetch(`https://thewhiskyedition.com/api/whisky-reviews/${b.slug}`);
+      if (resp.ok) {
+        const full = await resp.json();
+        const fullB = mapApiItem(full);
+        // Update the placeholder with fetched conclusions
+        const placeholder = document.getElementById('conclusion-placeholder');
+        if (placeholder && (fullB.conclusionMarcel || fullB.conclusionSascha)) {
+          placeholder.outerHTML = `
+            <div class="conclusion-section">
+              <div class="conclusion-title">Reviewer Verdict</div>
+              ${fullB.conclusionMarcel ? `<div class="conclusion-reviewer"><div class="conclusion-name">Marcel</div><div class="conclusion-text">${fullB.conclusionMarcel}</div></div>` : ''}
+              ${fullB.conclusionSascha ? `<div class="conclusion-reviewer"><div class="conclusion-name">Sascha</div><div class="conclusion-text">${fullB.conclusionSascha}</div></div>` : ''}
+            </div>`;
+        } else if (placeholder) {
+          placeholder.remove();
+        }
+        // Cache into browseItems so re-open doesn't re-fetch
+        browseItems[idx] = full;
+      }
+    } catch(_) { /* silent — placeholder just stays hidden */ }
+  }
 }
 function closeDetail() { document.getElementById('detail-overlay').classList.remove('show'); detailItem = null; }
 function toggleCollectionFromDetail() {
