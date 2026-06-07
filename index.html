@@ -633,6 +633,11 @@
         <span class="ds-btn-label">View on Map<small>Open in Maps app</small></span>
         <span style="color:var(--muted)">›</span>
       </button>
+      <button class="ds-btn" id="ds-website-btn" onclick="distilleryWebsite()" style="display:none">
+        <span class="ds-btn-icon">🔗</span>
+        <span class="ds-btn-label">Visit Website<small id="ds-website-sub">Official distillery site</small></span>
+        <span style="color:var(--muted)">›</span>
+      </button>
       <button class="ds-btn" onclick="distilleryMoreBottles()">
         <span class="ds-btn-icon">🥃</span>
         <span class="ds-btn-label">More from this Distillery<small>Browse all bottles</small></span>
@@ -1709,10 +1714,68 @@ function showOffResult(product, labelChips) {
 // DISTILLERY SHEET
 // ═══════════════════════════════════════════════════════
 let _dsName = '', _dsCountry = '', _dsRegion = '';
+const DISTILLERY_WEBSITES = {
+  'Buffalo Trace Distillery': 'https://www.buffalotracedistillery.com/',
+  'Wild Turkey Distillery': 'https://www.wildturkeybourbon.com/',
+  'Four Roses Distillery': 'https://www.fourrosesbourbon.com/',
+  'Heaven Hill Distilleries': 'https://heavenhilldistillery.com/',
+  "Maker's Mark Distillery": 'https://www.makersmark.com/',
+  'Woodford Reserve Distillery': 'https://www.woodfordreserve.com/',
+  'Beam Suntory': 'https://www.beamsuntory.com/',
+  'Brown-Forman': 'https://www.brown-forman.com/',
+  "Michter's Distillery": 'https://michters.com/',
+  "Angel's Envy Distillery": 'https://angelsenvy.com/',
+  'Bulleit Distilling Co.': 'https://www.bulleit.com/',
+  'Barton 1792 Distillery': 'https://www.sazerac.com/',
+  'New Riff Distilling': 'https://www.newriffdistilling.com/',
+  'Wilderness Trail Distillery': 'https://wildernesstrail.com/',
+  'High West Distillery': 'https://www.highwest.com/',
+  'WhistlePig Farm': 'https://www.whistlepigwhiskey.com/',
+  "Jefferson's Bourbon": 'https://www.jeffersonsbourbon.com/',
+  'Crown Royal Distillery': 'https://www.crownroyal.com/',
+  'Diageo': 'https://www.diageo.com/',
+  'Suntory': 'https://www.suntory.com/',
+  "Jack Daniel's Distillery": 'https://www.jackdaniels.com/',
+  'The Macallan Distillery': 'https://www.themacallan.com/',
+  'Glenfiddich Distillery': 'https://www.glenfiddich.com/',
+  'The Glenlivet Distillery': 'https://www.theglenlivet.com/',
+  'Balvenie Distillery': 'https://www.thebalvenie.com/',
+  'Glenmorangie Distillery': 'https://www.glenmorangie.com/',
+  'Dalmore Distillery': 'https://www.thedalmore.com/',
+  'Highland Park Distillery': 'https://www.highlandparkwhisky.com/',
+  'Ardbeg Distillery': 'https://www.ardbeg.com/',
+  'Lagavulin Distillery': 'https://www.malts.com/en-row/our-brands/lagavulin/',
+  'Laphroaig Distillery': 'https://www.laphroaig.com/',
+  'Oban Distillery': 'https://www.malts.com/en-row/our-brands/oban/',
+  'Chivas Brothers': 'https://www.chivasbrothers.com/',
+  'Old Bushmills Distillery': 'https://bushmills.com/',
+  'Tullamore Distillery': 'https://www.tullamoredew.com/',
+  'Midleton Distillery': 'https://www.irishdistillers.ie/',
+  'Yamazaki Distillery': 'https://www.suntory.com/whisky/yamazaki/',
+  'Hakushu Distillery': 'https://www.suntory.com/whisky/hakushu/',
+  'Nikka Whisky': 'https://www.nikka.com/eng/',
+};
+function distilleryWebsiteUrl(name) {
+  if (DISTILLERY_WEBSITES[name]) return DISTILLERY_WEBSITES[name];
+  const key = Object.keys(DISTILLERY_WEBSITES).find(k => k.toLowerCase() === (name||'').toLowerCase());
+  return key ? DISTILLERY_WEBSITES[key] : null;
+}
+function distilleryWebsite() {
+  const url = distilleryWebsiteUrl(_dsName);
+  if (url) window.open(url, '_blank');
+}
 async function openDistillerySheet(name, country, region) {
   _dsName = name; _dsCountry = country; _dsRegion = region;
   document.getElementById('ds-name').textContent = name;
   document.getElementById('ds-sub').textContent = [region, country].filter(Boolean).join(', ') || 'Distillery';
+  const websiteUrl = distilleryWebsiteUrl(name);
+  const websiteBtn = document.getElementById('ds-website-btn');
+  if (websiteUrl) {
+    websiteBtn.style.display = 'flex';
+    document.getElementById('ds-website-sub').textContent = websiteUrl.replace(/^https?:\/\//,'').replace(/\/$/,'');
+  } else {
+    websiteBtn.style.display = 'none';
+  }
   // Reset market panel
   const mktEl = document.getElementById('ds-market');
   document.getElementById('ds-market-content').innerHTML = '<div class="ds-market-loading">Loading…</div>';
