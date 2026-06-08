@@ -496,7 +496,7 @@
       </div>
       <div id="local-bottles-section" style="display:none"></div>
       <div class="bottle-list" id="bottle-list"></div>
-      <div class="attribution-line" style="padding:8px 0 16px">Powered by <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a></div>
+      <div class="attribution-line" style="padding:8px 0 16px">Powered by <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a> · <a href="https://distiller.com" target="_blank">Distiller</a></div>
     </section>
 
     <!-- COLLECTION -->
@@ -1538,7 +1538,7 @@ function renderLocalBottlesSection() {
   if (!matches.length) { el.style.display = 'none'; return; }
   el.style.display = 'block';
   el.innerHTML = `
-    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 0 8px">📚 Common Bottles</div>
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 0 8px">🔍 Distiller Database</div>
     ${matches.slice(0,20).map((b,idx) => {
       const inCol = !!collection.find(c => c.slug === b.slug);
       return `<div class="online-result-row" onclick="openLocalDetail('${b.slug}')">
@@ -1554,7 +1554,7 @@ function renderLocalBottlesSection() {
         </div>
       </div>`;
     }).join('')}
-    <div style="font-size:10px;color:var(--muted2);text-align:center;padding:8px 0">Curated local database</div>`;
+    <div style="font-size:10px;color:var(--muted2);text-align:center;padding:8px 0">Data from <a href="https://distiller.com" target="_blank" style="color:var(--muted2)">Distiller.com</a></div>`;
 }
 
 function openLocalDetail(slug) {
