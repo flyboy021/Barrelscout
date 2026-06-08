@@ -2174,13 +2174,13 @@ async function openDistillerySheet(name, country, region) {
   const websiteBtn = document.getElementById('ds-website-btn');
   document.getElementById('ds-website-sub').textContent = distilleryWebsiteUrl(name)
     ? _dsWebsiteUrl.replace(/^https?:\/\//,'').replace(/\/$/,'')
-    : 'Search for official site';
+    : 'Official website';
   websiteBtn.style.display = 'flex';
   // Try to upgrade to a real URL from Google Places in the background
   fetchDistilleryWebsiteFromPlaces(name).then(url => {
     if (url && _dsName === name) {
       _dsWebsiteUrl = url;
-      document.getElementById('ds-website-sub').textContent = url.replace(/^https?:\/\//,'').replace(/\/$/,'');
+      document.getElementById('ds-website-sub').textContent = url.replace(/^https?:\/\/(?:www\.)?/,'').replace(/\/$/,'');
     }
   });
   // Reset market panel
