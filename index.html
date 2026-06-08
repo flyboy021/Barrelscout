@@ -2330,8 +2330,12 @@ function distilleryWebsiteUrl(name) {
   return k ? DISTILLERY_WEBSITES[k] : null;
 }
 let _dsWebsiteUrl = '';
-function distilleryWebsite() {
-  if (_dsWebsiteUrl) window.open(_dsWebsiteUrl, '_blank');
+async function distilleryWebsite() {
+  if (_dsWebsiteUrl) { window.open(_dsWebsiteUrl, '_blank'); return; }
+  showToast('Looking up website…');
+  const url = await fetchDistilleryWebsiteFromPlaces(_dsName);
+  if (url) { _dsWebsiteUrl = url; window.open(url, '_blank'); }
+  else showToast('Website not found');
 }
 async function fetchDistilleryWebsiteFromPlaces(name) {
   // First check the hardcoded lookup
@@ -2359,24 +2363,17 @@ async function openDistillerySheet(name, country, region) {
   _dsName = name; _dsCountry = country; _dsRegion = region; _dsWebsiteUrl = '';
   document.getElementById('ds-name').textContent = name;
   document.getElementById('ds-sub').textContent = [region, country].filter(Boolean).join(', ') || 'Distillery';
-  // Show website button immediately if URL is known; otherwise fetch from Places API
+  // Always show website button; pre-fetch URL from lookup or Places API
   _dsWebsiteUrl = '';
   const websiteBtn = document.getElementById('ds-website-btn');
-  const knownUrl = distilleryWebsiteUrl(name);
-  if (knownUrl) {
-    _dsWebsiteUrl = knownUrl;
-    document.getElementById('ds-website-sub').textContent = knownUrl.replace(/^https?:\/\/(?:www\.)?/,'').replace(/\/$/,'');
-    websiteBtn.style.display = 'flex';
-  } else {
-    websiteBtn.style.display = 'none';
-    fetchDistilleryWebsiteFromPlaces(name).then(url => {
-      if (url && _dsName === name) {
-        _dsWebsiteUrl = url;
-        document.getElementById('ds-website-sub').textContent = url.replace(/^https?:\/\/(?:www\.)?/,'').replace(/\/$/,'');
-        websiteBtn.style.display = 'flex';
-      }
-    });
-  }
+  document.getElementById('ds-website-sub').textContent = 'Official website';
+  websiteBtn.style.display = 'flex';
+  fetchDistilleryWebsiteFromPlaces(name).then(url => {
+    if (url && _dsName === name) {
+      _dsWebsiteUrl = url;
+      document.getElementById('ds-website-sub').textContent = url.replace(/^https?:\/\/(?:www\.)?/,'').replace(/\/$/,'');
+    }
+  });
   // Reset market panel
   const mktEl = document.getElementById('ds-market');
   document.getElementById('ds-market-content').innerHTML = '<div class="ds-market-loading">Loading…</div>';
