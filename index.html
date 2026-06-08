@@ -496,7 +496,7 @@
       </div>
       <div id="local-bottles-section" style="display:none"></div>
       <div class="bottle-list" id="bottle-list"></div>
-      <div class="attribution-line" style="padding:8px 0 16px">Powered by <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a> · <a href="https://distiller.com" target="_blank">Distiller</a></div>
+      <div class="attribution-line" style="padding:8px 0 16px">Powered by <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a></div>
     </section>
 
     <!-- COLLECTION -->
@@ -1315,7 +1315,7 @@ function handleImageCapture(input) {
 
         // Step 2: Live Distiller search (if Apify token set)
         if (!found && getApifyToken()) {
-          document.getElementById('scanning-label').textContent = 'Searching Distiller…';
+          document.getElementById('scanning-label').textContent = 'Searching database…';
           try {
             const distItems = await searchDistillerLive(apiQuery);
             if (!distItems.length && shortQuery) distItems.push(...await searchDistillerLive(shortQuery));
@@ -1630,7 +1630,7 @@ function renderLocalBottlesSection() {
   if (!matches.length) { el.style.display = 'none'; return; }
   el.style.display = 'block';
   el.innerHTML = `
-    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 0 8px">🔍 Distiller Database</div>
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 0 8px">🔍 Featured Bottles</div>
     ${matches.slice(0,20).map((b,idx) => {
       const inCol = !!collection.find(c => c.slug === b.slug);
       return `<div class="online-result-row" onclick="openLocalDetail('${b.slug}')">
@@ -1645,8 +1645,7 @@ function renderLocalBottlesSection() {
           </div>
         </div>
       </div>`;
-    }).join('')}
-    <div style="font-size:10px;color:var(--muted2);text-align:center;padding:8px 0">Data from <a href="https://distiller.com" target="_blank" style="color:var(--muted2)">Distiller.com</a></div>`;
+    }).join('')}`;
 }
 
 function openLocalDetail(slug) {
@@ -1944,7 +1943,6 @@ function showDistillerResult(b, labelChips) {
         <div class="result-distillery"><button class="distillery-link" onclick="openDistillerySheet('${b.distillery.replace(/'/g,"\\'")}','${(b.country||'').replace(/'/g,"\\'")}','${(b.country||'').replace(/'/g,"\\'")}')">🏭 ${b.distillery}</button></div>
         <div class="result-badges">
           <span class="badge badge-amber">${b.type}</span>
-          <span class="badge badge-cream" style="background:rgba(255,255,255,.08)">🔍 Distiller</span>
         </div>
       </div>
     </div>
@@ -1961,8 +1959,7 @@ function showDistillerResult(b, labelChips) {
     <div class="result-actions">
       <button class="btn-primary" id="result-collect-btn" onclick="addDistillerToCollection()">${inCol ? '✓ In Your Cellar' : '+ Add to Cellar'}</button>
       <button class="btn-secondary" onclick="closeResult(); openNoteEditor('${b.name.replace(/'/g,"\\'")}')">+ Tasting Note</button>
-    </div>
-    <div class="attribution-line">Data from <a href="https://distiller.com" target="_blank">Distiller.com</a> via Apify</div>`;
+    </div>`;
   scanning.style.display = 'none';
   content.classList.add('show');
   document.getElementById('result-sheet').classList.add('show');
