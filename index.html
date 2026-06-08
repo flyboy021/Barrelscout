@@ -2412,8 +2412,12 @@ function distilleryWebsiteUrl(name) {
   // One name is a prefix of the other
   k = keys.find(k => { const lk = normalizeDistilleryName(k); return lk.startsWith(n) || n.startsWith(lk); });
   if (k) return DISTILLERY_WEBSITES[k];
-  // Substring match
-  k = keys.find(k => { const lk = normalizeDistilleryName(k); return lk.includes(n) || n.includes(lk); });
+  // Whole-word substring match (avoids "weller" matching "stitzel-weller")
+  const wordBoundary = (haystack, needle) => {
+    const re = new RegExp('(?:^|[\\s\\-])' + needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?:[\\s\\-]|$)');
+    return re.test(haystack);
+  };
+  k = keys.find(k => { const lk = normalizeDistilleryName(k); return wordBoundary(lk, n) || wordBoundary(n, lk); });
   return k ? DISTILLERY_WEBSITES[k] : null;
 }
 let _dsWebsiteUrl = '';

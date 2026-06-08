@@ -116,7 +116,7 @@
     "age": "",
     "abv": 45.2,
     "proof": "90.4",
-    "desc": "Distilled at the Woodford Reserve Distillery in Versailles, Kentucky (formerly the Labrot & Graham Distillery), this Kentucky straight bourbon was first introduced in 1996 and remains the brand’s flagship expression. The high-rye mash bill contains 18% rye and is made from a blend of pot still and column still distillates. Though it carries no age statement, the bourbon is typically aged between 6–7 years. It is bottled at 45.2% ABV.",
+    "desc": "Distilled at the Woodford Reserve Distillery in Versailles, Kentucky (formerly the Labrot & Graham Distillery), this Kentucky straight bourbon was first introduced in 1996 and remains the brand\u2019s flagship expression. The high-rye mash bill contains 18% rye and is made from a blend of pot still and column still distillates. Though it carries no age statement, the bourbon is typically aged between 6\u20137 years. It is bottled at 45.2% ABV.",
     "flavors": [
       "Full bodied",
       "Rich",
@@ -152,7 +152,7 @@
     "age": "",
     "abv": 45,
     "proof": "90.0",
-    "desc": "Maker’s Mark Bourbon is a wheated Kentucky Straight Bourbon made from a mash bill of 70% corn, 16% red winter wheat, and 14% malted barley. The recipe was developed by Bill Samuels Sr., who famously tested grain combinations through baking rather than distillation. His wife, Margie Samuels, designed the bottle’s shape, label, and signature red wax seal. The bourbon is aged 6–7 years in char #3 new American oak barrels and bottled at 90 proof.",
+    "desc": "Maker\u2019s Mark Bourbon is a wheated Kentucky Straight Bourbon made from a mash bill of 70% corn, 16% red winter wheat, and 14% malted barley. The recipe was developed by Bill Samuels Sr., who famously tested grain combinations through baking rather than distillation. His wife, Margie Samuels, designed the bottle\u2019s shape, label, and signature red wax seal. The bourbon is aged 6\u20137 years in char #3 new American oak barrels and bottled at 90 proof.",
     "flavors": [
       "Vanilla",
       "Sweet",
@@ -165,7 +165,7 @@
       "Oily",
       "Fruity"
     ],
-    "nose": "Vanilla bean and crème brûlée dominate a sweet nose, with a touch of spicy oak in the background",
+    "nose": "Vanilla bean and cr\u00e8me br\u00fbl\u00e9e dominate a sweet nose, with a touch of spicy oak in the background",
     "palate": "The palate is soft and sweet, with vanilla upfront, followed by a dose of spearmint, a just-opened loaf of whole wheat bread, and bitterness from Baker's chocolate and coffee grounds",
     "finish": "The finish is short and vanilla-forward, rounded out by tannic oak towards the back",
     "ratingAvg": 87,
@@ -309,7 +309,7 @@
     "age": "",
     "abv": 40,
     "proof": "80.0",
-    "desc": "Basil Hayden is one of four Kentucky straight bourbons in the Beam Small Batch Collection, alongside Booker’s, Baker’s, and Knob Creek. While Basil Hayden, Sr. is not featured on his namesake bottle, his likeness appears on every bottle of Old Grand-Dad, which uses the same high-rye mash bill recipe found here. This expression is the lowest proof in the collection, bottled at just 80 proof. Note: As of 2021, the brand name was updated from Basil Hayden’s to Basil Hayden across the entire portfolio, though the bourbon recipe itself has not changed.",
+    "desc": "Basil Hayden is one of four Kentucky straight bourbons in the Beam Small Batch Collection, alongside Booker\u2019s, Baker\u2019s, and Knob Creek. While Basil Hayden, Sr. is not featured on his namesake bottle, his likeness appears on every bottle of Old Grand-Dad, which uses the same high-rye mash bill recipe found here. This expression is the lowest proof in the collection, bottled at just 80 proof. Note: As of 2021, the brand name was updated from Basil Hayden\u2019s to Basil Hayden across the entire portfolio, though the bourbon recipe itself has not changed.",
     "flavors": [
       "Spicy",
       "Full bodied",
@@ -651,7 +651,7 @@
     "age": "",
     "abv": 47,
     "proof": "94.0",
-    "desc": "Jack Daniel’s Single Barrel Select Tennessee Whiskey debuted in 1997 and features individual barrels selected by the distillery’s Master Taster panel from the upper floors of the distillery’s rickhouses. Made from the classic Jack Daniel’s mash bill of 80% corn, 12% malted barley, and 8% rye, the whiskey undergoes the Lincoln County Process of charcoal mellowing before aging. Each bottle displays the barrel number, rick number, and bottling date. As with most single barrel releases, flavor will vary from barrel to barrel. Bottled at 94 proof.",
+    "desc": "Jack Daniel\u2019s Single Barrel Select Tennessee Whiskey debuted in 1997 and features individual barrels selected by the distillery\u2019s Master Taster panel from the upper floors of the distillery\u2019s rickhouses. Made from the classic Jack Daniel\u2019s mash bill of 80% corn, 12% malted barley, and 8% rye, the whiskey undergoes the Lincoln County Process of charcoal mellowing before aging. Each bottle displays the barrel number, rick number, and bottling date. As with most single barrel releases, flavor will vary from barrel to barrel. Bottled at 94 proof.",
     "flavors": [
       "Full bodied",
       "Rich",
@@ -666,7 +666,7 @@
       "Floral"
     ],
     "nose": "The nose shows intense notes of oak, honey, and cinnamon",
-    "palate": "The palate continues with more woody aromas but also includes the classic banana note typical in Jack Daniel’s Old No. 7 along with rich vanilla",
+    "palate": "The palate continues with more woody aromas but also includes the classic banana note typical in Jack Daniel\u2019s Old No. 7 along with rich vanilla",
     "finish": "The finish is long and spiced with pink peppercorns in particular standing out",
     "ratingAvg": 89,
     "valueForMoney": 4,
@@ -820,7 +820,7 @@
     "age": "",
     "abv": 40,
     "proof": "80.0",
-    "desc": "Prichard’s Tennessee Whiskey is produced at Prichard's Distillery and is the only Tennessee whiskey legally permitted to omit the Lincoln County Process of charcoal filtration, having been grandfathered into the state’s 2013 Tennessee whiskey law. Distilled in pot stills from a mash bill led by sweet white corn with rye and malted barley, the whiskey is mellowed through maturation in deeply charred new American oak barrels rather than charcoal filtering. It is aged about 10 years before being bottled unfiltered at 80 proof.",
+    "desc": "Prichard\u2019s Tennessee Whiskey is produced at Prichard's Distillery and is the only Tennessee whiskey legally permitted to omit the Lincoln County Process of charcoal filtration, having been grandfathered into the state\u2019s 2013 Tennessee whiskey law. Distilled in pot stills from a mash bill led by sweet white corn with rye and malted barley, the whiskey is mellowed through maturation in deeply charred new American oak barrels rather than charcoal filtering. It is aged about 10 years before being bottled unfiltered at 80 proof.",
     "flavors": [
       "Full bodied",
       "Vanilla",
@@ -855,7 +855,7 @@
     "age": "",
     "abv": 50,
     "proof": "100.0",
-    "desc": "This expression of Jack Daniel’s was introduced in 2022 as a permanent addition to the Jack Daniel’s Bonded Series. It is made using the brand’s traditional mash bill of 80% corn, 12% malted barley, and 8% rye, and adheres to all requirements of the Bottled-in-Bond Act: distilled by a single distiller in a single season, aged for at least four years in a government-bonded warehouse, and bottled at 100 proof. The packaging draws inspiration from the original 1895 Jack Daniel’s Tennessee Whiskey bottle. Offered in 700ml bottles, it made its debut in May 2022.",
+    "desc": "This expression of Jack Daniel\u2019s was introduced in 2022 as a permanent addition to the Jack Daniel\u2019s Bonded Series. It is made using the brand\u2019s traditional mash bill of 80% corn, 12% malted barley, and 8% rye, and adheres to all requirements of the Bottled-in-Bond Act: distilled by a single distiller in a single season, aged for at least four years in a government-bonded warehouse, and bottled at 100 proof. The packaging draws inspiration from the original 1895 Jack Daniel\u2019s Tennessee Whiskey bottle. Offered in 700ml bottles, it made its debut in May 2022.",
     "flavors": [],
     "nose": "",
     "palate": "",
@@ -1473,7 +1473,7 @@
       "Tart"
     ],
     "nose": "The aroma has a mild intensity, but you'll find some fresh corn and pears. It's pretty young tasting with some raw corn and new make flavors. It's also full-feeling on",
-    "palate": "the palate with a mild bittersweet taste. Taste profile leans more entry-level blended Irish whiskey than bourbon flavors — quite mellow and inoffensive",
+    "palate": "the palate with a mild bittersweet taste. Taste profile leans more entry-level blended Irish whiskey than bourbon flavors \u2014 quite mellow and inoffensive",
     "finish": "The finish is short and lightly prickly providing a nice bite to the end. Best to shoot or mix so it's priced accordingly",
     "ratingAvg": 78,
     "valueForMoney": 4,
@@ -1566,7 +1566,7 @@
     "age": "",
     "abv": 45.5,
     "proof": "91.0",
-    "desc": "Nelson’s Green Brier Tennessee Whiskey traces its origins to a Nashville distillery founded by Charles Nelson in 1860, once one of the largest whiskey producers in the United States before Prohibition. Revived by Nelson’s descendants Andy and Charlie Nelson, the whiskey follows the original family recipe using a mash bill of corn, wheat, and malted barley. After distillation, the spirit is filtered through sugar maple charcoal before aging in new charred American oak barrels. It is bottled at 91 proof after aging 2–5 years.",
+    "desc": "Nelson\u2019s Green Brier Tennessee Whiskey traces its origins to a Nashville distillery founded by Charles Nelson in 1860, once one of the largest whiskey producers in the United States before Prohibition. Revived by Nelson\u2019s descendants Andy and Charlie Nelson, the whiskey follows the original family recipe using a mash bill of corn, wheat, and malted barley. After distillation, the spirit is filtered through sugar maple charcoal before aging in new charred American oak barrels. It is bottled at 91 proof after aging 2\u20135 years.",
     "flavors": [],
     "nose": "",
     "palate": "",
@@ -1799,14 +1799,14 @@
   {
     "slug": "w-l-weller-special-reserve",
     "name": "Weller Special Reserve Bourbon",
-    "distillery": "Weller",
+    "distillery": "Buffalo Trace",
     "type": "Bourbon",
     "country": "USA",
     "region": "Kentucky, USA",
     "age": "",
     "abv": 45,
     "proof": "90.0",
-    "desc": "W.L. Weller — named after William Larue Weller — is a wheated bourbon brand now owned by the Sazerac Company which acquired it in 1999. Made at the Buffalo Trace Distillery, Weller Special Reserve is the entry bottling to the Weller portfolio which features wheat instead of rye as the flavoring grain in the bourbon. It is a no-age statement release which is bottled at 90 proof.",
+    "desc": "W.L. Weller \u2014 named after William Larue Weller \u2014 is a wheated bourbon brand now owned by the Sazerac Company which acquired it in 1999. Made at the Buffalo Trace Distillery, Weller Special Reserve is the entry bottling to the Weller portfolio which features wheat instead of rye as the flavoring grain in the bourbon. It is a no-age statement release which is bottled at 90 proof.",
     "flavors": [
       "Full bodied",
       "Rich",
@@ -2488,7 +2488,7 @@
     "age": "",
     "abv": 45,
     "proof": "90.0",
-    "desc": "Four Roses Small Batch is a Kentucky straight bourbon made by blending four of the distillery's ten proprietary recipes. It combines both of their mash bills — one with 60% corn, 35% rye, and 5% malted barley, and another with 75% corn, 20% rye, and 5% malted barley. The selected recipes use yeast strains designed to highlight a balance of light spice, richness, and fruit-forward character. Bottled at 90 proof.",
+    "desc": "Four Roses Small Batch is a Kentucky straight bourbon made by blending four of the distillery's ten proprietary recipes. It combines both of their mash bills \u2014 one with 60% corn, 35% rye, and 5% malted barley, and another with 75% corn, 20% rye, and 5% malted barley. The selected recipes use yeast strains designed to highlight a balance of light spice, richness, and fruit-forward character. Bottled at 90 proof.",
     "flavors": [
       "Sweet",
       "Fruity",
@@ -2526,7 +2526,7 @@
     "age": "",
     "abv": 50.5,
     "proof": "101.0",
-    "desc": "Wild Turkey 101 Bourbon is produced at the Wild Turkey Distillery and was created by Master Distiller Jimmy Russell. The bourbon is made from a mash bill of corn, rye, and malted barley, aged at least 5 years (typically between 6–8 years), and bottled at 101 proof with only minimal proofing after maturation.",
+    "desc": "Wild Turkey 101 Bourbon is produced at the Wild Turkey Distillery and was created by Master Distiller Jimmy Russell. The bourbon is made from a mash bill of corn, rye, and malted barley, aged at least 5 years (typically between 6\u20138 years), and bottled at 101 proof with only minimal proofing after maturation.",
     "flavors": [
       "Sweet",
       "Vanilla",
@@ -2539,7 +2539,7 @@
       "Herbal",
       "Tart"
     ],
-    "nose": "The nose is subtle yet full of rich sweet aromas of butterscotch, honey, vanilla caramel crème, with a touch of delicate underpinnings of citrus brightness and white flowers",
+    "nose": "The nose is subtle yet full of rich sweet aromas of butterscotch, honey, vanilla caramel cr\u00e8me, with a touch of delicate underpinnings of citrus brightness and white flowers",
     "palate": "The palate gives way to flavors of toasted wood, caramel, vanilla, and with just a couple drops of water reveals a rich chocolate maltiness with hints under ripe stone fruits",
     "finish": "The finish with this whiskey has a lingering richness of spice and bold notes of toasted oak",
     "ratingAvg": 82,
@@ -2660,7 +2660,7 @@
   {
     "slug": "w-l-weller-12",
     "name": "Weller 12 Year Bourbon",
-    "distillery": "Weller",
+    "distillery": "Buffalo Trace",
     "type": "Bourbon",
     "country": "USA",
     "region": "Kentucky, USA",
@@ -2732,7 +2732,7 @@
   {
     "slug": "w-l-weller-antique",
     "name": "Weller Antique 107 Bourbon",
-    "distillery": "Weller",
+    "distillery": "Buffalo Trace",
     "type": "Bourbon",
     "country": "USA",
     "region": "Kentucky, USA",
@@ -3350,7 +3350,7 @@
     "age": "",
     "abv": 45.7,
     "proof": "91.4",
-    "desc": "This Kentucky straight small batch bourbon from Michter’s is truly a “small batch,” with each batch made from a maximum of 20 barrels. The whiskey enters the barrel at 103 proof, lower than the industry standard of 125 proof, before aging in toasted and charred new American oak barrels. It is bottled at 91.4 proof.",
+    "desc": "This Kentucky straight small batch bourbon from Michter\u2019s is truly a \u201csmall batch,\u201d with each batch made from a maximum of 20 barrels. The whiskey enters the barrel at 103 proof, lower than the industry standard of 125 proof, before aging in toasted and charred new American oak barrels. It is bottled at 91.4 proof.",
     "flavors": [
       "Sweet",
       "Rich",
@@ -3656,7 +3656,7 @@
       "Salty"
     ],
     "nose": "Each phase of Legent Bourbon highlights a different one of its components. The nose brightly showcases the wine influence, fruity and jammy with grapes and red wine",
-    "palate": "The palate is where the rich, chewy bourbon character shines through, with caramel, crème brûlée, and butterscotch. A long",
+    "palate": "The palate is where the rich, chewy bourbon character shines through, with caramel, cr\u00e8me br\u00fbl\u00e9e, and butterscotch. A long",
     "finish": "finish then offers up the sherry side, with a bitter streak and peanut shells, along with oak, rye spice, tingly black pepper, and vanilla",
     "ratingAvg": 90,
     "valueForMoney": 4,
@@ -3701,7 +3701,7 @@
     "age": "6 Year",
     "abv": 48,
     "proof": "96.0",
-    "desc": "This Kentucky straight bourbon is part of Bardstown Bourbon Co.’s core lineup of estate-distilled whiskeys, with 100% of production from distilling to bottling handled by the brand. It is made with a high rye mash bill (60% corn, 36% rye, 4% malted barley), aged for 6 years, and bottled at 96 proof. Available nationwide. (SRP $44.99) Previously released as part of the Origin Series. Updated name and packaging roll out beginning spring 2026.",
+    "desc": "This Kentucky straight bourbon is part of Bardstown Bourbon Co.\u2019s core lineup of estate-distilled whiskeys, with 100% of production from distilling to bottling handled by the brand. It is made with a high rye mash bill (60% corn, 36% rye, 4% malted barley), aged for 6 years, and bottled at 96 proof. Available nationwide. (SRP $44.99) Previously released as part of the Origin Series. Updated name and packaging roll out beginning spring 2026.",
     "flavors": [
       "Rich",
       "Vanilla",
@@ -3978,7 +3978,7 @@
       "Salty"
     ],
     "nose": "The nose offers caramel, barrel char, and light wafts of cigar smoke",
-    "palate": "The palate is quite rich, with brown sugar, crème brûlée, and vanilla taffy, along with mint, oak tannins, cedar, and sawdust. The impact of the charcoal filtering is particularly prominent towards the back and on a short",
+    "palate": "The palate is quite rich, with brown sugar, cr\u00e8me br\u00fbl\u00e9e, and vanilla taffy, along with mint, oak tannins, cedar, and sawdust. The impact of the charcoal filtering is particularly prominent towards the back and on a short",
     "finish": "finish, with maple syrup, buttery biscuits, and bitter pistachio shells, as well as tart green apple and macerated blackberries. Note: this review is from single barrel #6",
     "ratingAvg": 85,
     "valueForMoney": 3,
@@ -4199,7 +4199,7 @@
     "age": "5 Year",
     "abv": 50,
     "proof": "100.0",
-    "desc": "Leiper’s Fork Bottled in Bond Tennessee Whiskey is produced at Leiper’s Fork Distillery in Williamson County, Tennessee using locally grown, non-GMO grains. The mash bill is 70% corn, 15% rye, and 15% toasted malted barley. Pot distilled and filtered through sugar maple charcoal, the whiskey enters the barrel at 110 proof before aging a minimum of five years under bottled-in-bond standards. It is bottled non chill-filtered at 100 proof.",
+    "desc": "Leiper\u2019s Fork Bottled in Bond Tennessee Whiskey is produced at Leiper\u2019s Fork Distillery in Williamson County, Tennessee using locally grown, non-GMO grains. The mash bill is 70% corn, 15% rye, and 15% toasted malted barley. Pot distilled and filtered through sugar maple charcoal, the whiskey enters the barrel at 110 proof before aging a minimum of five years under bottled-in-bond standards. It is bottled non chill-filtered at 100 proof.",
     "flavors": [],
     "nose": "",
     "palate": "",
@@ -4892,7 +4892,7 @@
     "age": "12 Year",
     "abv": 53.5,
     "proof": "107.0",
-    "desc": "Part of the brand’s Aged Series, Jack Daniel’s 12 Year Tennessee Whiskey Batch 4 is produced from the traditional mash bill of 80% corn, 12% malted barley, and 8% rye. Before entering the barrel, the whiskey is charcoal mellowed drop by drop through 10 feet of sugar maple charcoal in the Lincoln County Process. It was aged for 12 years in new American white oak barrels and bottled at 107 proof (53.5% ABV). Available in limited quantities nationwide in 700 ml bottles beginning March 2026 (SRP $99.99).",
+    "desc": "Part of the brand\u2019s Aged Series, Jack Daniel\u2019s 12 Year Tennessee Whiskey Batch 4 is produced from the traditional mash bill of 80% corn, 12% malted barley, and 8% rye. Before entering the barrel, the whiskey is charcoal mellowed drop by drop through 10 feet of sugar maple charcoal in the Lincoln County Process. It was aged for 12 years in new American white oak barrels and bottled at 107 proof (53.5% ABV). Available in limited quantities nationwide in 700 ml bottles beginning March 2026 (SRP $99.99).",
     "flavors": [],
     "nose": "",
     "palate": "",
@@ -4916,7 +4916,7 @@
     "age": "10 Year",
     "abv": 48.5,
     "proof": "97.0",
-    "desc": "Part of the brand’s Aged Series, Jack Daniel’s 10 Year Tennessee Whiskey Batch 5 is made from the signature mash bill of 80% corn, 12% malted barley, and 8% rye. The whiskey is charcoal mellowed through 10 feet of sugar maple charcoal prior to aging in accordance with the Lincoln County Process. It was matured for 10 years in new American white oak barrels and bottled at 97 proof (48.5% ABV). Available in limited quantities nationwide in 700 ml bottles beginning March 2026 (SRP $89.99)",
+    "desc": "Part of the brand\u2019s Aged Series, Jack Daniel\u2019s 10 Year Tennessee Whiskey Batch 5 is made from the signature mash bill of 80% corn, 12% malted barley, and 8% rye. The whiskey is charcoal mellowed through 10 feet of sugar maple charcoal prior to aging in accordance with the Lincoln County Process. It was matured for 10 years in new American white oak barrels and bottled at 97 proof (48.5% ABV). Available in limited quantities nationwide in 700 ml bottles beginning March 2026 (SRP $89.99)",
     "flavors": [],
     "nose": "",
     "palate": "",
@@ -4940,7 +4940,7 @@
     "age": "14 Year",
     "abv": 58.8,
     "proof": "117.6",
-    "desc": "Part of the brand’s Aged Series, Jack Daniel’s 14 Year Tennessee Whiskey Batch 2 is made using the classic mash bill of 80% corn, 12% malted barley, and 8% rye. As with all Tennessee Whiskey from the distillery, the spirit undergoes the Lincoln County Process, where it is charcoal mellowed drop by drop through 10 feet of sugar maple charcoal prior to barreling. The whiskey was aged for 14 years in new American white oak barrels and bottled at 117.6 proof (58.8% ABV). Available in limited quantities nationwide in 700 ml bottles beginning March 2026 (SRP $149.99).",
+    "desc": "Part of the brand\u2019s Aged Series, Jack Daniel\u2019s 14 Year Tennessee Whiskey Batch 2 is made using the classic mash bill of 80% corn, 12% malted barley, and 8% rye. As with all Tennessee Whiskey from the distillery, the spirit undergoes the Lincoln County Process, where it is charcoal mellowed drop by drop through 10 feet of sugar maple charcoal prior to barreling. The whiskey was aged for 14 years in new American white oak barrels and bottled at 117.6 proof (58.8% ABV). Available in limited quantities nationwide in 700 ml bottles beginning March 2026 (SRP $149.99).",
     "flavors": [],
     "nose": "",
     "palate": "",
@@ -5119,7 +5119,7 @@
     "age": "",
     "abv": 43,
     "proof": "86.0",
-    "desc": "Old Forester 86 Proof is a Kentucky Straight Bourbon made from a mash bill of 72% corn, 18% rye, and 10% malted barley. Bottled at 86 proof, it serves as the brand’s entry-level expression. The Old Forester brand was introduced in 1870 by George Garvin Brown and named for Dr. William Forrester, a customer of Brown’s (the second “r” was later dropped).",
+    "desc": "Old Forester 86 Proof is a Kentucky Straight Bourbon made from a mash bill of 72% corn, 18% rye, and 10% malted barley. Bottled at 86 proof, it serves as the brand\u2019s entry-level expression. The Old Forester brand was introduced in 1870 by George Garvin Brown and named for Dr. William Forrester, a customer of Brown\u2019s (the second \u201cr\u201d was later dropped).",
     "flavors": [
       "Fruity",
       "Sweet",
@@ -5155,7 +5155,7 @@
     "age": "",
     "abv": 50,
     "proof": "100.0",
-    "desc": "Old Grand-Dad Bonded is based on the high-rye bourbon recipe made famous by Basil Hayden, whose likeness appears on the label. Bottled under the requirements of the Bottled-in-Bond Act of 1897, it is the product of a single distillation season, aged at least 4 years, and bottled at 100 proof (50% ABV). Along with Old Overholt Rye, Old Grand-Dad is part of Jim Beam’s “Olds” whiskey lineup.",
+    "desc": "Old Grand-Dad Bonded is based on the high-rye bourbon recipe made famous by Basil Hayden, whose likeness appears on the label. Bottled under the requirements of the Bottled-in-Bond Act of 1897, it is the product of a single distillation season, aged at least 4 years, and bottled at 100 proof (50% ABV). Along with Old Overholt Rye, Old Grand-Dad is part of Jim Beam\u2019s \u201cOlds\u201d whiskey lineup.",
     "flavors": [
       "Sweet",
       "Full bodied",
@@ -5170,7 +5170,7 @@
       "Briny",
       "Tart"
     ],
-    "nose": "The aroma is full of oranges, vanilla bean, oak, and sweet corn. Brûléed sugars along with more orange and oak appear on",
+    "nose": "The aroma is full of oranges, vanilla bean, oak, and sweet corn. Br\u00fbl\u00e9ed sugars along with more orange and oak appear on",
     "palate": "the palate with a touch of black pepper",
     "finish": "The finish is of moderate length with citrus, toasted barrel sugars, and corn",
     "ratingAvg": 84,
@@ -5216,7 +5216,7 @@
     "age": "6 Year",
     "abv": 53,
     "proof": "106.0",
-    "desc": "This Kentucky straight bourbon is part of Bardstown Bourbon Co.’s core lineup of estate-distilled whiskeys. It is made with a high wheat mash bill (53% corn, 39% wheat, 8% malted barley), aged for 6 years, and bottled at 106 proof (53% ABV). Available nationwide. (SRP $49.99)\r\nPreviously released as part of the Origin Series. Updated name and packaging roll out beginning spring 2026.",
+    "desc": "This Kentucky straight bourbon is part of Bardstown Bourbon Co.\u2019s core lineup of estate-distilled whiskeys. It is made with a high wheat mash bill (53% corn, 39% wheat, 8% malted barley), aged for 6 years, and bottled at 106 proof (53% ABV). Available nationwide. (SRP $49.99)\r\nPreviously released as part of the Origin Series. Updated name and packaging roll out beginning spring 2026.",
     "flavors": [
       "Rich",
       "Vanilla",
@@ -5851,7 +5851,7 @@
     "age": "6 Year",
     "abv": 50,
     "proof": "100.0",
-    "desc": "This bottled-in-bond Kentucky straight bourbon is part of Bardstown Bourbon Co.’s core lineup of estate-distilled whiskeys. It is made with locally sourced grains (68% corn, 20% wheat, 12% malted barley), aged for 6 years, and bottled at 100 proof in accordance with bottled-in-bond regulations. Available nationwide. (SRP $49.99)\r\nPreviously released as part of the Origin Series. Updated name and packaging roll out beginning spring 2026.",
+    "desc": "This bottled-in-bond Kentucky straight bourbon is part of Bardstown Bourbon Co.\u2019s core lineup of estate-distilled whiskeys. It is made with locally sourced grains (68% corn, 20% wheat, 12% malted barley), aged for 6 years, and bottled at 100 proof in accordance with bottled-in-bond regulations. Available nationwide. (SRP $49.99)\r\nPreviously released as part of the Origin Series. Updated name and packaging roll out beginning spring 2026.",
     "flavors": [
       "Vanilla",
       "Rich",
@@ -5993,7 +5993,7 @@
     "age": "",
     "abv": 40,
     "proof": "80.0",
-    "desc": "Four Roses Bourbon is a Kentucky Straight Bourbon and the brand’s entry-level expression. It is made from a blend of two mash bills—60% corn, 35% rye, and 5% malted barley, and 75% corn, 20% rye, and 5% malted barley—using all five of the distillery’s proprietary yeast strains. Formerly known as “Yellow Label,” the product was renamed Four Roses Bourbon in spring 2018.",
+    "desc": "Four Roses Bourbon is a Kentucky Straight Bourbon and the brand\u2019s entry-level expression. It is made from a blend of two mash bills\u201460% corn, 35% rye, and 5% malted barley, and 75% corn, 20% rye, and 5% malted barley\u2014using all five of the distillery\u2019s proprietary yeast strains. Formerly known as \u201cYellow Label,\u201d the product was renamed Four Roses Bourbon in spring 2018.",
     "flavors": [
       "Sweet",
       "Herbal",
@@ -6027,7 +6027,7 @@
     "age": "",
     "abv": 42.5,
     "proof": "85.0",
-    "desc": "Tanner's Creek Blended Bourbon is distilled by MGP Ingredients in Lawrenceburg, Indiana and, as their motto goes, is \"Made by Hoosiers for Hoosiers.\" This Indiana exclusive whiskey is made from a blend of high-rye bourbons as well as other whiskeys all made at the Indiana distillery. Tanner’s Creek is named for a waterway that has been used to transport grain, barrels and whiskey. Bottled at 85 proof.",
+    "desc": "Tanner's Creek Blended Bourbon is distilled by MGP Ingredients in Lawrenceburg, Indiana and, as their motto goes, is \"Made by Hoosiers for Hoosiers.\" This Indiana exclusive whiskey is made from a blend of high-rye bourbons as well as other whiskeys all made at the Indiana distillery. Tanner\u2019s Creek is named for a waterway that has been used to transport grain, barrels and whiskey. Bottled at 85 proof.",
     "flavors": [],
     "nose": "",
     "palate": "",
@@ -6171,7 +6171,7 @@
     "age": "",
     "abv": 40,
     "proof": "80.0",
-    "desc": "Door County Distillery Rye comes from Shipwrecked Brew Pub, a microbrewery in Egg Harbor, WI. This rye is distilled using the naturally limestone filtered water of Door County, WI. It is bottled at 40% ABV.",
+    "desc": "Door County Distillery Rye comes from\u00a0Shipwrecked Brew Pub, a microbrewery\u00a0in Egg Harbor, WI. This rye is distilled using the naturally limestone filtered water of Door County, WI. It is bottled at 40% ABV.",
     "flavors": [],
     "nose": "",
     "palate": "",
@@ -6651,7 +6651,7 @@
     "age": "",
     "abv": 62.5,
     "proof": "125.0",
-    "desc": "1792 Full Proof Bourbon is a release from Barton 1792. The warehouses in which the bourbon was stored are exposed to direct sunlight through 7 story-high windows, with metal frames and concrete bottom floors. The aged distillate was filtered once though a plate and frame filter (no chill filtering) in order to maintain its proof. It's bottled at the same proof at which it entered the barrel — 125 proof.",
+    "desc": "1792 Full Proof Bourbon is a release from Barton 1792. The warehouses in which the bourbon was stored are exposed to direct sunlight through 7 story-high windows, with metal frames and concrete bottom floors. The aged distillate was filtered once though a plate and frame filter (no chill filtering) in order to maintain its proof. It's bottled at the same proof at which it entered the barrel \u2014 125 proof.",
     "flavors": [
       "Full bodied",
       "Rich",
@@ -6754,7 +6754,7 @@
     "age": "",
     "abv": 50,
     "proof": "100.0",
-    "desc": "Old Forester 100 Proof Bourbon is part of Brown-Forman’s historic lineup, a brand first introduced in 1870 as one of the first bourbons sold exclusively in sealed bottles. The name is often linked to a doctor who prescribed whiskey for medicinal purposes, though the signature on each bottle belongs to founder George Garvin Brown. It is bottled at 100 proof and is also available in an 86 proof version.",
+    "desc": "Old Forester 100 Proof Bourbon is part of Brown-Forman\u2019s historic lineup, a brand first introduced in 1870 as one of the first bourbons sold exclusively in sealed bottles. The name is often linked to a doctor who prescribed whiskey for medicinal purposes, though the signature on each bottle belongs to founder George Garvin Brown. It is bottled at 100 proof and is also available in an 86 proof version.",
     "flavors": [
       "Spicy",
       "Rich",
@@ -6914,7 +6914,7 @@
   {
     "slug": "weller-full-proof-bourbon",
     "name": "Weller Full Proof Bourbon",
-    "distillery": "Weller",
+    "distillery": "Buffalo Trace",
     "type": "Bourbon",
     "country": "USA",
     "region": "Kentucky, USA",
@@ -7660,7 +7660,7 @@
     "age": "15 Year",
     "abv": 49.5,
     "proof": "99.0",
-    "desc": "This is the 2021 release of the limited edition library series from Widow Jane. It consists of 15 and 17 year old straight bourbons that have been selected by Widow Jane president and head distiller Lisa Wicker from the brand’s Conover Street rickhouse in Red Hook, Brooklyn. It is bottled at 49.5% ABV with 3,000 bottles available as of December, 2021.",
+    "desc": "This is the 2021 release of the limited edition library series from Widow Jane. It consists of 15 and 17 year old straight bourbons that have been selected by Widow Jane president and head distiller Lisa Wicker from the brand\u2019s Conover Street rickhouse in Red Hook, Brooklyn. It is bottled at 49.5% ABV with 3,000 bottles available as of December, 2021.",
     "flavors": [
       "Rich",
       "Vanilla",
@@ -7696,7 +7696,7 @@
     "age": "",
     "abv": 50,
     "proof": "100.0",
-    "desc": "This expression uses a rye-forward mash bill rather than wheat as the secondary grain, composed of 64% corn, 24% rye, and 12% malted barley. The corn and rye are sourced from a local farm, and the whiskey is produced using a sweet mash process instead of the more common sour mash method. Each small batch is blended from 10–12 barrels and bottled in bond at 100 proof without chill-filtration. It debuted in April 2019 as the third whiskey release from the Danville, Kentucky–based distillery.",
+    "desc": "This expression uses a rye-forward mash bill rather than wheat as the secondary grain, composed of 64% corn, 24% rye, and 12% malted barley. The corn and rye are sourced from a local farm, and the whiskey is produced using a sweet mash process instead of the more common sour mash method. Each small batch is blended from 10\u201312 barrels and bottled in bond at 100 proof without chill-filtration. It debuted in April 2019 as the third whiskey release from the Danville, Kentucky\u2013based distillery.",
     "flavors": [
       "Sweet",
       "Full bodied",
@@ -8437,7 +8437,7 @@
     "age": "",
     "abv": 46,
     "proof": "92.0",
-    "desc": "3 Howls Distillery got their name from the legend of Cù-Sìth. This giant hound would take souls into the underworld by howling 3 times. This selection was distilled in copper pot stills and bottled at 46% ABV.",
+    "desc": "3 Howls Distillery got their name from the legend of C\u00f9-S\u00ecth. This giant hound would take souls into the underworld by howling 3 times. This selection was distilled in copper pot stills and bottled at 46% ABV.",
     "flavors": [],
     "nose": "",
     "palate": "",
@@ -8810,7 +8810,7 @@
     "age": "",
     "abv": 45,
     "proof": "90.0",
-    "desc": "The 1816 Reserve is one of two introductory whiskeys from Chattanooga Whiskey Co. which after a \"Vote Whiskey\" campaign in 2012, became the city's first whiskey brand since Prohibition. This features a mash bill of 75 percent corn, 21 percent rye and 4 percent malted barley, and was sourced from MGP in Indiana. The name “1816” is meant to honor the establishment of the trading post, Ross’s Landing, founded by John Ross, leader of the Cherokee nation and later their Principal Chief. This area later became the town of Chattanooga.",
+    "desc": "The 1816 Reserve is one of two introductory whiskeys from Chattanooga Whiskey Co. which after a \"Vote Whiskey\" campaign in 2012, became the city's first whiskey brand since Prohibition. This features a mash bill of 75 percent corn, 21 percent rye and 4 percent malted barley, and was sourced from MGP in Indiana. The name \u201c1816\u201d is meant to honor the establishment of the trading post, Ross\u2019s Landing, founded by John Ross, leader of the Cherokee nation and later their Principal Chief. This area later became the town of Chattanooga.",
     "flavors": [
       "Smoky",
       "Spicy",
@@ -9206,7 +9206,7 @@
   },
   {
     "slug": "bardstown-bourbon-co-chateau-de-laubade-armagnac-finish-2",
-    "name": "Bardstown Bourbon Co. Château de Laubade Armagnac Finish #2",
+    "name": "Bardstown Bourbon Co. Ch\u00e2teau de Laubade Armagnac Finish #2",
     "distillery": "Bardstown Bourbon Co.",
     "type": "Bourbon",
     "country": "USA",
@@ -9214,7 +9214,7 @@
     "age": "",
     "abv": 53.5,
     "proof": "107.0",
-    "desc": "This is the second collaboration between Bardstown Bourbon Co. and Armagnac house Château de Laubade. It features straight bourbons from Kentucky (12 year, mash bill 75% corn, 13% rye, 12% malted barley) and Tennessee (10 year, mash bill 84% corn, 8% rye, 8% malted barley). The bourbon blend is finished in Château de Laubade casks for at least 16 months for some barrels and up to 24 months for others in different warehouse locations. Bottled at 107 proof, there are 2,700 9L cases available as of September 9, 2022 in 20 states, online and at BBCo.'s gift shop in Bardstown.",
+    "desc": "This is the second collaboration between Bardstown Bourbon Co. and Armagnac house Ch\u00e2teau de Laubade. It features straight bourbons from Kentucky (12 year, mash bill 75% corn, 13% rye, 12% malted barley) and Tennessee (10 year, mash bill 84% corn, 8% rye, 8% malted barley). The bourbon blend is finished in Ch\u00e2teau de Laubade casks for at least 16 months for some barrels and up to 24 months for others in different warehouse locations. Bottled at 107 proof, there are 2,700 9L cases available as of September 9, 2022 in 20 states, online and at BBCo.'s gift shop in Bardstown.",
     "flavors": [],
     "nose": "",
     "palate": "",
@@ -9224,7 +9224,7 @@
     "price": "$200+",
     "imageUrl": "https://ip-distiller.imgix.net/images/spirits/43c9db90-111a-013b-f36d-4a4261eae3e0/bardstown_bourbon_chateau_de_labade_armagnac_finish_original-1662654932.jpg?w=640&h=280&mark-w=70&mark-h=70&fit=crop&crop=right&mark-align=top,left&mark-pad=0&mark=",
     "searchTerms": [
-      "bardstown bourbon co. château de laubade armagnac finish #2",
+      "bardstown bourbon co. ch\u00e2teau de laubade armagnac finish #2",
       "bardstown bourbon co."
     ]
   },
@@ -9664,7 +9664,7 @@
     "age": "",
     "abv": 47.5,
     "proof": "95.0",
-    "desc": "Hunter's Select Barrel was created in honor of Colonel Henry Hunter, a veteran of the War of 1812, distillery operator, and the original property owner of the Leiper’s Fork Distillery land. Comprised of 72% corn, 20% rye and 8% malted barley, this sourced whiskey was hand selected and bottled by blending small lots of barrels of finished Tennessee bourbon. It was aged for nine years, five months, and 11 days.",
+    "desc": "Hunter's Select Barrel was created in honor of Colonel Henry Hunter, a veteran of the War of 1812, distillery operator, and the original property owner of the Leiper\u2019s Fork Distillery land. Comprised of 72% corn, 20% rye and 8% malted barley, this sourced whiskey was hand selected and bottled by blending small lots of barrels of finished Tennessee bourbon. It was aged for nine years, five months, and 11 days.",
     "flavors": [],
     "nose": "",
     "palate": "",
@@ -9688,7 +9688,7 @@
     "age": "",
     "abv": 50,
     "proof": "100.0",
-    "desc": "Formulated each year by CEO & Founder Tim Piersant, Chattanooga Whiskey Founder's 12th Anniversary Blend is made from a blend of three solera whiskeys — each representing the past, present, and future. Representing the past, the brand's high-rye bourbon 1816 makes up 12% of the blend. The present is represented by Barrel 91 which is the brand's signature Tennessee high malt recipe and is 60% of the blend. Meanwhile, the future is featured with their Infinity Barrel with is a blend of malt and rye malt whiskeys including a cherrywood smoked \"Danko\" rye malt whiskey. Bottled at 100 proof without chill-filtration, it's available in limited quantities beginning May 2024. (SRP $59.99)",
+    "desc": "Formulated each year by CEO & Founder Tim Piersant, Chattanooga Whiskey Founder's 12th Anniversary Blend is made from a blend of three solera whiskeys \u2014 each representing the past, present, and future. Representing the past, the brand's high-rye bourbon 1816 makes up 12% of the blend. The present is represented by Barrel 91 which is the brand's signature Tennessee high malt recipe and is 60% of the blend. Meanwhile, the future is featured with their Infinity Barrel with is a blend of malt and rye malt whiskeys including a cherrywood smoked \"Danko\" rye malt whiskey. Bottled at 100 proof without chill-filtration, it's available in limited quantities beginning May 2024. (SRP $59.99)",
     "flavors": [
       "Spicy",
       "Full bodied",
@@ -9794,7 +9794,7 @@
     "age": "",
     "abv": 50,
     "proof": "100.0",
-    "desc": "Heaven's Door is a whiskey brand developed in collaboration with Bob Dylan. The bottles feature iron gates created by Dylan in his studio, Black Buffalo Ironworks, which were made from found objects from across America including “everything from farm equipment, children’s toys, kitchen utensils and antique firearms to chains, cogs, axes and wheels.” As for the whiskey, it is made from three different whiskeys and finished in toasted, new American oak for an additional year. Bottled at 100 proof.",
+    "desc": "Heaven's Door is a whiskey brand developed in collaboration with Bob Dylan. The bottles feature iron gates created by Dylan in his studio, Black Buffalo Ironworks, which were made from found objects from across America including \u201ceverything from farm equipment, children\u2019s toys, kitchen utensils and antique firearms to chains, cogs, axes and wheels.\u201d As for the whiskey, it is made from three different whiskeys and finished in toasted, new American oak for an additional year. Bottled at 100 proof.",
     "flavors": [
       "Full bodied",
       "Rich",
@@ -10020,7 +10020,7 @@
     "age": "8 Year",
     "abv": 50,
     "proof": "100.0",
-    "desc": "Released in August 2023, this expression is made with the same mash bill as the brand's flagship wheated bourbon — 64% corn, 24% wheat, and 12% malted barley. Wilderness Trail also employs a sweet mash rather than a sour mash in its production. Aged 8 years, this bourbon also adheres to the bottled in bond requirements. (SRP $88)",
+    "desc": "Released in August 2023, this expression is made with the same mash bill as the brand's flagship wheated bourbon \u2014 64% corn, 24% wheat, and 12% malted barley. Wilderness Trail also employs a sweet mash rather than a sour mash in its production. Aged 8 years, this bourbon also adheres to the bottled in bond requirements. (SRP $88)",
     "flavors": [
       "Herbal",
       "Sweet",
@@ -10613,7 +10613,7 @@
     "age": "",
     "abv": 43,
     "proof": "86.0",
-    "desc": "Created to honor each of the seven Master Distillers at Jack Daniel's, the third in the series is dedicated to Lemuel “Lem” Tolley. He was the grandnephew of Jack himself and held the position from 1941 and 1964, overseeing production during Brown-Forman's purchase of the Tennessee distillery in 1956. From what we gather, he was a \"stern\" fella determined to increase the distillery's whiskey production without compromising on quality.",
+    "desc": "Created to honor each of the seven Master Distillers at Jack Daniel's, the third in the series is dedicated to Lemuel \u201cLem\u201d Tolley. He was the grandnephew of Jack himself and held the position from 1941 and 1964, overseeing production during Brown-Forman's purchase of the Tennessee distillery in 1956. From what we gather, he was a \"stern\" fella determined to increase the distillery's whiskey production without compromising on quality.",
     "flavors": [],
     "nose": "",
     "palate": "",
@@ -11540,7 +11540,7 @@
     "age": "",
     "abv": 40,
     "proof": "80",
-    "desc": "Originally called \"Cork Distilling Company Map of Ireland Old Irish Whiskey\", it wasn’t until 1913 that the name was changed to Paddy after legendary salesman, Paddy O'Flaherty.  First produced in 1779, Paddy's is triple distilled in Cork, Ireland, made unusually with all three styles of Irish whiskey: single pot still, single malt and grain before being aged up to 7 years.",
+    "desc": "Originally called \"Cork Distilling Company Map of Ireland Old Irish Whiskey\", it wasn\u2019t until 1913 that the name was changed to Paddy after legendary salesman, Paddy O'Flaherty.  First produced in 1779, Paddy's is triple distilled in Cork, Ireland, made unusually with all three styles of Irish whiskey: single pot still, single malt and grain before being aged up to 7 years.",
     "flavors": [
       "Sweet",
       "Vanilla",
@@ -11596,7 +11596,7 @@
     "age": "",
     "abv": 40,
     "proof": "80",
-    "desc": "Lost Irish is the debut release from entrepreneur Neil Sands and Irish whiskey ambassador and author Tim Herlihy in partnership with Casa Lumbre. It is a blend of all three styles of Irish whiskey – grain, malt, and pot still — matured in casks sourced from Asia, Africa, Europe, North America, Oceania, and South America. It is bottled at 40% ABV with a release in select U.S. markets as of November 2021 with plans for further expansion in 2022. (SRP $39.99)",
+    "desc": "Lost Irish is the debut release from entrepreneur Neil Sands and Irish whiskey ambassador and author Tim Herlihy in partnership with Casa Lumbre. It is a blend of all three styles of Irish whiskey \u2013 grain, malt, and pot still \u2014\u00a0matured in casks sourced from Asia, Africa, Europe, North America, Oceania, and South America. It is bottled at 40% ABV with a release in select U.S. markets as of November 2021 with plans for further expansion in 2022. (SRP $39.99)",
     "flavors": [
       "Full Bodied",
       "Rich",
@@ -11740,7 +11740,7 @@
     "age": "",
     "abv": 43,
     "proof": "86",
-    "desc": "FUJI Japanese Whisky is 100% distilled and aged in Japan at Mt. Fuji Distillery. Uniquely, the distillery is capable of creating malt whisky and three different styles of grain whisky — an American-style made with 60% corn, 35% rye, 5% malted barley; a Canadian-style made with 95% rye and 5% malted barley; and a light Scottish-style made with 95% corn and 5% malted barley. Master Blender Jota Tanaka blended these three grain whiskies with malt whisky which were aged in American white oak barrels with a medium char/toast. Average age for the whiskies was 7 years and includes some aged up to 16 years. Bottled at 43% ABV, it's available in select US markets beginning May 2023. (SRP $70)",
+    "desc": "FUJI Japanese Whisky is 100% distilled and aged in Japan at Mt. Fuji Distillery. Uniquely, the distillery is capable of creating malt whisky and three different styles of grain whisky \u2014 an American-style made with 60% corn, 35% rye, 5% malted barley; a Canadian-style made with 95% rye and 5% malted barley; and a light Scottish-style made with 95% corn and 5% malted barley. Master Blender Jota Tanaka blended these three grain whiskies with malt whisky which were aged in American white oak barrels with a medium char/toast. Average age for the whiskies was 7 years and includes some aged up to 16 years. Bottled at 43% ABV, it's available in select US markets beginning May 2023. (SRP $70)",
     "flavors": [
       "Full Bodied",
       "Rich",
@@ -11763,7 +11763,7 @@
   },
   {
     "slug": "ens-japanese-whisky",
-    "name": "Ensō Japanese whisky",
+    "name": "Ens\u014d Japanese whisky",
     "distillery": "Japan",
     "type": "Blended",
     "country": "USA",
@@ -11782,8 +11782,8 @@
     "imageUrl": "https://ip-distiller.imgix.net/images/spirits/c5f0e950-652a-0137-d174-42acdb63a254/data_original.?w=640&h=280&mark-w=70&mark-h=70&fit=crop&crop=&mark-align=top,left&mark-pad=0&mark=https://s3.amazonaws.com/is.distiller.com/images/spirit_request_tags/whiskey_tag.png",
     "searchTerms": [
       "japan",
-      "ensō japanese whisky",
-      "ensō"
+      "ens\u014d japanese whisky",
+      "ens\u014d"
     ]
   },
   {
@@ -12089,7 +12089,7 @@
     "age": "13 Year",
     "abv": 50,
     "proof": "100",
-    "desc": "This bottling is the 3rd release in the distillery's BIB series, and the first from a spring distilling season, distilled in 2007. The Tennessee whiskey has a mash bill of 84% corn, 8% rye and 8% malted barley and is “chill charcoal mellowed”, bottled at 50% ABV (100 proof). It was released in May, 2021.",
+    "desc": "This bottling is the 3rd release in the distillery's BIB series, and the first from a spring distilling season, distilled in 2007. The Tennessee whiskey has a mash bill of 84% corn, 8% rye and 8% malted barley and is \u201cchill charcoal mellowed\u201d, bottled at 50% ABV (100 proof). It was released in May, 2021.",
     "flavors": [
       "Rich",
       "Vanilla",
@@ -12661,8 +12661,8 @@
   },
   {
     "slug": "sla-inte-irish-whiskey",
-    "name": "Sláinte Irish Whiskey",
-    "distillery": "Sláinte",
+    "name": "Sla\u0301inte Irish Whiskey",
+    "distillery": "Sla\u0301inte",
     "type": "Blended",
     "country": "Ireland",
     "region": "Ireland",
@@ -12679,8 +12679,8 @@
     "price": "~$35",
     "imageUrl": "https://ip-distiller.imgix.net/images/spirits/88d52670-59ff-013b-76d8-6a264eb4cd44/9e1b6f6ac03860ee37f6e79122db12cd_original-1670597767.jpeg?w=640&h=280&mark-w=70&mark-h=70&fit=crop&crop=&mark-align=top,left&mark-pad=0&mark=https://s3.amazonaws.com/is.distiller.com/images/spirit_request_tags/whiskey_tag.png",
     "searchTerms": [
-      "sláinte",
-      "sláinte irish whiskey"
+      "sla\u0301inte",
+      "sla\u0301inte irish whiskey"
     ]
   },
   {
@@ -12741,7 +12741,7 @@
     "age": "",
     "abv": 46,
     "proof": "92",
-    "desc": "Teeling Single Malt Irish Whiskey is made from 100% malted barley and was the third release in the brand’s core range. This no-age statement whiskey is initially matured in ex-bourbon barrels before being finished in a combination of five different wine casks: sherry, port, Madeira, white Burgundy, and cabernet sauvignon. It is bottled without chill filtration at 92 proof.",
+    "desc": "Teeling Single Malt Irish Whiskey is made from 100% malted barley and was the third release in the brand\u2019s core range. This no-age statement whiskey is initially matured in ex-bourbon barrels before being finished in a combination of five different wine casks: sherry, port, Madeira, white Burgundy, and cabernet sauvignon. It is bottled without chill filtration at 92 proof.",
     "flavors": [
       "Sweet",
       "Rich",
@@ -12797,7 +12797,7 @@
     "age": "",
     "abv": 40,
     "proof": "80",
-    "desc": "Also known as Finest Japanese Whisky, this blended whisky from the brand Hatozaki is made with grain and malt whiskies distilled in Japan and elsewhere. At least 40% of the blend is made from malt whiskies and all the whiskies in the blend are aged from 3-12 years. Hatozaki is named after the oldest stone lighthouse in Japan which dates back to the 1600s. The Hatozaki whisky brand is based out of the Kaikyō Distillery which began production in 2017.",
+    "desc": "Also known as Finest Japanese Whisky, this blended whisky from the brand Hatozaki is made with grain and malt whiskies distilled in Japan and elsewhere. At least 40% of the blend is made from malt whiskies and all the whiskies in the blend are aged from 3-12 years. Hatozaki is named after the oldest stone lighthouse in Japan which dates back to the 1600s. The Hatozaki whisky brand is based out of the Kaiky\u014d Distillery which began production in 2017.",
     "flavors": [
       "Full Bodied",
       "Rich",
@@ -12877,7 +12877,7 @@
     "age": "",
     "abv": 46,
     "proof": "92",
-    "desc": "Also known as Small Batch Whisky in some markets, this bottling is made with 100% malt whiskies distilled in Japan and elsewhere. The blended malt is aged in ex-bourbon, ex-sherry, and Mizunara oak casks before bottling at 46% ABV with the age of the whisky ranging from 5-6 years. Made in batches no larger than 20 casks, the whisky is bottled without added color or chill filtering. Hatozaki is named after the oldest stone lighthouse in Japan which dates back to the 1600s. The Hatozaki whisky brand is based out of the Kaikyō Distillery which began production in 2017.",
+    "desc": "Also known as Small Batch Whisky in some markets, this bottling is made with 100% malt whiskies distilled in Japan and elsewhere. The blended malt is aged in ex-bourbon, ex-sherry, and Mizunara oak casks before bottling at 46% ABV with the age of the whisky ranging from 5-6 years. Made in batches no larger than 20 casks, the whisky is bottled without added color or chill filtering. Hatozaki is named after the oldest stone lighthouse in Japan which dates back to the 1600s. The Hatozaki whisky brand is based out of the Kaiky\u014d Distillery which began production in 2017.",
     "flavors": [],
     "nose": "",
     "palate": "",
@@ -12901,7 +12901,7 @@
     "age": "",
     "abv": 46,
     "proof": "92",
-    "desc": "Also known as Pure Malt Whisky in some markets, this bottling is made with 100% malt whiskies distilled in Japan and elsewhere. The blended malt is aged in ex-bourbon, ex-sherry, and Mizunara oak casks before bottling at 46% ABV with the age of the whisky ranging from 5-6 years. Made in batches no larger than 20 casks, the whisky is bottled without added color or chill filtering. Hatozaki is named after the oldest stone lighthouse in Japan which dates back to the 1600s. The Hatozaki whisky brand is based out of the Kaikyō Distillery which began production in 2017.",
+    "desc": "Also known as Pure Malt Whisky in some markets, this bottling is made with 100% malt whiskies distilled in Japan and elsewhere. The blended malt is aged in ex-bourbon, ex-sherry, and Mizunara oak casks before bottling at 46% ABV with the age of the whisky ranging from 5-6 years. Made in batches no larger than 20 casks, the whisky is bottled without added color or chill filtering. Hatozaki is named after the oldest stone lighthouse in Japan which dates back to the 1600s. The Hatozaki whisky brand is based out of the Kaiky\u014d Distillery which began production in 2017.",
     "flavors": [
       "Full Bodied",
       "Rich",
@@ -13072,7 +13072,7 @@
       "Sweet",
       "Smoky"
     ],
-    "nose": "Find brown sugar and crème brûlée on the nose along with butterscotch and berries. Compared to a lively set of aromas,",
+    "nose": "Find brown sugar and cr\u00e8me br\u00fbl\u00e9e on the nose along with butterscotch and berries. Compared to a lively set of aromas,",
     "palate": "the palate starts off a bit disappointingly; soft and one note, indicating perhaps this has seen too many long years in the barrel. Still, there's dry oaky spice, vanilla, black pepper, and buttery notes. Find buttery corn kernels along with oak, baking spices, and vanilla on a short",
     "finish": "finish",
     "ratingAvg": 85,
@@ -13490,8 +13490,8 @@
   },
   {
     "slug": "flatn-se-blended-scotch-whisky",
-    "name": "Flatnöse Blended Scotch Whisky",
-    "distillery": "Flatnöse Blended",
+    "name": "Flatn\u00f6se Blended Scotch Whisky",
+    "distillery": "Flatn\u00f6se Blended",
     "type": "Blended",
     "country": "USA",
     "region": "",
@@ -13508,9 +13508,9 @@
     "price": "~$35",
     "imageUrl": "https://ip-distiller.imgix.net/images/spirits/182ebd80-696d-0138-9351-02b3ee993026/data_original.?w=640&h=280&mark-w=70&mark-h=70&fit=crop&crop=&mark-align=top,left&mark-pad=0&mark=https://s3.amazonaws.com/is.distiller.com/images/spirit_request_tags/whiskey_tag.png",
     "searchTerms": [
-      "flatnöse blended scotch whisky",
-      "flatnöse blended",
-      "flatnöse"
+      "flatn\u00f6se blended scotch whisky",
+      "flatn\u00f6se blended",
+      "flatn\u00f6se"
     ]
   },
   {
@@ -13766,7 +13766,7 @@
     "age": "",
     "abv": 40,
     "proof": "80",
-    "desc": "Made in conjunction with Master Blender, Noel Sweeney, Concannon is made with a mix of malted barley and corn and matured in ex bourbon casks for at least 4 years.  The “Concannon Effect” is the maturation of that blend for four months in used Petite Syrah Barrels from the Concannon Winery in Livermore Valley, California.",
+    "desc": "Made in conjunction with Master Blender, Noel Sweeney, Concannon is made with a mix of malted barley and corn and matured in ex bourbon casks for at least 4 years.  The \u201cConcannon Effect\u201d is the maturation of that blend for four months in used Petite Syrah Barrels from the Concannon Winery in Livermore Valley, California.",
     "flavors": [
       "Herbal",
       "Sweet",
@@ -14011,7 +14011,7 @@
   },
   {
     "slug": "akashi-me-sei-japanese-blended-whisky",
-    "name": "Akashi Meïsei Japanese Blended Whisky",
+    "name": "Akashi Me\u00efsei Japanese Blended Whisky",
     "distillery": "Akashi",
     "type": "Blended",
     "country": "Japan",
@@ -14030,7 +14030,7 @@
     "imageUrl": "https://ip-distiller.imgix.net/images/spirits/ec540250-3a49-0137-2968-0ada11df5713/akashi-mei%2525CC%252588sei-japanese-blended-whisky_original-1711758042.jpg?w=640&h=280&mark-w=70&mark-h=70&fit=crop&crop=right&mark-align=top,left&mark-pad=0&mark=",
     "searchTerms": [
       "akashi",
-      "akashi meïsei japanese blended whisky"
+      "akashi me\u00efsei japanese blended whisky"
     ]
   },
   {
@@ -14075,7 +14075,7 @@
     "age": "",
     "abv": 47.5,
     "proof": "95",
-    "desc": "This is the second release of Chattanooga's limited edition Barrel Finishing Series which uses Chattanooga Whiskey’s Tennessee High Malt whiskey made from a combination of unique bourbon mash bills, all containing over 25% specialty malt. Islay Scotch Cask Finish is made using what the distillery describes as a “Scottish style bourbon” recipe containing peated malt, naked oat malt, and honey malt. Each batch is made from a blend of 3 finishing casks, sourced from 3 different distilleries on Islay. It is aged for over 4 years, including 3 months in 250 liter Islay Scotch hogsheads. It is bottled at 95 proof and available in limited quantities as of February, 2022.",
+    "desc": "This is the second release of Chattanooga's limited edition Barrel Finishing Series which uses Chattanooga Whiskey\u2019s Tennessee High Malt whiskey made from a combination of unique bourbon mash bills, all containing over 25% specialty malt. Islay Scotch Cask Finish is made using what the distillery describes as a \u201cScottish style bourbon\u201d recipe containing peated malt, naked oat malt, and honey malt. Each batch is made from a blend of 3 finishing casks, sourced from 3 different distilleries on Islay. It is aged for over 4 years, including 3 months in 250 liter Islay Scotch hogsheads. It is bottled at 95 proof and available in limited quantities as of February, 2022.",
     "flavors": [],
     "nose": "",
     "palate": "",
@@ -14996,7 +14996,7 @@
       "Cherry"
     ],
     "nose": "Intense vanilla, caramel, dark chocolate, and dried fruit with oak and leather.",
-    "palate": "Massive — dark chocolate, cherry, vanilla, tobacco, and oak tannins.",
+    "palate": "Massive \u2014 dark chocolate, cherry, vanilla, tobacco, and oak tannins.",
     "finish": "Extraordinarily long with chocolate, oak, and spice lingering for minutes.",
     "ratingAvg": 98,
     "valueForMoney": 5,
@@ -15026,7 +15026,7 @@
       "Spice"
     ],
     "nose": "Butterscotch, vanilla, caramel, and dried fruit with subtle oak.",
-    "palate": "Luxurious — caramel, vanilla, dried fruit, honey, and gentle spice.",
+    "palate": "Luxurious \u2014 caramel, vanilla, dried fruit, honey, and gentle spice.",
     "finish": "Long, warm, and incredibly smooth.",
     "ratingAvg": 97,
     "valueForMoney": 4,
@@ -15086,7 +15086,7 @@
       "Molasses"
     ],
     "nose": "Antique oak, tobacco, caramel, and dried dark fruit.",
-    "palate": "Rich and complex — oak, leather, dark fruit, vanilla, and tobacco.",
+    "palate": "Rich and complex \u2014 oak, leather, dark fruit, vanilla, and tobacco.",
     "finish": "Seemingly endless with oak, spice, and dark fruit.",
     "ratingAvg": 99,
     "valueForMoney": 4,
@@ -15116,7 +15116,7 @@
       "Butterscotch"
     ],
     "nose": "Butterscotch, vanilla, caramel, and a hint of toasted oak.",
-    "palate": "Smooth and creamy — caramel, vanilla, honey, and gentle oak.",
+    "palate": "Smooth and creamy \u2014 caramel, vanilla, honey, and gentle oak.",
     "finish": "Long and warm with lingering vanilla and oak.",
     "ratingAvg": 92,
     "valueForMoney": 5,
@@ -15175,7 +15175,7 @@
       "Oak"
     ],
     "nose": "Light caramel, vanilla, and honey.",
-    "palate": "Smooth and sweet — caramel, vanilla, and gentle wheat.",
+    "palate": "Smooth and sweet \u2014 caramel, vanilla, and gentle wheat.",
     "finish": "Clean and moderately long.",
     "ratingAvg": 88,
     "valueForMoney": 5,
@@ -15235,7 +15235,7 @@
       "Leather"
     ],
     "nose": "Intense caramel, oak, and dark fruit with vanilla.",
-    "palate": "Bold and full — caramel, dark fruit, oak, and spice.",
+    "palate": "Bold and full \u2014 caramel, dark fruit, oak, and spice.",
     "finish": "Long and powerful with oak and spice.",
     "ratingAvg": 95,
     "valueForMoney": 4,
@@ -15265,7 +15265,7 @@
       "Honey"
     ],
     "nose": "Rich caramel, vanilla, and toasted oak.",
-    "palate": "Full-bodied — caramel, oak, vanilla, and baking spice.",
+    "palate": "Full-bodied \u2014 caramel, oak, vanilla, and baking spice.",
     "finish": "Long and warming with oak and light smoke.",
     "ratingAvg": 88,
     "valueForMoney": 5,
@@ -15295,7 +15295,7 @@
       "Smoke"
     ],
     "nose": "Bold caramel, toasted oak, and vanilla.",
-    "palate": "Rich and intense — dark caramel, oak, leather, and spice.",
+    "palate": "Rich and intense \u2014 dark caramel, oak, leather, and spice.",
     "finish": "Very long with persistent oak and spice.",
     "ratingAvg": 92,
     "valueForMoney": 5,
@@ -15355,7 +15355,7 @@
       "Cinnamon"
     ],
     "nose": "Caramel, vanilla, and spice with toasted oak.",
-    "palate": "Bold and full — caramel, vanilla, spice, and oak.",
+    "palate": "Bold and full \u2014 caramel, vanilla, spice, and oak.",
     "finish": "Long and warming with spice and oak.",
     "ratingAvg": 87,
     "valueForMoney": 5,
@@ -15375,7 +15375,7 @@
     "age": "",
     "abv": 58.4,
     "proof": "116.8",
-    "desc": "A barrel-proof blend of 6, 8, and 12 year Wild Turkey bourbons. No water added — big, bold, and complex.",
+    "desc": "A barrel-proof blend of 6, 8, and 12 year Wild Turkey bourbons. No water added \u2014 big, bold, and complex.",
     "flavors": [
       "Caramel",
       "Vanilla",
@@ -15385,7 +15385,7 @@
       "Honey"
     ],
     "nose": "Rich caramel, vanilla, honey, and warm spice.",
-    "palate": "Full and complex — caramel, dark fruit, vanilla, and bold spice.",
+    "palate": "Full and complex \u2014 caramel, dark fruit, vanilla, and bold spice.",
     "finish": "Long and warming with vanilla and oak.",
     "ratingAvg": 92,
     "valueForMoney": 5,
@@ -15415,7 +15415,7 @@
       "Butterscotch"
     ],
     "nose": "Caramel, vanilla, honey, and toasted oak.",
-    "palate": "Smooth and balanced — caramel, vanilla, oak, and gentle spice.",
+    "palate": "Smooth and balanced \u2014 caramel, vanilla, oak, and gentle spice.",
     "finish": "Warm and medium-long with vanilla and oak.",
     "ratingAvg": 90,
     "valueForMoney": 5,
@@ -15475,7 +15475,7 @@
       "Spice"
     ],
     "nose": "Intense vanilla, caramel, and honey.",
-    "palate": "Rich and full — caramel, vanilla, wheat, and spice.",
+    "palate": "Rich and full \u2014 caramel, vanilla, wheat, and spice.",
     "finish": "Long and warming.",
     "ratingAvg": 91,
     "valueForMoney": 5,
@@ -15505,7 +15505,7 @@
       "Honey"
     ],
     "nose": "Ripe fruit, caramel, vanilla, and subtle spice.",
-    "palate": "Balanced and fruity — caramel, pear, vanilla, and gentle spice.",
+    "palate": "Balanced and fruity \u2014 caramel, pear, vanilla, and gentle spice.",
     "finish": "Smooth and medium-long with fruit and caramel.",
     "ratingAvg": 90,
     "valueForMoney": 5,
@@ -15535,7 +15535,7 @@
       "Floral"
     ],
     "nose": "Rich fruit, floral notes, caramel, and vanilla.",
-    "palate": "Full and complex — dark fruit, caramel, oak, and spice.",
+    "palate": "Full and complex \u2014 dark fruit, caramel, oak, and spice.",
     "finish": "Long and smooth with fruit and spice.",
     "ratingAvg": 93,
     "valueForMoney": 5,
@@ -15565,7 +15565,7 @@
       "Butterscotch"
     ],
     "nose": "Caramel, vanilla, honey, and toasted oak.",
-    "palate": "Smooth and rich — caramel, vanilla, oak, and warm spice.",
+    "palate": "Smooth and rich \u2014 caramel, vanilla, oak, and warm spice.",
     "finish": "Long and satisfying.",
     "ratingAvg": 88,
     "valueForMoney": 4,
@@ -15625,7 +15625,7 @@
       "Leather"
     ],
     "nose": "Rich caramel, oak, and dark fruit.",
-    "palate": "Complex — dark caramel, vanilla, oak, leather, and spice.",
+    "palate": "Complex \u2014 dark caramel, vanilla, oak, leather, and spice.",
     "finish": "Long and refined with oak and caramel.",
     "ratingAvg": 93,
     "valueForMoney": 4,
@@ -15655,7 +15655,7 @@
       "Leather"
     ],
     "nose": "Intense caramel, dark fruit, oak, and vanilla.",
-    "palate": "Bold and complex — dark fruit, caramel, oak, and spice.",
+    "palate": "Bold and complex \u2014 dark fruit, caramel, oak, and spice.",
     "finish": "Very long with oak and spice.",
     "ratingAvg": 95,
     "valueForMoney": 4,
@@ -15685,7 +15685,7 @@
       "Leather"
     ],
     "nose": "Caramel, honey, vanilla, and toasted oak.",
-    "palate": "Rich and layered — caramel, oak, vanilla, and spice.",
+    "palate": "Rich and layered \u2014 caramel, oak, vanilla, and spice.",
     "finish": "Long with oak and caramel.",
     "ratingAvg": 93,
     "valueForMoney": 4,
@@ -15715,7 +15715,7 @@
       "Leather"
     ],
     "nose": "Rich dark caramel, oak, dark fruit, and vanilla.",
-    "palate": "Massive — dark caramel, oak, dark fruit, leather, and spice.",
+    "palate": "Massive \u2014 dark caramel, oak, dark fruit, leather, and spice.",
     "finish": "Extraordinarily long with oak and dark fruit.",
     "ratingAvg": 97,
     "valueForMoney": 5,
@@ -15745,7 +15745,7 @@
       "Vanilla"
     ],
     "nose": "Antique oak, leather, dark fruit, and caramel.",
-    "palate": "Complex and mature — oak, leather, dark fruit, and vanilla.",
+    "palate": "Complex and mature \u2014 oak, leather, dark fruit, and vanilla.",
     "finish": "Very long with oak, leather, and fruit.",
     "ratingAvg": 92,
     "valueForMoney": 4,
@@ -15775,7 +15775,7 @@
       "Spice"
     ],
     "nose": "Rich caramel, vanilla, honey, and wheat.",
-    "palate": "Smooth and full — caramel, vanilla, wheat, honey, and gentle spice.",
+    "palate": "Smooth and full \u2014 caramel, vanilla, wheat, honey, and gentle spice.",
     "finish": "Long and warm with caramel and vanilla.",
     "ratingAvg": 93,
     "valueForMoney": 5,
@@ -15805,7 +15805,7 @@
       "Chocolate"
     ],
     "nose": "Dark caramel, chocolate, dark fruit, and oak.",
-    "palate": "Rich and bold — dark caramel, dark fruit, chocolate, and spice.",
+    "palate": "Rich and bold \u2014 dark caramel, dark fruit, chocolate, and spice.",
     "finish": "Long and warming with chocolate and oak.",
     "ratingAvg": 92,
     "valueForMoney": 5,
@@ -15825,7 +15825,7 @@
     "age": "",
     "abv": 46.5,
     "proof": "93",
-    "desc": "Part of the Whiskey Row Series, double barreled — aged in new oak then finished in lightly charred barrels for a smooth, approachable profile.",
+    "desc": "Part of the Whiskey Row Series, double barreled \u2014 aged in new oak then finished in lightly charred barrels for a smooth, approachable profile.",
     "flavors": [
       "Caramel",
       "Vanilla",
@@ -15835,7 +15835,7 @@
       "Spice"
     ],
     "nose": "Caramel, vanilla, dried fruit, and toasted oak.",
-    "palate": "Smooth — caramel, vanilla, fruit, and gentle spice.",
+    "palate": "Smooth \u2014 caramel, vanilla, fruit, and gentle spice.",
     "finish": "Medium-long and smooth.",
     "ratingAvg": 89,
     "valueForMoney": 5,
@@ -15865,7 +15865,7 @@
       "Dried Fruit"
     ],
     "nose": "Vanilla, caramel, honey, and spice.",
-    "palate": "Smooth and balanced — caramel, vanilla, oak, and warm spice.",
+    "palate": "Smooth and balanced \u2014 caramel, vanilla, oak, and warm spice.",
     "finish": "Medium with vanilla and spice.",
     "ratingAvg": 88,
     "valueForMoney": 4,
@@ -15895,7 +15895,7 @@
       "Honey"
     ],
     "nose": "Caramel, vanilla, dark fruit, and rye spice.",
-    "palate": "Full and spicy — caramel, oak, dark fruit, and vanilla.",
+    "palate": "Full and spicy \u2014 caramel, oak, dark fruit, and vanilla.",
     "finish": "Long with spice and dark fruit.",
     "ratingAvg": 88,
     "valueForMoney": 5,
@@ -15915,7 +15915,7 @@
     "age": "",
     "abv": 62.5,
     "proof": "125",
-    "desc": "Bottled at the same proof it entered the barrel — a true full-proof bourbon. Rich, robust, and intensely flavored.",
+    "desc": "Bottled at the same proof it entered the barrel \u2014 a true full-proof bourbon. Rich, robust, and intensely flavored.",
     "flavors": [
       "Oak",
       "Caramel",
@@ -15925,7 +15925,7 @@
       "Leather"
     ],
     "nose": "Bold caramel, rye spice, and dark fruit.",
-    "palate": "Rich and intense — caramel, oak, spice, and dark fruit.",
+    "palate": "Rich and intense \u2014 caramel, oak, spice, and dark fruit.",
     "finish": "Long and warming with spice and oak.",
     "ratingAvg": 91,
     "valueForMoney": 5,
@@ -15955,7 +15955,7 @@
       "Chocolate"
     ],
     "nose": "Port wine, dark fruit, caramel, and vanilla.",
-    "palate": "Rich — port, dark fruit, chocolate, caramel, and oak.",
+    "palate": "Rich \u2014 port, dark fruit, chocolate, caramel, and oak.",
     "finish": "Long and warming with port and dark fruit.",
     "ratingAvg": 94,
     "valueForMoney": 4,
@@ -15985,7 +15985,7 @@
       "Fruit"
     ],
     "nose": "Bold rye spice, caramel, vanilla, and pepper.",
-    "palate": "Complex rye — spice, caramel, fruit, and oak.",
+    "palate": "Complex rye \u2014 spice, caramel, fruit, and oak.",
     "finish": "Long and spicy with vanilla.",
     "ratingAvg": 93,
     "valueForMoney": 4,
@@ -16045,7 +16045,7 @@
       "Caramel"
     ],
     "nose": "Mature rye spice, dark fruit, oak, and leather.",
-    "palate": "Complex and full — rye spice, dark fruit, oak, and vanilla.",
+    "palate": "Complex and full \u2014 rye spice, dark fruit, oak, and vanilla.",
     "finish": "Very long and spicy with fruit.",
     "ratingAvg": 95,
     "valueForMoney": 4,
@@ -16065,7 +16065,7 @@
     "age": "",
     "abv": 46,
     "proof": "92",
-    "desc": "A blend of two ryes — a young, herbal 2-year rye and an older, more developed rye — creating a balanced and complex whiskey.",
+    "desc": "A blend of two ryes \u2014 a young, herbal 2-year rye and an older, more developed rye \u2014 creating a balanced and complex whiskey.",
     "flavors": [
       "Rye Spice",
       "Herbal",
@@ -16075,7 +16075,7 @@
       "Pepper"
     ],
     "nose": "Rye spice, herbal notes, vanilla, and anise.",
-    "palate": "Balanced — rye spice, herbal, caramel, and pepper.",
+    "palate": "Balanced \u2014 rye spice, herbal, caramel, and pepper.",
     "finish": "Medium and spicy with herbal notes.",
     "ratingAvg": 89,
     "valueForMoney": 5,
@@ -16105,7 +16105,7 @@
       "Oak"
     ],
     "nose": "Rye spice, caramel, fruit, and pepper.",
-    "palate": "Rich rye — spice, fruit, caramel, and oak.",
+    "palate": "Rich rye \u2014 spice, fruit, caramel, and oak.",
     "finish": "Long and warming with rye spice.",
     "ratingAvg": 91,
     "valueForMoney": 4,
@@ -16165,7 +16165,7 @@
       "Fruit"
     ],
     "nose": "Rye spice, caramel, vanilla, and fruit.",
-    "palate": "Smooth — rye spice, caramel, vanilla, and pepper.",
+    "palate": "Smooth \u2014 rye spice, caramel, vanilla, and pepper.",
     "finish": "Medium with rye spice.",
     "ratingAvg": 82,
     "valueForMoney": 4,
@@ -16195,7 +16195,7 @@
       "Citrus"
     ],
     "nose": "Fresh pear, apple, vanilla, and a hint of oak.",
-    "palate": "Light and fruity — pear, apple, vanilla, and honey.",
+    "palate": "Light and fruity \u2014 pear, apple, vanilla, and honey.",
     "finish": "Clean and medium with fruit and vanilla.",
     "ratingAvg": 85,
     "valueForMoney": 5,
@@ -16225,7 +16225,7 @@
       "Spice"
     ],
     "nose": "Honey, vanilla, sherry fruit, and spice.",
-    "palate": "Rich and smooth — honey, sherry, vanilla, and fruit.",
+    "palate": "Rich and smooth \u2014 honey, sherry, vanilla, and fruit.",
     "finish": "Long and smooth with honey and oak.",
     "ratingAvg": 89,
     "valueForMoney": 5,
@@ -16255,7 +16255,7 @@
       "Honey"
     ],
     "nose": "Dried fruit, oak, vanilla, and sherry.",
-    "palate": "Rich and complex — dried fruit, sherry, oak, and spice.",
+    "palate": "Rich and complex \u2014 dried fruit, sherry, oak, and spice.",
     "finish": "Long and warming with dried fruit and oak.",
     "ratingAvg": 91,
     "valueForMoney": 4,
@@ -16275,7 +16275,7 @@
     "age": "",
     "abv": 44.7,
     "proof": "89.4",
-    "desc": "A legendary and extraordinarily rare single malt. A 6-litre Lalique decanter holds the Guinness World Record for the most expensive whisky sold at auction — $628,000. Master whisky maker Bob Dalgarno spent two years sourcing whiskies dating from 1940 to 1991, including some of the last casks filled before WWII halted production and rare 1947 peated malts made during post-war coal rationing. Matured in sherry oak casks.",
+    "desc": "A legendary and extraordinarily rare single malt. A 6-litre Lalique decanter holds the Guinness World Record for the most expensive whisky sold at auction \u2014 $628,000. Master whisky maker Bob Dalgarno spent two years sourcing whiskies dating from 1940 to 1991, including some of the last casks filled before WWII halted production and rare 1947 peated malts made during post-war coal rationing. Matured in sherry oak casks.",
     "flavors": [
       "Rich",
       "Full Bodied",
@@ -16284,9 +16284,9 @@
       "Spice",
       "Chocolate"
     ],
-    "nose": "A pleasing bouquet of a rare bookstore — oak, wood smoke, aged port, baking spices, citrus, and fruitcake.",
+    "nose": "A pleasing bouquet of a rare bookstore \u2014 oak, wood smoke, aged port, baking spices, citrus, and fruitcake.",
     "palate": "Viscous and coating. Chocolate, allspice, sherry, leather, and citrus flavors of extraordinary depth.",
-    "finish": "Pipe tobacco, oak, dried fruits, and citrus — long, slow, and unforgettable.",
+    "finish": "Pipe tobacco, oak, dried fruits, and citrus \u2014 long, slow, and unforgettable.",
     "ratingAvg": 98,
     "valueForMoney": 1,
     "price": "$5,000+",
@@ -16318,7 +16318,7 @@
       "Oak"
     ],
     "nose": "Rich sherry, vanilla, caramel, and dried fruit.",
-    "palate": "Smooth and rich — sherry, vanilla, caramel, and gentle spice.",
+    "palate": "Smooth and rich \u2014 sherry, vanilla, caramel, and gentle spice.",
     "finish": "Long and sweet with sherry and vanilla.",
     "ratingAvg": 90,
     "valueForMoney": 4,
@@ -16348,7 +16348,7 @@
       "Chocolate"
     ],
     "nose": "Sherry, dried fruit, spice, and chocolate.",
-    "palate": "Rich sherry character — dried fruit, chocolate, spice, and oak.",
+    "palate": "Rich sherry character \u2014 dried fruit, chocolate, spice, and oak.",
     "finish": "Long and warming with sherry and spice.",
     "ratingAvg": 92,
     "valueForMoney": 4,
@@ -16378,7 +16378,7 @@
       "Spice"
     ],
     "nose": "Rich sherry, oak, dried fruit, and caramel.",
-    "palate": "Complex and full — sherry, dark fruit, chocolate, oak, and spice.",
+    "palate": "Complex and full \u2014 sherry, dark fruit, chocolate, oak, and spice.",
     "finish": "Very long with sherry and oak.",
     "ratingAvg": 95,
     "valueForMoney": 4,
@@ -16438,7 +16438,7 @@
       "Sweet"
     ],
     "nose": "Peat smoke, vanilla, caramel, and iodine.",
-    "palate": "Sweeter than the 10 — peat, vanilla, caramel, and smoke.",
+    "palate": "Sweeter than the 10 \u2014 peat, vanilla, caramel, and smoke.",
     "finish": "Long and smoky with vanilla.",
     "ratingAvg": 91,
     "valueForMoney": 5,
@@ -16468,7 +16468,7 @@
       "Seaweed"
     ],
     "nose": "Intense peat, lemon, vanilla, and pepper.",
-    "palate": "Complex — peat, citrus, vanilla, smoke, and pepper.",
+    "palate": "Complex \u2014 peat, citrus, vanilla, smoke, and pepper.",
     "finish": "Very long and peaty with vanilla.",
     "ratingAvg": 95,
     "valueForMoney": 5,
@@ -16498,7 +16498,7 @@
       "Chocolate"
     ],
     "nose": "Powerful peat, sherry, dark fruit, and chocolate.",
-    "palate": "Complex — peat, sherry, dark fruit, smoke, and chocolate.",
+    "palate": "Complex \u2014 peat, sherry, dark fruit, smoke, and chocolate.",
     "finish": "Very long and warming with peat and fruit.",
     "ratingAvg": 97,
     "valueForMoney": 5,
@@ -16528,7 +16528,7 @@
       "Oak"
     ],
     "nose": "Intense peat, smoke, dried fruit, and seaweed.",
-    "palate": "Rich and complex — peat, dried fruit, seaweed, and spice.",
+    "palate": "Rich and complex \u2014 peat, dried fruit, seaweed, and spice.",
     "finish": "Extraordinarily long with peat and fruit.",
     "ratingAvg": 95,
     "valueForMoney": 4,
@@ -16558,7 +16558,7 @@
       "Oak"
     ],
     "nose": "Honey, vanilla, sherry fruit, and spice.",
-    "palate": "Smooth and rich — honey, vanilla, sherry, and gentle spice.",
+    "palate": "Smooth and rich \u2014 honey, vanilla, sherry, and gentle spice.",
     "finish": "Long and sweet.",
     "ratingAvg": 88,
     "valueForMoney": 4,
@@ -16588,7 +16588,7 @@
       "Rum"
     ],
     "nose": "Tropical fruit, vanilla, honey, and rum.",
-    "palate": "Sweet and fruity — tropical fruit, vanilla, caramel, and oak.",
+    "palate": "Sweet and fruity \u2014 tropical fruit, vanilla, caramel, and oak.",
     "finish": "Long and sweet with rum and vanilla.",
     "ratingAvg": 90,
     "valueForMoney": 4,
@@ -16608,7 +16608,7 @@
     "age": "12",
     "abv": 40,
     "proof": "80",
-    "desc": "One of the best-selling single malts in the world. Light, fruity, and approachable — a classic Speyside introduction.",
+    "desc": "One of the best-selling single malts in the world. Light, fruity, and approachable \u2014 a classic Speyside introduction.",
     "flavors": [
       "Vanilla",
       "Citrus",
@@ -16618,7 +16618,7 @@
       "Honey"
     ],
     "nose": "Light floral notes, vanilla, citrus, and fruit.",
-    "palate": "Light and smooth — vanilla, citrus, fruit, and honey.",
+    "palate": "Light and smooth \u2014 vanilla, citrus, fruit, and honey.",
     "finish": "Clean and medium with fruit.",
     "ratingAvg": 83,
     "valueForMoney": 5,
@@ -16638,7 +16638,7 @@
     "age": "15",
     "abv": 40,
     "proof": "80",
-    "desc": "French oak edition — matured in a combination of American, European, and French Limousin oak casks for a unique richness.",
+    "desc": "French oak edition \u2014 matured in a combination of American, European, and French Limousin oak casks for a unique richness.",
     "flavors": [
       "Vanilla",
       "Fruit",
@@ -16648,7 +16648,7 @@
       "Caramel"
     ],
     "nose": "Vanilla, fruit, and spice.",
-    "palate": "Rich and smooth — vanilla, fruit, caramel, and spice.",
+    "palate": "Rich and smooth \u2014 vanilla, fruit, caramel, and spice.",
     "finish": "Medium-long with spice.",
     "ratingAvg": 86,
     "valueForMoney": 4,
@@ -16678,7 +16678,7 @@
       "Fruit"
     ],
     "nose": "Heather honey, vanilla, sherry fruit, and light peat.",
-    "palate": "Balanced — honey, vanilla, sherry, light peat, and spice.",
+    "palate": "Balanced \u2014 honey, vanilla, sherry, light peat, and spice.",
     "finish": "Long and warming with honey and smoke.",
     "ratingAvg": 90,
     "valueForMoney": 5,
@@ -16708,7 +16708,7 @@
       "Spice"
     ],
     "nose": "Rich heather honey, sherry, oak, and gentle peat.",
-    "palate": "Complex — honey, sherry, dark fruit, peat, and spice.",
+    "palate": "Complex \u2014 honey, sherry, dark fruit, peat, and spice.",
     "finish": "Long and elegant.",
     "ratingAvg": 93,
     "valueForMoney": 4,
@@ -16738,7 +16738,7 @@
       "Oak"
     ],
     "nose": "Honey, dried fruit, vanilla, and a hint of brine.",
-    "palate": "Balanced and complex — honey, dried fruit, gentle peat, and brine.",
+    "palate": "Balanced and complex \u2014 honey, dried fruit, gentle peat, and brine.",
     "finish": "Long and warming with fruit and smoke.",
     "ratingAvg": 91,
     "valueForMoney": 4,
@@ -16768,7 +16768,7 @@
       "Vanilla"
     ],
     "nose": "Peat smoke, brine, pepper, and fruit.",
-    "palate": "Bold — peat, pepper, brine, and sweet fruit.",
+    "palate": "Bold \u2014 peat, pepper, brine, and sweet fruit.",
     "finish": "Long and warming with peat and pepper.",
     "ratingAvg": 92,
     "valueForMoney": 5,
@@ -16798,7 +16798,7 @@
       "Vanilla"
     ],
     "nose": "Rich sherry, dark fruit, chocolate, and spice.",
-    "palate": "Full and rich — sherry, dark fruit, chocolate, and oak.",
+    "palate": "Full and rich \u2014 sherry, dark fruit, chocolate, and oak.",
     "finish": "Long and warming with sherry and spice.",
     "ratingAvg": 91,
     "valueForMoney": 5,
@@ -16828,7 +16828,7 @@
       "Vanilla"
     ],
     "nose": "Intense sherry, dark fruit, chocolate, and spice.",
-    "palate": "Rich and powerful — sherry, dark fruit, chocolate, and oak.",
+    "palate": "Rich and powerful \u2014 sherry, dark fruit, chocolate, and oak.",
     "finish": "Very long with sherry and spice.",
     "ratingAvg": 95,
     "valueForMoney": 5,
@@ -16858,7 +16858,7 @@
       "Toffee"
     ],
     "nose": "Light peat, brine, vanilla, and fruit.",
-    "palate": "Complex — peat, brine, toffee, vanilla, and fruit.",
+    "palate": "Complex \u2014 peat, brine, toffee, vanilla, and fruit.",
     "finish": "Long and complex with peat and fruit.",
     "ratingAvg": 93,
     "valueForMoney": 5,
@@ -16878,7 +16878,7 @@
     "age": "",
     "abv": 50,
     "proof": "100",
-    "desc": "Unpeated Islay single malt — a departure from most Islay whiskies. Showcases the terroir of Scottish barley with a focus on flavor rather than smoke.",
+    "desc": "Unpeated Islay single malt \u2014 a departure from most Islay whiskies. Showcases the terroir of Scottish barley with a focus on flavor rather than smoke.",
     "flavors": [
       "Floral",
       "Fruit",
@@ -16888,7 +16888,7 @@
       "Citrus"
     ],
     "nose": "Floral, fruit, vanilla, and honey.",
-    "palate": "Light and elegant — floral, fruit, citrus, and vanilla.",
+    "palate": "Light and elegant \u2014 floral, fruit, citrus, and vanilla.",
     "finish": "Medium and clean.",
     "ratingAvg": 89,
     "valueForMoney": 4,
@@ -16908,7 +16908,7 @@
     "age": "",
     "abv": 40,
     "proof": "80",
-    "desc": "A blend of three Speyside single malts — Glenfiddich, Balvenie, and Kininvie. Smooth, rich, and easy-drinking.",
+    "desc": "A blend of three Speyside single malts \u2014 Glenfiddich, Balvenie, and Kininvie. Smooth, rich, and easy-drinking.",
     "flavors": [
       "Vanilla",
       "Caramel",
@@ -16918,7 +16918,7 @@
       "Spice"
     ],
     "nose": "Vanilla, caramel, fruit, and honey.",
-    "palate": "Smooth and sweet — vanilla, caramel, fruit, and gentle spice.",
+    "palate": "Smooth and sweet \u2014 vanilla, caramel, fruit, and gentle spice.",
     "finish": "Medium and smooth.",
     "ratingAvg": 85,
     "valueForMoney": 5,
@@ -16948,7 +16948,7 @@
       "Oak"
     ],
     "nose": "Dried fruit, spice, vanilla, and sherry.",
-    "palate": "Rich pot still character — dried fruit, sherry, vanilla, and spice.",
+    "palate": "Rich pot still character \u2014 dried fruit, sherry, vanilla, and spice.",
     "finish": "Long and complex.",
     "ratingAvg": 93,
     "valueForMoney": 5,
@@ -16978,7 +16978,7 @@
       "Leather"
     ],
     "nose": "Rich dried fruit, sherry, spice, and oak.",
-    "palate": "Complex and full — dried fruit, sherry, spice, and leather.",
+    "palate": "Complex and full \u2014 dried fruit, sherry, spice, and leather.",
     "finish": "Very long and warming.",
     "ratingAvg": 95,
     "valueForMoney": 4,
@@ -17008,7 +17008,7 @@
       "Dark Fruit"
     ],
     "nose": "Intense dried fruit, sherry, and spice.",
-    "palate": "Powerful pot still — dried fruit, sherry, spice, and oak.",
+    "palate": "Powerful pot still \u2014 dried fruit, sherry, spice, and oak.",
     "finish": "Very long with fruit and spice.",
     "ratingAvg": 96,
     "valueForMoney": 5,
@@ -17038,7 +17038,7 @@
       "Herbal"
     ],
     "nose": "Pot still spice, vanilla, fruit, and honey.",
-    "palate": "Smooth pot still — spice, vanilla, fruit, and honey.",
+    "palate": "Smooth pot still \u2014 spice, vanilla, fruit, and honey.",
     "finish": "Medium with spice and fruit.",
     "ratingAvg": 90,
     "valueForMoney": 5,
@@ -17058,7 +17058,7 @@
     "age": "12",
     "abv": 46,
     "proof": "92",
-    "desc": "Matured in bourbon, sherry, and Málaga wine casks. Uniquely complex with wine cask influence adding a distinctive character.",
+    "desc": "Matured in bourbon, sherry, and M\u00e1laga wine casks. Uniquely complex with wine cask influence adding a distinctive character.",
     "flavors": [
       "Dried Fruit",
       "Spice",
@@ -17068,7 +17068,7 @@
       "Oak"
     ],
     "nose": "Dried fruit, honey, spice, and wine cask sweetness.",
-    "palate": "Complex — dried fruit, spice, honey, wine, and oak.",
+    "palate": "Complex \u2014 dried fruit, spice, honey, wine, and oak.",
     "finish": "Long and complex.",
     "ratingAvg": 93,
     "valueForMoney": 4,
@@ -17098,7 +17098,7 @@
       "Floral"
     ],
     "nose": "Honey, vanilla, fruit, and floral notes.",
-    "palate": "Light and smooth — honey, vanilla, fruit, and gentle spice.",
+    "palate": "Light and smooth \u2014 honey, vanilla, fruit, and gentle spice.",
     "finish": "Clean and medium.",
     "ratingAvg": 86,
     "valueForMoney": 5,
@@ -17128,7 +17128,7 @@
       "Leather"
     ],
     "nose": "Pot still spice, dried fruit, and vanilla.",
-    "palate": "Rich pot still — spice, dried fruit, oak, and honey.",
+    "palate": "Rich pot still \u2014 spice, dried fruit, oak, and honey.",
     "finish": "Long and spicy.",
     "ratingAvg": 91,
     "valueForMoney": 4,
@@ -17158,7 +17158,7 @@
       "Spice"
     ],
     "nose": "Honey, vanilla, fruit, and almonds.",
-    "palate": "Light and smooth — honey, vanilla, fruit, and gentle spice.",
+    "palate": "Light and smooth \u2014 honey, vanilla, fruit, and gentle spice.",
     "finish": "Clean and medium.",
     "ratingAvg": 85,
     "valueForMoney": 4,
@@ -17218,7 +17218,7 @@
       "Oak"
     ],
     "nose": "Floral, honey, vanilla, and subtle spice.",
-    "palate": "Delicate and complex — floral, honey, vanilla, and fruit.",
+    "palate": "Delicate and complex \u2014 floral, honey, vanilla, and fruit.",
     "finish": "Long and smooth.",
     "ratingAvg": 91,
     "valueForMoney": 4,
@@ -17248,7 +17248,7 @@
       "Spice"
     ],
     "nose": "Tropical fruit, peach, vanilla, and gentle oak.",
-    "palate": "Delicate and complex — peach, pineapple, vanilla, and oak.",
+    "palate": "Delicate and complex \u2014 peach, pineapple, vanilla, and oak.",
     "finish": "Long and smooth.",
     "ratingAvg": 93,
     "valueForMoney": 4,
@@ -17278,7 +17278,7 @@
       "Sandalwood"
     ],
     "nose": "Dark fruit, oak, chocolate, and sandalwood.",
-    "palate": "Complex and full — dark fruit, chocolate, oak, and spice.",
+    "palate": "Complex and full \u2014 dark fruit, chocolate, oak, and spice.",
     "finish": "Extraordinarily long and complex.",
     "ratingAvg": 97,
     "valueForMoney": 4,
@@ -17308,7 +17308,7 @@
       "Oak"
     ],
     "nose": "Honey, grapefruit, vanilla, and herb.",
-    "palate": "Light and clean — honey, grapefruit, vanilla, and pepper.",
+    "palate": "Light and clean \u2014 honey, grapefruit, vanilla, and pepper.",
     "finish": "Clean and refreshing.",
     "ratingAvg": 84,
     "valueForMoney": 5,
@@ -17338,7 +17338,7 @@
       "Smoke"
     ],
     "nose": "Vanilla, caramel, spice, and dried fruit.",
-    "palate": "Rich and complex — caramel, vanilla, spice, and oak.",
+    "palate": "Rich and complex \u2014 caramel, vanilla, spice, and oak.",
     "finish": "Long and warming.",
     "ratingAvg": 93,
     "valueForMoney": 5,
@@ -17368,7 +17368,7 @@
       "Honey"
     ],
     "nose": "Tropical fruit, vanilla, caramel, and coconut.",
-    "palate": "Smooth and sweet — tropical fruit, vanilla, caramel, and honey.",
+    "palate": "Smooth and sweet \u2014 tropical fruit, vanilla, caramel, and honey.",
     "finish": "Long and sweet.",
     "ratingAvg": 91,
     "valueForMoney": 4,
@@ -17398,7 +17398,7 @@
       "Sweet"
     ],
     "nose": "Vanilla, caramel, banana, and charcoal.",
-    "palate": "Sweet and smooth — vanilla, caramel, banana, and oak.",
+    "palate": "Sweet and smooth \u2014 vanilla, caramel, banana, and oak.",
     "finish": "Medium and sweet.",
     "ratingAvg": 80,
     "valueForMoney": 5,
@@ -17418,7 +17418,7 @@
     "age": "",
     "abv": 40,
     "proof": "80",
-    "desc": "Double charcoal mellowed for extra smoothness — charcoal filtered before and after aging. Lighter and smoother than Old No. 7.",
+    "desc": "Double charcoal mellowed for extra smoothness \u2014 charcoal filtered before and after aging. Lighter and smoother than Old No. 7.",
     "flavors": [
       "Vanilla",
       "Caramel",
@@ -17428,7 +17428,7 @@
       "Smooth"
     ],
     "nose": "Light vanilla, caramel, and honey.",
-    "palate": "Very smooth — vanilla, caramel, honey, and banana.",
+    "palate": "Very smooth \u2014 vanilla, caramel, honey, and banana.",
     "finish": "Clean and medium.",
     "ratingAvg": 82,
     "valueForMoney": 4,
@@ -17472,7 +17472,7 @@
     "age": "",
     "abv": 43,
     "proof": "86",
-    "desc": "The Easter Townships of Quebec, Canada is home to Domaine Pinnacle, a stone’s throw from Vermont. They’re famous for their award winning apple and ice cider but have recently branched out into spirits including this blended Canadian Whisky. It’s distilled and aged in small batches using 100% natural Canadian ingredients.",
+    "desc": "The Easter Townships of Quebec, Canada is home to Domaine Pinnacle, a stone\u2019s throw from Vermont. They\u2019re famous for their award winning apple and ice cider but have recently branched out into spirits including this blended Canadian Whisky. It\u2019s distilled and aged in small batches using 100% natural Canadian ingredients.",
     "flavors": [
       "Sweet",
       "Fruity",
@@ -17481,7 +17481,7 @@
       "Full Bodied",
       "Vanilla"
     ],
-    "nose": "A salvo of everything maple slams the sweet nose. Toffee sugar, toasted campfire marshmallows and coffee caramels setup a creamy texture that’s not at all syrupy. Cereal grains calm the nose’s sweetness as the younger grain characteristics are amplified on",
+    "nose": "A salvo of everything maple slams the sweet nose. Toffee sugar, toasted campfire marshmallows and coffee caramels setup a creamy texture that\u2019s not at all syrupy. Cereal grains calm the nose\u2019s sweetness as the younger grain characteristics are amplified on",
     "palate": "the palate. Barrel flavors such as oak and vanilla are muted. Berries and some dried fruits lead into a concise to-the-point",
     "finish": "finish",
     "ratingAvg": 79,
@@ -17679,7 +17679,7 @@
     "age": "",
     "abv": 40,
     "proof": "80",
-    "desc": "Drew Mayville is well known as the master blender for Buffalo Trace’s collection of award winning whiskies. However, as the fourth and final master blender for the Seagram’s dynasty, he has a passion for blending Canadian whisky that includes this 2017 Sazerac release. The name pays tribute to the Canadian prairie rye grain farmed along mineral rich rivers that are prone to flooding.  This whisky is currently exclusive to Canada.",
+    "desc": "Drew Mayville is well known as the master blender for Buffalo Trace\u2019s collection of award winning whiskies. However, as the fourth and final master blender for the Seagram\u2019s dynasty, he has a passion for blending Canadian whisky that includes this 2017 Sazerac release. The name pays tribute to the Canadian prairie rye grain farmed along mineral rich rivers that are prone to flooding.  This whisky is currently exclusive to Canada.",
     "flavors": [
       "Sweet",
       "Spicy",
@@ -17792,7 +17792,7 @@
     "age": "",
     "abv": 40,
     "proof": "80",
-    "desc": "Signal Hill Canadian Whisky is Canadian whisky is blended and bottled in St. John’s Newfoundland. It is also named after the city’s historic Signal Hill where Guglielmo Marconi received the first wireless transatlantic message in 1901. The non-chill filtered blend contains 95% corn and 5% malted barley whiskies aged in a combination of ex-bourbon, new white oak and Canadian whisky barrels. Available across Canada, Europe and select States.",
+    "desc": "Signal Hill Canadian Whisky is Canadian whisky is blended and bottled in St. John\u2019s Newfoundland. It is also named after the city\u2019s historic Signal Hill where Guglielmo Marconi received the first wireless transatlantic message in 1901. The non-chill filtered blend contains 95% corn and 5% malted barley whiskies aged in a combination of ex-bourbon, new white oak and Canadian whisky barrels. Available across Canada, Europe and select States.",
     "flavors": [
       "Sweet",
       "Spicy",
@@ -18023,7 +18023,7 @@
     "age": "",
     "abv": 40,
     "proof": "80",
-    "desc": "Sazerac’s Legacy Blended Canadian whisky is an expansion of the growing Buffalo Trace Canadian whisky lineup. This whisky was blended by Master Blender, Drew Mayville and bottled at the Buffalo Trace Distillery in Frankfort, Kentucky.",
+    "desc": "Sazerac\u2019s Legacy Blended Canadian whisky is an expansion of the growing Buffalo Trace Canadian whisky lineup. This whisky was blended by Master Blender, Drew Mayville and bottled at the Buffalo Trace Distillery in Frankfort, Kentucky.",
     "flavors": [
       "Sweet",
       "Rich",
@@ -18033,8 +18033,8 @@
       "Spicy"
     ],
     "nose": "Creamy vanilla and maple-sweetened coffee underline the Legacy experience. Ripe orchard cherries and candy corn climb out of the creaminess. But on",
-    "palate": "the palate, a welcome speck of spice dries off the nose’s fruity vanilla sweetness. This blended whisky is rich with corn that attacks the side of the mouth with a tingling",
-    "finish": "finish. All accented and controlled by that O’Canada signature citrus pith",
+    "palate": "the palate, a welcome speck of spice dries off the nose\u2019s fruity vanilla sweetness. This blended whisky is rich with corn that attacks the side of the mouth with a tingling",
+    "finish": "finish. All accented and controlled by that O\u2019Canada signature citrus pith",
     "ratingAvg": 83,
     "valueForMoney": 5,
     "price": "~$20",
@@ -18055,7 +18055,7 @@
     "age": "",
     "abv": 40,
     "proof": "80",
-    "desc": "The Last Mountain Distillery is Saskatchewan Canada’s first micro-distillery located in the town of Lumsden. This blended whisky is a blend of 3-5 year old wheat whisky that’s been aged in used bourbon barrels. It’s currently only available in western Canada.",
+    "desc": "The Last Mountain Distillery is Saskatchewan Canada\u2019s first micro-distillery located in the town of Lumsden. This blended whisky is a blend of 3-5 year old wheat whisky that\u2019s been aged in used bourbon barrels. It\u2019s currently only available in western Canada.",
     "flavors": [
       "Sweet",
       "Vanilla",
@@ -18087,7 +18087,7 @@
     "age": "",
     "abv": 40,
     "proof": "80",
-    "desc": "Mercer + Prince is a blended Canadian whisky brand made in partnership with music artist A$AP Rocky along with Global Brand Equities and E & J Gallo. The whisky is distilled, aged and blended in Canada and is aged a minimum of 4 years in American white oak barrels. Japanese Mizunara oak has been imparted in the whisky as a boisé, a method commonly used in cognac production. The brand is named after A$AP Rocky's favorite cross streets in NYC, Mercer and Prince. The bottle is designed with two cups built into it as well as the ability to lay it horizontally or vertically. Available in summer 2022.",
+    "desc": "Mercer + Prince is a blended Canadian whisky brand made in partnership with music artist A$AP Rocky along with Global Brand Equities and E & J Gallo. The whisky is distilled, aged and blended in Canada and is aged a minimum of 4 years in American white oak barrels. Japanese Mizunara oak has been imparted in the whisky as a bois\u00e9, a method commonly used in cognac production. The brand is named after A$AP Rocky's favorite cross streets in NYC, Mercer and Prince. The bottle is designed with two cups built into it as well as the ability to lay it horizontally or vertically. Available in summer 2022.",
     "flavors": [],
     "nose": "",
     "palate": "",
@@ -18187,7 +18187,7 @@
     "age": "",
     "abv": 40,
     "proof": "80",
-    "desc": "Schenley O.F.C. was distilled at the Black Velvet Distillery in Lethbridge, Alberta. The OFC stands for “Original Fine Canadian” and no longer carries an age statement. This once very popular brand, a Canadian whisky staple for nearly a century, is getting difficult to find. Rumors are correct, it’s now discontinued but there are still cases to be found. Not available in the U.S.",
+    "desc": "Schenley O.F.C. was distilled at the Black Velvet Distillery in Lethbridge, Alberta. The OFC stands for \u201cOriginal Fine Canadian\u201d and no longer carries an age statement. This once very popular brand, a Canadian whisky staple for nearly a century, is getting difficult to find. Rumors are correct, it\u2019s now discontinued but there are still cases to be found. Not available in the U.S.",
     "flavors": [
       "Spicy",
       "Sweet",
@@ -18197,8 +18197,8 @@
       "Full Bodied"
     ],
     "nose": "The initial alcohol bite coming from the bottle is accompanied by pleasant caramel, rye spice and vanilla. These flavor profiles maintain a status quo on",
-    "palate": "the palate – grainy rye spice and alcohol soothed by caramel and bourbon vanilla",
-    "finish": "The finish is sharp and oily but given time, an agreeable corn-fueled sweetness sets up the “Schenley” – a trademark palate cleansing citrus zest. This whisky is worth mixing into your favorite whisky drink before it’s history",
+    "palate": "the palate \u2013 grainy rye spice and alcohol soothed by caramel and bourbon vanilla",
+    "finish": "The finish is sharp and oily but given time, an agreeable corn-fueled sweetness sets up the \u201cSchenley\u201d \u2013 a trademark palate cleansing citrus zest. This whisky is worth mixing into your favorite whisky drink before it\u2019s history",
     "ratingAvg": 79,
     "valueForMoney": 5,
     "price": "~$20",
@@ -18218,7 +18218,7 @@
     "age": "",
     "abv": 40,
     "proof": "80",
-    "desc": "Sazerac’s Caribou Crossing was designed to reinvent the Canadian whisky category. This 80 proof whisky — the first single-barrel Canadian whisky since the 19th century — is aged in oak barrels and was selected from over 200,000 barrels by Master Blender Drew Mayville.  This Canadian whisky is bottled twice a year (in the spring and fall) at the Buffalo Trace Distillery in Kentucky.",
+    "desc": "Sazerac\u2019s Caribou Crossing was designed to reinvent the Canadian whisky category. This 80 proof whisky \u2014 the first single-barrel Canadian whisky since the 19th century \u2014 is aged in oak barrels and was selected from over 200,000 barrels by Master Blender Drew Mayville.  This Canadian whisky is bottled twice a year (in the spring and fall) at the Buffalo Trace Distillery in Kentucky.",
     "flavors": [
       "Sweet",
       "Vanilla",
