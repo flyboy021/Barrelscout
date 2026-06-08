@@ -496,6 +496,7 @@
         <button class="btn-secondary" style="padding:8px;font-size:12px" onclick="resetFilters()">Reset</button>
       </div>
       <div id="local-bottles-section" style="display:none"></div>
+      <div id="apify-live-section" style="display:none"></div>
       <div class="bottle-list" id="bottle-list"></div>
       <div class="attribution-line" style="padding:8px 0 16px">Powered by <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a></div>
     </section>
@@ -724,6 +725,7 @@ const FILTER_PARAMS = {
 // ═══════════════════════════════════════════════════════
 const LOCAL_BOTTLES = [
   { slug:'buffalo-trace-bourbon', name:'Buffalo Trace Bourbon', distillery:'Buffalo Trace', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'', abv:45, proof:'90', desc:'This is the flagship bourbon from Buffalo Trace, made from a traditional low-rye mash bill and bottled without an age statement at 90 proof. The former George T. Stagg Distillery was renamed Buffalo Trace when Sazerac Company took over ownership in 1999. Master Distiller Elmer T. Lee played a key role in the creation of Buffalo Trace Bourbon, which was released later that year.', flavors:["Sweet", "Tart", "Fruity", "Full Bodied", "Rich", "Spicy"], nose:'Buffalo Trace Bourbon shows a medium intensity on the nose with light spice (particularly cinnamon), vanilla, caramel, apples, and a touch of leather. The bourbon is soft on', palate:'the palate with a creamed corn taste profile and a gentle sweetness', finish:'The finish is tangy and offers a medium spice note. A great everyday dram', ratingAvg:83, valueForMoney:5, price:'~$20', imageUrl:'https://ip-distiller.imgix.net/images/spirits/7835c5b1-c104-4846-af20-69afba81c6c0/buffalo_trace_bourbon_original-1776192703.png?w=640&h=280&mark-w=70&mark-h=70&fit=crop&crop=right&mark-align=top,left&mark-pad=0&mark=', searchTerms:["buffalo trace", "buffalo", "buffalo trace bourbon"] },
+  { slug:'eagle-rare-12-year-bourbon', name:'Eagle Rare 12 Year Bourbon', distillery:'Eagle Rare', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'12 Year', abv:47.5, proof:'95', desc:'Eagle Rare 12 Year joins the Buffalo Trace portfolio as a permanent addition. Made with the distillery\'s classic low-rye mash bill #1, this bottling receives two additional years of aging from the standard Eagle Rare 10 Year and is bottled at a slightly higher proof of 47.5% ABV. Available in the US beginning June 2025 at an SRP of $49.99.', flavors:['Rich','Full Bodied','Sweet','Vanilla','Fruity','Spicy'], nose:'Sweet and nutty aromas of vanilla, cherry, and almond fill the nose along with spicy aromatics of ginger, clove, and nutmeg.', palate:'The palate is creamy, but held together well by balanced spice structure and tart cherry and apricot notes.', finish:'Deep and fruity with a tiny spark of heat and lasting cocoa-toasted almond flavors.', ratingAvg:98, valueForMoney:4, price:'~$50', imageUrl:'https://ip-distiller.imgix.net/images/spirits/f293af50-c499-013d-6aa1-7a07a13b6781/eagle_rare_12_original-1749579352.jpg?w=640&h=280&mark-w=70&mark-h=70&fit=crop&crop=right&mark-align=top,left&mark-pad=0&mark=', searchTerms:['eagle rare 12', 'eagle rare 12 year', 'eagle rare 12 year bourbon', 'eagle rare'] },
   { slug:'eagle-rare-10-year-bourbon', name:'Eagle Rare 10 Year Bourbon', distillery:'Eagle Rare', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'10 Year', abv:45, proof:'90', desc:'Eagle Rare 10 Year Bourbon is one of the flagship products from Buffalo Trace Distillery. It is made from a low-rye mash bill and is aged for at least 10 years at the Kentucky distillery. The barrels are hand selected for quality and consistency before bottling. While the bottling proof was originally 101 when the brand was first released in 1974, it has been bottled at 90 proof since 2005.', flavors:["Sweet", "Full Bodied", "Rich", "Vanilla", "Fruity", "Spicy"], nose:'', palate:'', finish:'', ratingAvg:91, valueForMoney:3, price:'~$60', imageUrl:'https://ip-distiller.imgix.net/images/spirits/0d8bd475-ac66-4f37-9ee6-dd7b5da7bf40/eagle_rare_10_yr_original.jpg?w=640&h=280&mark-w=70&mark-h=70&fit=crop&crop=right&mark-align=top,left&mark-pad=0&mark=', searchTerms:["eagle rare", "eagle rare 10 year bourbon", "eagle"] },
   { slug:'bulleit-bourbon', name:'Bulleit Bourbon', distillery:'Bulleit', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'', abv:45, proof:'90', desc:'The Bulleit label, revived by Tom Bulleit, traces its roots to the early 1800s, when Augustus Bulleit produced a high-rye whiskey recipe for friends and family, though it was never sold commercially. Tom reintroduced the brand in the late 1980s, and it was later acquired by Diageo in 2001. Made with a mash bill of 68% corn, 28% rye, and 4% malted barley, it is bottled at 90 proof.', flavors:["Spicy", "Smoky", "Full Bodied", "Rich", "Oily", "Sweet"], nose:'', palate:'', finish:'', ratingAvg:86, valueForMoney:4, price:'~$35', imageUrl:'https://ip-distiller.imgix.net/images/spirits/98226c9e-12cd-41a5-a377-5e0a34fa8873/bulleit_bourbon_original.jpg?w=640&h=280&mark-w=70&mark-h=70&fit=crop&crop=right&mark-align=top,left&mark-pad=0&mark=', searchTerms:["bulleit", "bulleit bourbon"] },
   { slug:'woodford-reserve-bourbon', name:'Woodford Reserve Bourbon', distillery:'Woodford Reserve', type:'Bourbon', country:'USA', region:'Kentucky, USA', age:'', abv:45.2, proof:'90', desc:'Distilled at the Woodford Reserve Distillery in Versailles, Kentucky (formerly the Labrot & Graham Distillery), this Kentucky straight bourbon was first introduced in 1996 and remains the brand’s flagship expression. The high-rye mash bill contains 18% rye and is made from a blend of pot still and column still distillates. Though it carries no age statement, the bourbon is typically aged between 6–7 years. It is bottled at 45.2% ABV.', flavors:["Full Bodied", "Rich", "Sweet", "Spicy", "Vanilla", "Oily"], nose:'A scent of sweet baked cornbread fills the nose along with traditional aromas of clove, cinnamon, nutmeg, and baked apples', palate:'The palate has a medium-rich viscosity, which sets the base for sweet flavors of caramel popcorn mixing with tart cherry, baking spices, and cocoa. A subtle toasted oak smokiness plays into', finish:'the finish, coating the throat with sweet-tart fruitiness and warming spices', ratingAvg:92, valueForMoney:4, price:'~$35', imageUrl:'https://ip-distiller.imgix.net/images/spirits/634e943c-b937-48ec-bc60-431a28f62924/woodford_reserve_bourbon_original.jpg?w=640&h=280&mark-w=70&mark-h=70&fit=crop&crop=right&mark-align=top,left&mark-pad=0&mark=', searchTerms:["woodford reserve bourbon", "woodford reserve", "woodford"] },
@@ -1684,6 +1686,28 @@ async function renderBrowse() {
   // Render local Distiller database immediately (synchronous)
   renderLocalBottlesSection();
 
+  // Search Apify live when query is set and token exists
+  const apifyEl = document.getElementById('apify-live-section');
+  apifyEl.style.display = 'none';
+  apifyEl.innerHTML = '';
+  if (searchQuery && getApifyToken()) {
+    apifyEl.style.display = 'block';
+    apifyEl.innerHTML = `<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 0 8px">🔎 Live Search</div><div style="color:var(--muted2);font-size:13px;padding:4px 0 8px">Searching Distiller.com…</div>`;
+    searchDistillerLive(searchQuery).then(items => {
+      if (!items.length) { apifyEl.style.display = 'none'; return; }
+      const fresh = items.filter(i => !localMatchNames.has(normalizeBottleName(i.name)));
+      if (!fresh.length) { apifyEl.style.display = 'none'; return; }
+      apifyEl.innerHTML = `<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 0 8px">🔎 Live Search</div>` +
+        fresh.map(b => `<div class="online-result-row" onclick='openApifyDetail(${JSON.stringify(JSON.stringify(b))})'>
+          ${b.imageUrl ? `<img class="online-result-img" src="${b.imageUrl}" alt="${b.name}">` : `<div class="online-result-img-placeholder">🥃</div>`}
+          <div class="online-result-info">
+            <div class="online-result-name">${b.name}</div>
+            <div class="online-result-meta">${b.distillery||''}${b.region?' · '+b.region:''}${(b.age&&b.age!=='NAS')?' · '+b.age:''}${b.abv?' · '+b.abv+'%':''}</div>
+            ${b.ratingAvg ? `<div style="font-size:12px;color:var(--amber-glow);font-weight:700;margin-top:3px">⭐ ${b.ratingAvg}/100</div>` : ''}
+          </div></div>`).join('');
+    });
+  }
+
   const listEl = document.getElementById('bottle-list');
   listEl.innerHTML = `<div class="online-searching">⏳ Loading from WHISKY:EDITION…</div>`;
   try {
@@ -1938,6 +1962,15 @@ async function openBrowseDetail(idx) {
       }
     } catch(_) { /* silent — placeholder just stays hidden */ }
   }
+}
+function openApifyDetail(jsonStr) {
+  const b = JSON.parse(jsonStr);
+  detailItem = { _distiller: true, _mapped: b };
+  const inCol = !!collection.find(c => c.name === b.name);
+  document.getElementById('detail-title').textContent = b.name;
+  document.getElementById('detail-collect-btn').style.color = inCol ? 'var(--amber-glow)' : '';
+  document.getElementById('detail-body').innerHTML = renderDetailBody(b, inCol);
+  document.getElementById('detail-overlay').classList.add('show');
 }
 function closeDetail() { document.getElementById('detail-overlay').classList.remove('show'); detailItem = null; }
 
