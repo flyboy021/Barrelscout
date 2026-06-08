@@ -1497,6 +1497,15 @@ function handleImageCapture(input) {
           if (!localHits.length && shortQuery) localHits.push(...searchLocalBottles(shortQuery));
           if (localHits.length) { showLocalResult(localToMapped(localHits[0]), labelChips); found = true; }
         }
+        // Fallback: OCR often mis-reads cursive/script fonts — try each distinctive word individually
+        if (!found) {
+          const SCAN_GENERIC = new Set(['single','double','small','batch','barrel','straight','bourbon','whiskey','whisky','kentucky','tennessee','blended','aged','reserve','mash','sour','proof','years','year','old','american','bottle','glass','liquor','distillery','distilled','bottled','product','spirits','alcohol','content','from','with','the','and','for','this']);
+          const ocrWords = ocrText.toLowerCase().split(/\W+/).filter(w => w.length >= 4 && !SCAN_GENERIC.has(w));
+          for (const word of ocrWords) {
+            const hits = searchLocalBottles(word);
+            if (hits.length) { showLocalResult(localToMapped(hits[0]), labelChips); found = true; break; }
+          }
+        }
 
         // Step 2: Live Distiller search (if Apify token set)
         if (!found && getApifyToken()) {
