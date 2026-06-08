@@ -1751,25 +1751,9 @@ function renderLocalBottlesSection() {
   if (!matches.length) { el.style.display = 'none'; return; }
   el.style.display = 'block';
 
-  // When browsing with no search/filter, group top-rated bottles by region of origin
-  if (!searchQuery && activeFilter === 'All') {
-    const groups = {};
-    matches.forEach(b => {
-      const key = continentFor(b);
-      (groups[key] = groups[key] || []).push(b);
-    });
-    const order = [...CONTINENT_ORDER, ...Object.keys(groups).filter(k => !CONTINENT_ORDER.includes(k))];
-    el.innerHTML = order.filter(k => groups[k]?.length).map(key => {
-      const top = [...groups[key]].sort((a,b) => (b.ratingAvg||0) - (a.ratingAvg||0)).slice(0, 6);
-      return `<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 0 8px">🌍 ${key}</div>
-        ${top.map(localBottleRow).join('')}`;
-    }).join('');
-    return;
-  }
-
   el.innerHTML = `
-    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 0 8px">🔍 Featured Bottles</div>
-    ${matches.slice(0,20).map(localBottleRow).join('')}`;
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 0 8px">🔍 Distiller Database</div>
+    ${matches.slice(0, 50).map(localBottleRow).join('')}`;
 }
 
 function openLocalDetail(slug) {
