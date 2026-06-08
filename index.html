@@ -439,13 +439,7 @@
       <input type="file" id="camera-input"  accept="image/*" capture="environment" style="display:none" onchange="handleImageCapture(this)"/>
       <input type="file" id="gallery-input" accept="image/*"                        style="display:none" onchange="handleImageCapture(this)"/>
 
-      <div class="scan-recent">
-        <div class="section-header">
-          <span class="section-title">Bottle Database</span>
-          <button class="section-link" onclick="navTo('browse')">See All</button>
-        </div>
-        <div class="recent-scroll" id="recent-scroll"></div>
-      </div>
+      <div class="scan-recent" id="scan-regional-db"></div>
 
       <div style="padding:0 20px 20px">
         <div class="quote-banner">
@@ -2371,29 +2365,58 @@ function init() {
   document.getElementById('daily-quote').textContent = `"${q.text}"`;
   document.getElementById('daily-quote-author').textContent = `— ${q.author}`;
 
-  // Load recent bottles from API for home screen
-  const recentEl = document.getElementById('recent-scroll');
-  recentEl.innerHTML = `<div style="color:var(--muted2);font-size:12px;padding:10px 4px">Loading…</div>`;
-  searchWhiskyEditionAPI('whisky').then(items => {
-    if (!items.length) { recentEl.innerHTML = ''; return; }
-    const shuffled = items.sort(() => Math.random() - 0.5).slice(0, 6);
-    recentEl.innerHTML = shuffled.map((item, idx) => {
-      const b = mapApiItem(item);
-      return `<div class="recent-card" onclick="openHomeDetail(${idx}, this)" data-idx="${idx}">
-        <div class="recent-card-img">
-          ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.name}" style="width:44px;height:52px;object-fit:contain;border-radius:4px">` : '🥃'}
-        </div>
-        <div class="recent-card-body">
-          <div class="recent-card-name">${b.name}</div>
-          <div class="recent-card-year">${b.type}</div>
-        </div>
-      </div>`;
-    }).join('');
-    // Store these items for detail viewing
-    window._homeItems = shuffled;
-  }).catch(() => { recentEl.innerHTML = ''; });
+  // Render regional bottle database on scan screen
+  renderRegionalDB();
 
   renderNotes();
+}
+
+function renderRegionalDB() {
+  const el = document.getElementById('scan-regional-db');
+  if (!el) return;
+
+  const REGIONS = [
+    { label: '🇺🇸 American',  countries: ['USA'],                    types: ['Bourbon','Rye','Tennessee Whiskey','American Whiskey'] },
+    { label: '🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotch',    countries: ['Scotland'],             types: ['Single Malt Scotch','Blended Malt Scotch','Blended Scotch Whisky','Scotch'] },
+    { label: '🍀 Irish',      countries: ['Ireland'],              types: ['Irish Whiskey'] },
+    { label: '🗾 Japanese',   countries: ['Japan'],                types: ['Japanese Whisky'] },
+    { label: '🌍 Other',      countries: ['Canada','Other'],       types: [] },
+  ];
+
+  const top = (bottles) =>
+    [...bottles].sort((a,b) => (b.ratingAvg||0) - (a.ratingAvg||0)).slice(0, 12);
+
+  let html = '';
+  for (const region of REGIONS) {
+    let bottles;
+    if (region.label.includes('Other')) {
+      bottles = LOCAL_BOTTLES.filter(b => !['USA','Scotland','Ireland','Japan'].includes(b.country));
+    } else {
+      bottles = LOCAL_BOTTLES.filter(b => region.countries.includes(b.country));
+    }
+    if (!bottles.length) continue;
+    const picks = top(bottles);
+    html += `
+      <div style="padding:16px 20px 4px">
+        <div class="section-header">
+          <span class="section-title">${region.label}</span>
+          <button class="section-link" onclick="navTo('browse')">See All</button>
+        </div>
+        <div class="recent-scroll">
+          ${picks.map(b => `
+            <div class="recent-card" onclick="openLocalDetail('${b.slug}')">
+              <div class="recent-card-img">
+                ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.name}" style="width:44px;height:52px;object-fit:contain;border-radius:4px">` : '🥃'}
+              </div>
+              <div class="recent-card-body">
+                <div class="recent-card-name">${b.name}</div>
+                <div class="recent-card-year">${b.type}</div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+  el.innerHTML = html || '<div style="color:var(--muted2);font-size:12px;padding:16px 20px">No bottles in database</div>';
 }
 
 function openHomeDetail(idx, el) {
