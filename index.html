@@ -1499,6 +1499,9 @@ async function renderBrowse() {
   // Render flavour chips
   const fc = document.getElementById('flavour-chips');
   if (fc) fc.innerHTML = FLAVOUR_OPTIONS.map(f=>`<button class="chip ${f===activeFlavour?'active':''}" onclick="setFlavour('${f}')">${f}</button>`).join('');
+  // Render local Distiller database immediately (synchronous)
+  renderLocalBottlesSection();
+
   const listEl = document.getElementById('bottle-list');
   listEl.innerHTML = `<div class="online-searching">⏳ Loading from WHISKY:EDITION…</div>`;
   try {
