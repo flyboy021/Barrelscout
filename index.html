@@ -1110,9 +1110,39 @@ async function loadBottleDB() {
     const localOnly = LOCAL_BOTTLES.filter(b => !extSlugs.has(b.slug));
     BOTTLE_DB = [...data, ...localOnly];
     console.log(`BarrelScout: loaded ${BOTTLE_DB.length} bottles (${data.length} from DB + ${localOnly.length} local-only)`);
+    renderHomeBottles(); // refresh home screen with full DB
   } catch(e) {
     console.warn('bottles.json not available, using built-in database:', e.message);
   }
+}
+
+function renderHomeBottles() {
+  const recentEl = document.getElementById('recent-scroll');
+  if (!recentEl) return;
+  const pool = BOTTLE_DB.filter(b => b.name && b.type);
+  if (!pool.length) { recentEl.innerHTML = ''; return; }
+  // Pick 8 random bottles, weighted toward those with images
+  const withImg = pool.filter(b => b.imageUrl);
+  const noImg   = pool.filter(b => !b.imageUrl);
+  const picks = [];
+  const target = 8;
+  // Fill from image-bearing bottles first (up to target), then pad with no-image
+  const shuffleImg = withImg.sort(() => Math.random() - 0.5);
+  const shuffleNo  = noImg.sort(() => Math.random() - 0.5);
+  picks.push(...shuffleImg.slice(0, target));
+  if (picks.length < target) picks.push(...shuffleNo.slice(0, target - picks.length));
+  // Final shuffle so image/no-image bottles are interspersed
+  picks.sort(() => Math.random() - 0.5);
+  recentEl.innerHTML = picks.map(b => `
+    <div class="recent-card" onclick="openLocalDetail('${b.slug}')">
+      <div class="recent-card-img">
+        ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.name}" style="width:44px;height:52px;object-fit:contain;border-radius:4px" onerror="this.style.display='none';this.parentNode.textContent='🥃'">` : '🥃'}
+      </div>
+      <div class="recent-card-body">
+        <div class="recent-card-name">${b.name}</div>
+        <div class="recent-card-year">${b.type}</div>
+      </div>
+    </div>`).join('');
 }
 
 // Search local bottles by query string
@@ -2631,26 +2661,8 @@ function init() {
   document.getElementById('daily-quote').textContent = `"${q.text}"`;
   document.getElementById('daily-quote-author').textContent = `— ${q.author}`;
 
-  // Load recent bottles from API for home screen
-  const recentEl = document.getElementById('recent-scroll');
-  recentEl.innerHTML = `<div style="color:var(--muted2);font-size:12px;padding:10px 4px">Loading…</div>`;
-  searchWhiskyEditionAPI('whisky').then(items => {
-    if (!items.length) { recentEl.innerHTML = ''; return; }
-    const shuffled = items.sort(() => Math.random() - 0.5).slice(0, 6);
-    recentEl.innerHTML = shuffled.map((item, idx) => {
-      const b = mapApiItem(item);
-      return `<div class="recent-card" onclick="openHomeDetail(${idx}, this)" data-idx="${idx}">
-        <div class="recent-card-img">
-          ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.name}" style="width:44px;height:52px;object-fit:contain;border-radius:4px">` : '🥃'}
-        </div>
-        <div class="recent-card-body">
-          <div class="recent-card-name">${b.name}</div>
-          <div class="recent-card-year">${b.type}</div>
-        </div>
-      </div>`;
-    }).join('');
-    window._homeItems = shuffled;
-  }).catch(() => { recentEl.innerHTML = ''; });
+  // Show random bottles from local DB on home screen
+  renderHomeBottles();
 
   renderNotes();
 }
