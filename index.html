@@ -1691,28 +1691,7 @@ async function renderBrowse() {
   // Render local Distiller database immediately (synchronous)
   renderLocalBottlesSection();
 
-  // Search Apify live when query is set and token exists
-  const apifyEl = document.getElementById('apify-live-section');
-  apifyEl.style.display = 'none';
-  apifyEl.innerHTML = '';
-  if (searchQuery && getApifyToken()) {
-    apifyEl.style.display = 'block';
-    apifyEl.innerHTML = `<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 0 8px">🔎 Live Search</div><div style="color:var(--muted2);font-size:13px;padding:4px 0 8px">Searching Distiller.com…</div>`;
-    searchDistillerLive(searchQuery, false).then(items => {
-      if (!items.length) { apifyEl.style.display = 'none'; return; }
-      const fresh = items.filter(i => !localMatchNames.has(normalizeBottleName(i.name)));
-      if (!fresh.length) { apifyEl.style.display = 'none'; return; }
-      apifyBrowseItems = fresh;
-      apifyEl.innerHTML = `<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 0 8px">🔎 Live Search</div>` +
-        fresh.map((b, i) => `<div class="online-result-row" onclick="openApifyDetail(${i})">
-          ${b.imageUrl ? `<img class="online-result-img" src="${b.imageUrl}" alt="${b.name}">` : `<div class="online-result-img-placeholder">🥃</div>`}
-          <div class="online-result-info">
-            <div class="online-result-name">${b.name}</div>
-            <div class="online-result-meta">${b.distillery||''}${b.region?' · '+b.region:''}${(b.age&&b.age!=='NAS')?' · '+b.age:''}${b.abv?' · '+b.abv+'%':''}</div>
-            ${b.ratingAvg ? `<div style="font-size:12px;color:var(--amber-glow);font-weight:700;margin-top:3px">⭐ ${b.ratingAvg}/100</div>` : ''}
-          </div></div>`).join('');
-    });
-  }
+  document.getElementById('apify-live-section').style.display = 'none';
 
   const listEl = document.getElementById('bottle-list');
   listEl.innerHTML = `<div class="online-searching">⏳ Loading from WHISKY:EDITION…</div>`;
