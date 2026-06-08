@@ -1162,11 +1162,18 @@ function searchLocalBottles(query) {
 function searchLocalBottlesByOCR(ocrText) {
   if (!ocrText) return [];
   const ocrLower = ocrText.toLowerCase();
+  // Generic whiskey words that alone don't constitute a distinctive match
+  const OCR_GENERIC = new Set(['single','double','small','batch','barrel','straight','bourbon','whiskey','whisky','kentucky','tennessee','blended','aged','reserve','mash','sour','proof','years','year','old','american','bottle','glass','liquor','distillery','distilled','bottled','product','spirits','alcohol','the','and','for','usa','united','states']);
   const scored = BOTTLE_DB.map(b => {
     const terms = [b.name, b.distillery, ...(b.searchTerms || [])].map(t => (t||'').toLowerCase());
     let score = 0;
     for (const term of terms) {
-      if (term.length > 3 && ocrLower.includes(term)) score += term.split(/\s+/).length;
+      if (term.length > 3 && ocrLower.includes(term)) {
+        // Only count if the term contains at least one distinctive (non-generic) word
+        const words = term.split(/\s+/);
+        const hasDistinctive = words.some(w => w.length >= 3 && !OCR_GENERIC.has(w));
+        if (hasDistinctive) score += words.length;
+      }
     }
     return { b, score };
   }).filter(x => x.score > 0).sort((a, z) => z.score - a.score);
