@@ -1092,12 +1092,35 @@ const LOCAL_BOTTLES = [
 { slug:'caribou-crossing-single-barrel-canadian-whisky', name:'Caribou Crossing Single Barrel Canadian Whisky', distillery:'Sazerac', type:'Canadian', country:'Canada', region:'Canada', age:'', abv:40, proof:'80', desc:'Sazerac’s Caribou Crossing was designed to reinvent the Canadian whisky category. This 80 proof whisky — the first single-barrel Canadian whisky since the 19th century — is aged in oak barrels and was selected from over 200,000 barrels by Master Blender Drew Mayville.  This Canadian whisky is bottled twice a year (in the spring and fall) at the Buffalo Trace Distillery in Kentucky.', flavors:["Sweet", "Vanilla", "Fruity", "Oily", "Rich", "Floral"], nose:'', palate:'', finish:'', ratingAvg:86, valueForMoney:3, price:'~$60', imageUrl:'https://ip-distiller.imgix.net/images/spirits/f801c140-66d4-0133-9bbc-5a6938b69d5e/caribou_crossing_single_barrel_canadian_whisky_original.jpg?w=640&h=280&mark-w=70&mark-h=70&fit=crop&crop=right&mark-align=top,left&mark-pad=0&mark=', searchTerms:["caribou", "caribou crossing single barrel canadian whisky", "sazerac"] }
 ];
 
+// ═══════════════════════════════════════════════════════
+// EXTERNAL BOTTLE DATABASE (bottles.json)
+// Loaded once on startup. Falls back to LOCAL_BOTTLES if
+// the file is missing (e.g. during local dev).
+// ═══════════════════════════════════════════════════════
+let BOTTLE_DB = LOCAL_BOTTLES;
+
+async function loadBottleDB() {
+  try {
+    const resp = await fetch('bottles.json?v=' + (Date.now() / 86400000 | 0));
+    if (!resp.ok) return;
+    const data = await resp.json();
+    if (!Array.isArray(data) || !data.length) return;
+    // External file wins for any slug it contains; keep LOCAL_BOTTLES-only entries
+    const extSlugs = new Set(data.map(b => b.slug));
+    const localOnly = LOCAL_BOTTLES.filter(b => !extSlugs.has(b.slug));
+    BOTTLE_DB = [...data, ...localOnly];
+    console.log(`BarrelScout: loaded ${BOTTLE_DB.length} bottles (${data.length} from DB + ${localOnly.length} local-only)`);
+  } catch(e) {
+    console.warn('bottles.json not available, using built-in database:', e.message);
+  }
+}
+
 // Search local bottles by query string
 function searchLocalBottles(query) {
   if (!query) return [];
   const q = query.toLowerCase().trim();
   const words = q.split(/\s+/);
-  return LOCAL_BOTTLES.filter(b => {
+  return BOTTLE_DB.filter(b => {
     const haystack = [b.name, b.distillery, b.type, ...(b.searchTerms || [])].join(' ').toLowerCase();
     return b.searchTerms?.some(t => q.includes(t) || t.includes(q)) ||
            words.every(w => haystack.includes(w)) ||
@@ -1172,6 +1195,9 @@ let collection = (() => {
 })();
 let notes = JSON.parse(localStorage.getItem('bs-notes') || '[]');
 let editingNote = null, noteRating = 0;
+
+// Kick off external DB load immediately (non-blocking)
+loadBottleDB();
 
 // ═══════════════════════════════════════════════════════
 // API KEY MANAGEMENT
@@ -1750,11 +1776,11 @@ function renderLocalBottlesSection() {
   const typeMap = { 'Bourbon':'Bourbon', 'Rye':'Rye', 'Irish':'Irish Whiskey',
                     'Japanese':'Japanese Whisky', 'All':null, 'Scotch':null };
   const filterType = typeMap[activeFilter];
-  let matches = LOCAL_BOTTLES;
-  if (filterType) matches = LOCAL_BOTTLES.filter(b => b.type === filterType || b.type.includes(filterType));
+  let matches = BOTTLE_DB;
+  if (filterType) matches = BOTTLE_DB.filter(b => b.type === filterType || b.type.includes(filterType));
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
-    matches = LOCAL_BOTTLES.filter(b => b.name.toLowerCase().includes(q) || b.distillery.toLowerCase().includes(q) || (b.searchTerms||[]).some(t=>t.includes(q)));
+    matches = BOTTLE_DB.filter(b => b.name.toLowerCase().includes(q) || b.distillery.toLowerCase().includes(q) || (b.searchTerms||[]).some(t=>t.includes(q)));
   }
   // Track names so the WHISKY:EDITION list can skip duplicates already shown here (Distiller DB takes priority)
   localMatchNames = new Set(matches.map(b => normalizeBottleName(b.name)));
@@ -1767,7 +1793,7 @@ function renderLocalBottlesSection() {
 }
 
 function openLocalDetail(slug) {
-  const b = LOCAL_BOTTLES.find(x => x.slug === slug);
+  const b = BOTTLE_DB.find(x => x.slug === slug);
   if (!b) return;
   const mapped = localToMapped(b);
   const inCol = !!collection.find(c => c.slug === b.slug);
@@ -2636,9 +2662,9 @@ function renderRegionalDB() {
   for (const region of REGIONS) {
     let bottles;
     if (region.label.includes('Other')) {
-      bottles = LOCAL_BOTTLES.filter(b => !['USA','Scotland','Ireland','Japan'].includes(b.country));
+      bottles = BOTTLE_DB.filter(b => !['USA','Scotland','Ireland','Japan'].includes(b.country));
     } else {
-      bottles = LOCAL_BOTTLES.filter(b => region.countries.includes(b.country));
+      bottles = BOTTLE_DB.filter(b => region.countries.includes(b.country));
     }
     if (!bottles.length) continue;
     const picks = top(bottles);
