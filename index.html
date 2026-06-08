@@ -1158,6 +1158,21 @@ function searchLocalBottles(query) {
   }).slice(0, 5);
 }
 
+// Search local DB by scanning full OCR text for any known bottle name / search term
+function searchLocalBottlesByOCR(ocrText) {
+  if (!ocrText) return [];
+  const ocrLower = ocrText.toLowerCase();
+  const scored = BOTTLE_DB.map(b => {
+    const terms = [b.name, b.distillery, ...(b.searchTerms || [])].map(t => (t||'').toLowerCase());
+    let score = 0;
+    for (const term of terms) {
+      if (term.length > 3 && ocrLower.includes(term)) score += term.split(/\s+/).length;
+    }
+    return { b, score };
+  }).filter(x => x.score > 0).sort((a, z) => z.score - a.score);
+  return scored.slice(0, 5).map(x => x.b);
+}
+
 // Map local bottle to the same shape as mapApiItem output (so we can reuse rendering)
 function localToMapped(b) {
   return { ...b, flavourRaw: b.flavors.join(', '), conclusionMarcel:'', conclusionSascha:'',
@@ -1456,21 +1471,32 @@ function handleImageCapture(input) {
       const logoAnnotations  = (result.logoAnnotations  || []).map(l => l.description);
       const labelChips = [...new Set([...labelAnnotations, ...logoAnnotations])];
 
-      // Best query: first line of OCR (usually the bottle name) or top web entity
-      const ocrFirstLine = ocrText.trim().split('\n')[0].trim().slice(0, 80);
-      const apiQuery = ocrFirstLine || webEntities[0] || labelAnnotations[0] || '';
+      // Skip generic label words to find the actual brand name line
+      const GENERIC_LABEL = new Set(['single','double','small','batch','barrel','straight','bourbon','whiskey','whisky','kentucky','tennessee','blended','aged','reserve','mash','sour','pure','premium','special','limited','edition','select','gold','black','original','classic','cask','strength','proof','years','year','old','american']);
+      const ocrLines = ocrText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 2);
+      let bestOcrLine = ocrLines[0] || '';
+      for (const line of ocrLines) {
+        const words = line.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/);
+        if (words.length >= 1 && !words.every(w => GENERIC_LABEL.has(w))) { bestOcrLine = line; break; }
+      }
+      const ocrFirstLine = bestOcrLine.slice(0, 80);
+      const apiQuery = webEntities[0] || ocrFirstLine || labelAnnotations[0] || '';
 
       if (!apiQuery) {
         showNoMatch(labelChips, ocrText.toLowerCase());
       } else {
-        const shortQuery = webEntities[0] || ocrText.trim().split(/\s+/).slice(0,3).join(' ');
+        const shortQuery = ocrFirstLine || ocrText.trim().split(/\s+/).slice(0,3).join(' ');
         let found = false;
 
-        // Step 1: Local DB
+        // Step 1: Local DB — first try full OCR scan (catches bottles whose name isn't on line 1)
         document.getElementById('scanning-label').textContent = 'Checking local database…';
-        const localHits = searchLocalBottles(apiQuery);
-        if (!localHits.length && shortQuery) localHits.push(...searchLocalBottles(shortQuery));
-        if (localHits.length) { showLocalResult(localToMapped(localHits[0]), labelChips); found = true; }
+        const ocrLocalHits = searchLocalBottlesByOCR(ocrText);
+        if (ocrLocalHits.length) { showLocalResult(localToMapped(ocrLocalHits[0]), labelChips); found = true; }
+        if (!found) {
+          const localHits = searchLocalBottles(apiQuery);
+          if (!localHits.length && shortQuery) localHits.push(...searchLocalBottles(shortQuery));
+          if (localHits.length) { showLocalResult(localToMapped(localHits[0]), labelChips); found = true; }
+        }
 
         // Step 2: Live Distiller search (if Apify token set)
         if (!found && getApifyToken()) {
