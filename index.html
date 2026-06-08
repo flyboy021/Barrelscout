@@ -2315,9 +2315,19 @@ const DISTILLERY_WEBSITES = {
   'Pike Creek': 'https://www.pikecreekwhisky.com/',
 };
 function distilleryWebsiteUrl(name) {
+  if (!name) return null;
   if (DISTILLERY_WEBSITES[name]) return DISTILLERY_WEBSITES[name];
-  const key = Object.keys(DISTILLERY_WEBSITES).find(k => k.toLowerCase() === (name||'').toLowerCase());
-  return key ? DISTILLERY_WEBSITES[key] : null;
+  const n = name.toLowerCase().trim();
+  const keys = Object.keys(DISTILLERY_WEBSITES);
+  // Exact case-insensitive
+  let k = keys.find(k => k.toLowerCase() === n);
+  if (k) return DISTILLERY_WEBSITES[k];
+  // One name is a prefix of the other (e.g. "Woodford Reserve" matches "Woodford Reserve Distillery")
+  k = keys.find(k => { const lk = k.toLowerCase(); return lk.startsWith(n) || n.startsWith(lk); });
+  if (k) return DISTILLERY_WEBSITES[k];
+  // Substring match
+  k = keys.find(k => { const lk = k.toLowerCase(); return lk.includes(n) || n.includes(lk); });
+  return k ? DISTILLERY_WEBSITES[k] : null;
 }
 let _dsWebsiteUrl = '';
 function distilleryWebsite() {
