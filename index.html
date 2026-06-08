@@ -1495,16 +1495,12 @@ function handleImageCapture(input) {
         const shortQuery = ocrFirstLine || ocrText.trim().split(/\s+/).slice(0,3).join(' ');
         let found = false;
 
-        // Step 1: Local DB — first try full OCR scan (catches bottles whose name isn't on line 1)
+        // Step 1: Local DB — OCR-based matching (more reliable than visual web entity)
         document.getElementById('scanning-label').textContent = 'Checking local database…';
+        // 1a: full OCR text scan (requires distinctive non-generic word match)
         const ocrLocalHits = searchLocalBottlesByOCR(ocrText);
         if (ocrLocalHits.length) { showLocalResult(localToMapped(ocrLocalHits[0]), labelChips); found = true; }
-        if (!found) {
-          const localHits = searchLocalBottles(apiQuery);
-          if (!localHits.length && shortQuery) localHits.push(...searchLocalBottles(shortQuery));
-          if (localHits.length) { showLocalResult(localToMapped(localHits[0]), labelChips); found = true; }
-        }
-        // Fallback: OCR often mis-reads cursive/script fonts — try each distinctive word individually
+        // 1b: distinctive word fallback — handles cursive/script OCR misreads (e.g. "flee" → "elmer")
         if (!found) {
           const SCAN_GENERIC = new Set(['single','double','small','batch','barrel','straight','bourbon','whiskey','whisky','kentucky','tennessee','blended','aged','reserve','mash','sour','proof','years','year','old','american','bottle','glass','liquor','distillery','distilled','bottled','product','spirits','alcohol','content','from','with','the','and','for','this']);
           const ocrWords = ocrText.toLowerCase().split(/\W+/).filter(w => w.length >= 4 && !SCAN_GENERIC.has(w));
@@ -1512,6 +1508,12 @@ function handleImageCapture(input) {
             const hits = searchLocalBottles(word);
             if (hits.length) { showLocalResult(localToMapped(hits[0]), labelChips); found = true; break; }
           }
+        }
+        // 1c: web entity / OCR first-line query (visual match — less reliable, runs last for local DB)
+        if (!found) {
+          const localHits = searchLocalBottles(apiQuery);
+          if (!localHits.length && shortQuery) localHits.push(...searchLocalBottles(shortQuery));
+          if (localHits.length) { showLocalResult(localToMapped(localHits[0]), labelChips); found = true; }
         }
 
         // Step 2: Live Distiller search (if Apify token set)
