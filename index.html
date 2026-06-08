@@ -643,7 +643,7 @@
       </button>
       <button class="ds-btn" id="ds-website-btn" onclick="distilleryWebsite()" style="display:none">
         <span class="ds-btn-icon">🔗</span>
-        <span class="ds-btn-label">Visit Website<small id="ds-website-sub">Official distillery site</small></span>
+        <span class="ds-btn-label">Visit Website<small id="ds-website-sub">Loading…</small></span>
         <span style="color:var(--muted)">›</span>
       </button>
       <button class="ds-btn" onclick="distilleryMoreBottles()">
@@ -2139,21 +2139,46 @@ function distilleryWebsiteUrl(name) {
   const key = Object.keys(DISTILLERY_WEBSITES).find(k => k.toLowerCase() === (name||'').toLowerCase());
   return key ? DISTILLERY_WEBSITES[key] : null;
 }
+let _dsWebsiteUrl = '';
 function distilleryWebsite() {
-  const url = distilleryWebsiteUrl(_dsName) || `https://www.google.com/search?q=${encodeURIComponent(_dsName + ' distillery official site')}`;
-  window.open(url, '_blank');
+  if (_dsWebsiteUrl) window.open(_dsWebsiteUrl, '_blank');
+}
+async function fetchDistilleryWebsiteFromPlaces(name) {
+  // First check the hardcoded lookup
+  const known = distilleryWebsiteUrl(name);
+  if (known) return known;
+  // Fall back to Google Places API using the stored Vision key
+  const key = getApiKey();
+  if (!key) return null;
+  try {
+    const resp = await fetch('https://places.googleapis.com/v1/places:searchText', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': key,
+        'X-Goog-FieldMask': 'places.websiteUri,places.displayName'
+      },
+      body: JSON.stringify({ textQuery: name + ' distillery', maxResultCount: 1 })
+    });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    return data.places?.[0]?.websiteUri || null;
+  } catch(_) { return null; }
 }
 async function openDistillerySheet(name, country, region) {
-  _dsName = name; _dsCountry = country; _dsRegion = region;
+  _dsName = name; _dsCountry = country; _dsRegion = region; _dsWebsiteUrl = '';
   document.getElementById('ds-name').textContent = name;
   document.getElementById('ds-sub').textContent = [region, country].filter(Boolean).join(', ') || 'Distillery';
-  const websiteUrl = distilleryWebsiteUrl(name) || `https://www.google.com/search?q=${encodeURIComponent(name + ' distillery official site')}`;
+  // Reset website button while we fetch
   const websiteBtn = document.getElementById('ds-website-btn');
-  websiteBtn.style.display = 'flex';
-  const knownUrl = distilleryWebsiteUrl(name);
-  document.getElementById('ds-website-sub').textContent = knownUrl
-    ? knownUrl.replace(/^https?:\/\//,'').replace(/\/$/,'')
-    : 'Search for official site';
+  websiteBtn.style.display = 'none';
+  fetchDistilleryWebsiteFromPlaces(name).then(url => {
+    if (url && _dsName === name) {
+      _dsWebsiteUrl = url;
+      document.getElementById('ds-website-sub').textContent = url.replace(/^https?:\/\//,'').replace(/\/$/,'');
+      websiteBtn.style.display = 'flex';
+    }
+  });
   // Reset market panel
   const mktEl = document.getElementById('ds-market');
   document.getElementById('ds-market-content').innerHTML = '<div class="ds-market-loading">Loading…</div>';
