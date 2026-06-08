@@ -439,7 +439,13 @@
       <input type="file" id="camera-input"  accept="image/*" capture="environment" style="display:none" onchange="handleImageCapture(this)"/>
       <input type="file" id="gallery-input" accept="image/*"                        style="display:none" onchange="handleImageCapture(this)"/>
 
-      <div class="scan-recent" id="scan-regional-db"></div>
+      <div class="scan-recent">
+        <div class="section-header">
+          <span class="section-title">Bottle Database</span>
+          <button class="section-link" onclick="navTo('browse')">See All</button>
+        </div>
+        <div class="recent-scroll" id="recent-scroll"></div>
+      </div>
 
       <div style="padding:0 20px 20px">
         <div class="quote-banner">
@@ -2157,14 +2163,13 @@ async function openDistillerySheet(name, country, region) {
   _dsName = name; _dsCountry = country; _dsRegion = region;
   document.getElementById('ds-name').textContent = name;
   document.getElementById('ds-sub').textContent = [region, country].filter(Boolean).join(', ') || 'Distillery';
-  const websiteUrl = distilleryWebsiteUrl(name);
+  const websiteUrl = distilleryWebsiteUrl(name) || `https://www.google.com/search?q=${encodeURIComponent(name + ' distillery official site')}`;
   const websiteBtn = document.getElementById('ds-website-btn');
-  if (websiteUrl) {
-    websiteBtn.style.display = 'flex';
-    document.getElementById('ds-website-sub').textContent = websiteUrl.replace(/^https?:\/\//,'').replace(/\/$/,'');
-  } else {
-    websiteBtn.style.display = 'none';
-  }
+  websiteBtn.style.display = 'flex';
+  const knownUrl = distilleryWebsiteUrl(name);
+  document.getElementById('ds-website-sub').textContent = knownUrl
+    ? knownUrl.replace(/^https?:\/\//,'').replace(/\/$/,'')
+    : 'Search for official site';
   // Reset market panel
   const mktEl = document.getElementById('ds-market');
   document.getElementById('ds-market-content').innerHTML = '<div class="ds-market-loading">Loading…</div>';
@@ -2365,8 +2370,26 @@ function init() {
   document.getElementById('daily-quote').textContent = `"${q.text}"`;
   document.getElementById('daily-quote-author').textContent = `— ${q.author}`;
 
-  // Render regional bottle database on scan screen
-  renderRegionalDB();
+  // Load recent bottles from API for home screen
+  const recentEl = document.getElementById('recent-scroll');
+  recentEl.innerHTML = `<div style="color:var(--muted2);font-size:12px;padding:10px 4px">Loading…</div>`;
+  searchWhiskyEditionAPI('whisky').then(items => {
+    if (!items.length) { recentEl.innerHTML = ''; return; }
+    const shuffled = items.sort(() => Math.random() - 0.5).slice(0, 6);
+    recentEl.innerHTML = shuffled.map((item, idx) => {
+      const b = mapApiItem(item);
+      return `<div class="recent-card" onclick="openHomeDetail(${idx}, this)" data-idx="${idx}">
+        <div class="recent-card-img">
+          ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.name}" style="width:44px;height:52px;object-fit:contain;border-radius:4px">` : '🥃'}
+        </div>
+        <div class="recent-card-body">
+          <div class="recent-card-name">${b.name}</div>
+          <div class="recent-card-year">${b.type}</div>
+        </div>
+      </div>`;
+    }).join('');
+    window._homeItems = shuffled;
+  }).catch(() => { recentEl.innerHTML = ''; });
 
   renderNotes();
 }
