@@ -1,0 +1,2183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1a0a00" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BarrelScout" />
+  <meta name="description" content="Identify vintage and collectible whiskey & bourbon bottles instantly." />
+  <title>BarrelScout – Whiskey Bottle Identifier</title>
+
+  <style>
+    /* ── Design Tokens ──────────────────────────────────────── */
+    :root {
+      --bg:          #0d0500;
+      --bg2:         #1a0a00;
+      --bg3:         #261200;
+      --bg4:         #311800;
+      --card:        #1e0e02;
+      --card2:       #2a1504;
+      --border:      #5c2e0a;
+      --border2:     #7a3d10;
+      --amber:       #c8710a;
+      --amber-light: #e8920d;
+      --amber-glow:  #f0a830;
+      --gold:        #d4a017;
+      --gold-light:  #f0c040;
+      --cream:       #f5e6c8;
+      --cream2:      #e8d4a8;
+      --muted:       #9a7a5a;
+      --muted2:      #7a5a3a;
+      --text:        #f2e0c0;
+      --text2:       #c8a878;
+      --red:         #c0392b;
+      --green:       #27ae60;
+      --radius:      14px;
+      --radius-sm:   8px;
+      --shadow:      0 4px 24px rgba(0,0,0,0.6);
+      --shadow-amber:0 0 20px rgba(200,113,10,0.25);
+      --font:        'Georgia', 'Times New Roman', serif;
+      --font-ui:     -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --tab-h:       68px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    /* ── Reset & Base ───────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%; width: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none;
+    }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; }
+    img { display: block; }
+    input, textarea { font-family: inherit; }
+
+    /* ── App Shell ──────────────────────────────────────────── */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── Top Bar ────────────────────────────────────────────── */
+    #topbar {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px 10px;
+      padding-top: calc(14px + env(safe-area-inset-top, 0px));
+      background: linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+      z-index: 10;
+    }
+    .topbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .topbar-logo svg { width: 28px; height: 28px; }
+    .topbar-title {
+      font-family: var(--font);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--amber-glow);
+      letter-spacing: 0.03em;
+      text-shadow: 0 0 12px rgba(240,168,48,0.4);
+    }
+    .topbar-subtitle {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-top: 1px;
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .icon-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text2);
+      transition: background 0.15s, color 0.15s;
+    }
+    .icon-btn:active { background: var(--border); color: var(--amber-glow); }
+
+    /* ── Screen Container ───────────────────────────────────── */
+    #screens {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    .screen {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .screen.active {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0);
+    }
+
+    /* ── Bottom Nav ─────────────────────────────────────────── */
+    #bottom-nav {
+      flex-shrink: 0;
+      display: flex;
+      align-items: stretch;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      padding-bottom: var(--safe-bottom);
+      z-index: 10;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 10px 4px;
+      color: var(--muted2);
+      transition: color 0.15s;
+      position: relative;
+    }
+    .nav-item.active { color: var(--amber-glow); }
+    .nav-item svg { width: 22px; height: 22px; }
+    .nav-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .nav-item.active::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 20%; right: 20%;
+      height: 2px;
+      background: var(--amber-glow);
+      border-radius: 0 0 2px 2px;
+    }
+
+    /* ── SCAN SCREEN ────────────────────────────────────────── */
+    #screen-scan {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: var(--bg);
+    }
+    .scan-hero {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-height: 340px;
+      position: relative;
+      background: var(--bg2);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .scan-viewfinder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .scan-bg-pattern {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at center, rgba(200,113,10,0.08) 0%, transparent 70%),
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 20px,
+          rgba(255,255,255,0.015) 20px,
+          rgba(255,255,255,0.015) 21px
+        );
+    }
+    .scan-frame {
+      width: 220px;
+      height: 280px;
+      position: relative;
+    }
+    .scan-corner {
+      position: absolute;
+      width: 28px; height: 28px;
+      border-color: var(--amber-glow);
+      border-style: solid;
+      border-width: 0;
+    }
+    .scan-corner.tl { top:0;left:0; border-top-width:3px; border-left-width:3px; border-top-left-radius:4px; }
+    .scan-corner.tr { top:0;right:0; border-top-width:3px; border-right-width:3px; border-top-right-radius:4px; }
+    .scan-corner.bl { bottom:0;left:0; border-bottom-width:3px; border-left-width:3px; border-bottom-left-radius:4px; }
+    .scan-corner.br { bottom:0;right:0; border-bottom-width:3px; border-right-width:3px; border-bottom-right-radius:4px; }
+    .scan-line {
+      position: absolute;
+      left: 4%; right: 4%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--amber-glow), transparent);
+      top: 50%;
+      animation: scanMove 2.4s ease-in-out infinite;
+      box-shadow: 0 0 8px var(--amber);
+    }
+    @keyframes scanMove {
+      0%,100% { top: 8%; opacity: 0.6; }
+      50% { top: 92%; opacity: 1; }
+    }
+    .scan-bottle-icon {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(200,113,10,0.15);
+    }
+    .scan-bottle-icon svg { width: 90px; height: 90px; }
+
+    .scan-controls {
+      width: 100%;
+      padding: 20px 20px 12px;
+    }
+    .scan-cta {
+      width: 100%;
+      background: linear-gradient(135deg, var(--amber) 0%, var(--amber-light) 100%);
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 16px;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 20px rgba(200,113,10,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .scan-cta:active { transform: scale(0.97); box-shadow: 0 2px 10px rgba(200,113,10,0.3); }
+    .scan-cta svg { width: 22px; height: 22px; }
+
+    .scan-or {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted2);
+      margin: 12px 0;
+      position: relative;
+    }
+    .scan-or::before, .scan-or::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 38%;
+      height: 1px;
+      background: var(--border);
+    }
+    .scan-or::before { left: 0; }
+    .scan-or::after { right: 0; }
+
+    .scan-gallery-btn {
+      width: 100%;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      font-size: 15px;
+      font-weight: 600;
+      padding: 14px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .scan-gallery-btn:active { background: var(--card); }
+    .scan-gallery-btn svg { width: 20px; height: 20px; }
+
+    .scan-recent {
+      width: 100%;
+      padding: 16px 20px 8px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-family: var(--font);
+      font-size: 16px;
+      color: var(--cream2);
+      letter-spacing: 0.02em;
+    }
+    .section-link {
+      font-size: 12px;
+      color: var(--amber);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .recent-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .recent-scroll::-webkit-scrollbar { display: none; }
+
+    .recent-card {
+      flex-shrink: 0;
+      width: 110px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .recent-card:active { opacity: 0.8; }
+    .recent-card-img {
+      width: 100%;
+      height: 80px;
+      background: var(--card2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+    }
+    .recent-card-body { padding: 8px; }
+    .recent-card-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--cream);
+      line-height: 1.3;
+      margin-bottom: 3px;
+    }
+    .recent-card-year {
+      font-size: 10px;
+      color: var(--amber);
+      font-weight: 600;
+    }
+
+    /* ── RESULT OVERLAY ─────────────────────────────────────── */
+    #result-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0,0,0,0.88);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    #result-overlay.show { opacity: 1; pointer-events: all; }
+    .result-sheet {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-radius: 20px 20px 0 0;
+      padding: 0 0 calc(20px + var(--safe-bottom));
+      max-height: 88vh;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+    }
+    #result-overlay.show .result-sheet { transform: translateY(0); }
+
+    .result-handle {
+      width: 40px; height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 12px auto 16px;
+    }
+    .result-scanning {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .scanning-dots {
+      display: flex; gap: 8px;
+    }
+    .scanning-dots span {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--amber);
+      animation: dotPulse 1.2s ease-in-out infinite;
+    }
+    .scanning-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .scanning-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dotPulse {
+      0%,80%,100% { opacity: 0.3; transform: scale(0.8); }
+      40% { opacity: 1; transform: scale(1.1); }
+    }
+    .scanning-label {
+      font-size: 15px;
+      color: var(--text2);
+      letter-spacing: 0.04em;
+    }
+
+    .result-content { padding: 0 20px 10px; display: none; }
+    .result-content.show { display: block; }
+
+    .result-match-header {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+    .result-bottle-img {
+      width: 72px;
+      height: 100px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      flex-shrink: 0;
+    }
+    .result-meta { flex: 1; }
+    .result-name {
+      font-family: var(--font);
+      font-size: 20px;
+      color: var(--cream);
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+    .result-distillery {
+      font-size: 12px;
+      color: var(--amber);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+    .result-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .badge-amber { background: rgba(200,113,10,0.2); color: var(--amber-glow); border: 1px solid rgba(200,113,10,0.3); }
+    .badge-gold  { background: rgba(212,160,23,0.2); color: var(--gold-light);  border: 1px solid rgba(212,160,23,0.3); }
+    .badge-cream { background: rgba(245,230,200,0.1); color: var(--cream2);    border: 1px solid rgba(245,230,200,0.2); }
+    .badge-red   { background: rgba(192,57,43,0.2);  color: #e74c3c;           border: 1px solid rgba(192,57,43,0.3); }
+    .badge-green { background: rgba(39,174,96,0.2);  color: #2ecc71;           border: 1px solid rgba(39,174,96,0.3); }
+
+    .confidence-bar {
+      margin-bottom: 18px;
+      padding: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .confidence-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .confidence-label strong { color: var(--amber-glow); font-size: 13px; }
+    .confidence-track {
+      height: 6px;
+      background: var(--bg3);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .confidence-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--amber) 0%, var(--gold-light) 100%);
+      transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .result-details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .detail-cell {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+    }
+    .detail-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+    .detail-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--cream);
+    }
+    .detail-value.accent { color: var(--amber-glow); }
+
+    .flavor-section { margin-bottom: 18px; }
+    .flavor-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+    .flavor-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+    .flavor-tag {
+      padding: 5px 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--cream2);
+    }
+
+    .result-desc {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text2);
+      margin-bottom: 18px;
+      padding: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-primary {
+      flex: 1;
+      background: linear-gradient(135deg, var(--amber) 0%, var(--amber-light) 100%);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 13px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 3px 12px rgba(200,113,10,0.35);
+    }
+    .btn-primary:active { opacity: 0.85; }
+    .btn-secondary {
+      flex: 1;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 13px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-secondary:active { background: var(--card); }
+
+    /* ── BROWSE SCREEN ──────────────────────────────────────── */
+    #screen-browse {
+      padding: 16px 16px calc(var(--tab-h) + var(--safe-bottom) + 16px);
+    }
+    .browse-search-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .browse-search {
+      width: 100%;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 15px;
+      padding: 12px 42px 12px 44px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .browse-search::placeholder { color: var(--muted2); }
+    .browse-search:focus { border-color: var(--amber); }
+    .search-icon {
+      position: absolute;
+      left: 13px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted2);
+      width: 18px; height: 18px;
+    }
+    .search-clear {
+      position: absolute;
+      right: 10px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted2);
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg3);
+      display: none;
+    }
+    .search-clear.visible { display: flex; }
+
+    .filter-chips {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 16px;
+      scrollbar-width: none;
+    }
+    .filter-chips::-webkit-scrollbar { display: none; }
+    .chip {
+      flex-shrink: 0;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+    .chip.active {
+      background: rgba(200,113,10,0.2);
+      border-color: var(--amber);
+      color: var(--amber-glow);
+    }
+
+    .bottle-list { display: flex; flex-direction: column; gap: 10px; }
+    .bottle-row {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .bottle-row:active { background: var(--card2); border-color: var(--border2); }
+    .bottle-emoji {
+      width: 52px; height: 68px;
+      background: var(--bg3);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px;
+      flex-shrink: 0;
+    }
+    .bottle-info { flex: 1; min-width: 0; }
+    .bottle-name {
+      font-family: var(--font);
+      font-size: 16px;
+      color: var(--cream);
+      line-height: 1.3;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .bottle-distillery {
+      font-size: 11px;
+      color: var(--amber);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 6px;
+    }
+    .bottle-stats {
+      display: flex; gap: 10px;
+    }
+    .bottle-stat {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .bottle-stat strong { color: var(--text2); }
+    .bottle-chevron {
+      color: var(--muted2);
+      flex-shrink: 0;
+    }
+    .bottle-chevron svg { width: 16px; height: 16px; }
+
+    /* ── BOTTLE DETAIL OVERLAY ──────────────────────────────── */
+    #detail-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: var(--bg);
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    #detail-overlay.show { transform: translateX(0); }
+    .detail-topbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      padding-top: calc(14px + env(safe-area-inset-top, 0px));
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0; z-index: 5;
+    }
+    .back-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text2);
+    }
+    .detail-topbar-title {
+      font-family: var(--font);
+      font-size: 18px;
+      color: var(--cream);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .detail-hero {
+      width: 100%;
+      background: linear-gradient(180deg, var(--bg3) 0%, var(--bg) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 20px 20px;
+    }
+    .detail-bottle-icon { font-size: 80px; margin-bottom: 16px; }
+    .detail-name {
+      font-family: var(--font);
+      font-size: 26px;
+      color: var(--cream);
+      text-align: center;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+    .detail-distillery {
+      font-size: 12px;
+      color: var(--amber);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 14px;
+    }
+    .detail-body { padding: 16px; }
+
+    /* ── COLLECTION SCREEN ──────────────────────────────────── */
+    #screen-collection {
+      padding: 16px 16px calc(var(--tab-h) + var(--safe-bottom) + 16px);
+    }
+    .collection-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 10px;
+      text-align: center;
+    }
+    .stat-number {
+      font-family: var(--font);
+      font-size: 26px;
+      color: var(--amber-glow);
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .collection-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted2);
+    }
+    .collection-empty svg { width: 60px; height: 60px; margin: 0 auto 16px; opacity: 0.4; }
+    .collection-empty p { font-size: 15px; line-height: 1.6; }
+    .collection-empty strong { color: var(--amber); display: block; font-size: 17px; margin-bottom: 8px; }
+
+    .collection-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .collection-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+    }
+    .collection-card:active { opacity: 0.85; }
+    .collection-card-img {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: var(--bg3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 52px;
+    }
+    .collection-card-body { padding: 10px; }
+    .collection-card-name {
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--cream);
+      line-height: 1.3;
+      margin-bottom: 2px;
+    }
+    .collection-card-year {
+      font-size: 11px;
+      color: var(--amber);
+      font-weight: 700;
+    }
+    .collection-card-remove {
+      position: absolute;
+      top: 6px; right: 6px;
+      width: 26px; height: 26px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted);
+    }
+    .collection-card-remove:active { color: #e74c3c; }
+
+    .add-to-collection-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      background: var(--card2);
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .add-to-collection-btn:active { background: var(--card); }
+
+    /* ── NOTES SCREEN ───────────────────────────────────────── */
+    #screen-notes {
+      padding: 16px 16px calc(var(--tab-h) + var(--safe-bottom) + 16px);
+    }
+    .notes-list { display: flex; flex-direction: column; gap: 12px; }
+    .note-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .note-card:active { border-color: var(--amber); }
+    .note-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .note-name {
+      font-family: var(--font);
+      font-size: 16px;
+      color: var(--cream);
+      line-height: 1.3;
+    }
+    .note-date {
+      font-size: 11px;
+      color: var(--muted2);
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+    .note-rating {
+      display: flex; gap: 2px;
+      margin-bottom: 10px;
+    }
+    .star { color: var(--gold); font-size: 16px; }
+    .star.empty { color: var(--muted2); }
+    .note-text {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text2);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .note-tags {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .note-tag {
+      padding: 3px 10px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .fab {
+      position: fixed;
+      bottom: calc(var(--tab-h) + var(--safe-bottom) + 16px);
+      right: 16px;
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--amber) 0%, var(--amber-light) 100%);
+      box-shadow: 0 4px 16px rgba(200,113,10,0.45);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      z-index: 50;
+      transition: transform 0.15s;
+    }
+    .fab:active { transform: scale(0.92); }
+    .fab svg { width: 24px; height: 24px; }
+
+    /* Note Editor Overlay */
+    #note-editor {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: var(--bg2);
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+      display: flex;
+      flex-direction: column;
+    }
+    #note-editor.show { transform: translateY(0); }
+    .note-editor-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      padding-top: calc(14px + env(safe-area-inset-top, 0px));
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+    }
+    .note-editor-title {
+      font-family: var(--font);
+      font-size: 18px;
+      color: var(--cream);
+    }
+    .note-editor-save {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--amber-glow);
+      padding: 6px 12px;
+      background: rgba(200,113,10,0.15);
+      border-radius: 8px;
+      border: 1px solid rgba(200,113,10,0.3);
+    }
+    .note-editor-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    .note-field {
+      margin-bottom: 18px;
+    }
+    .note-field-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .note-input {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 15px;
+      padding: 12px;
+      outline: none;
+    }
+    .note-input:focus { border-color: var(--amber); }
+    textarea.note-input { resize: none; min-height: 100px; line-height: 1.6; }
+    .star-picker {
+      display: flex;
+      gap: 6px;
+    }
+    .star-picker-btn {
+      font-size: 28px;
+      transition: transform 0.1s;
+    }
+    .star-picker-btn:active { transform: scale(1.2); }
+
+    /* ── PROFILE SCREEN ─────────────────────────────────────── */
+    #screen-profile {
+      padding: 16px 16px calc(var(--tab-h) + var(--safe-bottom) + 16px);
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+    .profile-avatar {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--amber) 0%, var(--gold) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      font-family: var(--font);
+      color: #fff;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .profile-name {
+      font-family: var(--font);
+      font-size: 20px;
+      color: var(--cream);
+      margin-bottom: 4px;
+    }
+    .profile-since {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .settings-group {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .settings-group-title {
+      padding: 10px 16px 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .settings-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(92,46,10,0.3);
+      cursor: pointer;
+    }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-row:active { background: var(--card2); }
+    .settings-row-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: var(--bg3);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--amber);
+      flex-shrink: 0;
+    }
+    .settings-row-icon svg { width: 16px; height: 16px; }
+    .settings-row-label {
+      flex: 1;
+      font-size: 15px;
+      color: var(--text);
+    }
+    .settings-row-value {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .settings-row-arrow { color: var(--muted2); }
+    .settings-row-arrow svg { width: 14px; height: 14px; }
+
+    .toggle-switch {
+      width: 44px; height: 26px;
+      border-radius: 13px;
+      background: var(--border);
+      position: relative;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle-switch.on { background: var(--amber); }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      top: 3px; left: 3px;
+      transition: left 0.2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .toggle-switch.on::after { left: 21px; }
+
+    /* ── Whiskey Quote Banner ───────────────────────────────── */
+    .quote-banner {
+      margin: 0 0 20px;
+      padding: 14px 16px;
+      background: linear-gradient(135deg, var(--bg3) 0%, var(--bg4) 100%);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      border-radius: var(--radius-sm);
+    }
+    .quote-text {
+      font-family: var(--font);
+      font-style: italic;
+      font-size: 14px;
+      color: var(--cream2);
+      line-height: 1.6;
+      margin-bottom: 6px;
+    }
+    .quote-author {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Toast ──────────────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: calc(var(--tab-h) + var(--safe-bottom) + 20px);
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--card2);
+      border: 1px solid var(--border2);
+      color: var(--cream);
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+      white-space: nowrap;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Utility ────────────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 16px 0;
+    }
+    .text-muted { color: var(--muted); }
+    .mt-16 { margin-top: 16px; }
+  </style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- TOP BAR -->
+  <header id="topbar">
+    <div class="topbar-logo">
+      <!-- Barrel icon -->
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="14" cy="5" rx="9" ry="3" stroke="#f0a830" stroke-width="1.5"/>
+        <ellipse cx="14" cy="23" rx="9" ry="3" stroke="#f0a830" stroke-width="1.5"/>
+        <line x1="5" y1="5" x2="5" y2="23" stroke="#f0a830" stroke-width="1.5"/>
+        <line x1="23" y1="5" x2="23" y2="23" stroke="#f0a830" stroke-width="1.5"/>
+        <path d="M5 14 Q14 17 23 14" stroke="#f0a830" stroke-width="1.2" fill="none"/>
+        <path d="M5 14 Q14 11 23 14" stroke="#f0a830" stroke-width="1.2" fill="none"/>
+      </svg>
+      <div>
+        <div class="topbar-title">BarrelScout</div>
+        <div class="topbar-subtitle">Whiskey Identifier</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" onclick="showNotifications()">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
+          <path d="M10 2a6 6 0 0 1 6 6v3l1.5 2.5H2.5L4 11V8a6 6 0 0 1 6-6z"/>
+          <path d="M8 16a2 2 0 0 0 4 0"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- SCREENS -->
+  <div id="screens">
+
+    <!-- ① SCAN -->
+    <section id="screen-scan" class="screen active">
+      <div class="scan-hero">
+        <div class="scan-bg-pattern"></div>
+        <div class="scan-viewfinder">
+          <div class="scan-frame">
+            <div class="scan-corner tl"></div>
+            <div class="scan-corner tr"></div>
+            <div class="scan-corner bl"></div>
+            <div class="scan-corner br"></div>
+            <div class="scan-line"></div>
+            <div class="scan-bottle-icon">
+              <svg viewBox="0 0 60 100" fill="currentColor"><path d="M22 0h16v14l6 8v62a6 6 0 0 1-6 6H22a6 6 0 0 1-6-6V22l6-8V0z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scan-controls">
+        <button class="scan-cta" onclick="startScan()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            <path d="M11 8v6M8 11h6" stroke-linecap="round"/>
+          </svg>
+          Scan a Bottle
+        </button>
+        <div class="scan-or">or</div>
+        <button class="scan-gallery-btn" onclick="startScan()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21,15 16,10 5,21"/>
+          </svg>
+          Choose from Photo Library
+        </button>
+      </div>
+
+      <div class="scan-recent">
+        <div class="section-header">
+          <span class="section-title">Recently Identified</span>
+          <button class="section-link" onclick="navTo('browse')">See All</button>
+        </div>
+        <div class="recent-scroll" id="recent-scroll"></div>
+      </div>
+
+      <div style="padding: 0 20px 20px;">
+        <div class="quote-banner">
+          <div class="quote-text" id="daily-quote">"Too much of anything is bad, but too much good whiskey is barely enough."</div>
+          <div class="quote-author" id="daily-quote-author">— Mark Twain</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ② BROWSE -->
+    <section id="screen-browse" class="screen">
+      <div class="browse-search-wrap">
+        <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/>
+        </svg>
+        <input class="browse-search" id="browse-input" type="search" placeholder="Search bottles, distilleries…"
+               oninput="filterBottles(this.value)" autocomplete="off" autocorrect="off" spellcheck="false"/>
+        <button class="search-clear" id="search-clear" onclick="clearSearch()">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <path d="M5 5l10 10M15 5L5 15"/>
+          </svg>
+        </button>
+      </div>
+      <div class="filter-chips" id="filter-chips"></div>
+      <div class="bottle-list" id="bottle-list"></div>
+    </section>
+
+    <!-- ③ COLLECTION -->
+    <section id="screen-collection" class="screen">
+      <div class="collection-stats">
+        <div class="stat-card">
+          <div class="stat-number" id="stat-bottles">0</div>
+          <div class="stat-label">Bottles</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="stat-distilleries">0</div>
+          <div class="stat-label">Distilleries</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="stat-avg-age">—</div>
+          <div class="stat-label">Avg Age</div>
+        </div>
+      </div>
+      <div id="collection-content"></div>
+      <button class="add-to-collection-btn" onclick="navTo('browse')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <circle cx="10" cy="10" r="8"/><path d="M10 6v8M6 10h8"/>
+        </svg>
+        Browse & Add Bottles
+      </button>
+    </section>
+
+    <!-- ④ NOTES -->
+    <section id="screen-notes" class="screen">
+      <div class="notes-list" id="notes-list"></div>
+      <div id="notes-empty" style="display:none; text-align:center; padding:48px 20px; color:var(--muted2);">
+        <svg viewBox="0 0 60 60" width="60" height="60" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 16px;opacity:0.4">
+          <path d="M10 8h40v44H10z" rx="3"/><path d="M18 20h24M18 28h24M18 36h16"/>
+        </svg>
+        <strong style="color:var(--amber);display:block;font-size:17px;margin-bottom:8px;">No tasting notes yet</strong>
+        <p style="font-size:14px;line-height:1.6;">Tap the <strong style="color:var(--amber);">+</strong> button to log your first pour</p>
+      </div>
+      <button class="fab" onclick="openNoteEditor(null)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </button>
+    </section>
+
+    <!-- ⑤ PROFILE -->
+    <section id="screen-profile" class="screen">
+      <div class="profile-header">
+        <div class="profile-avatar" id="profile-avatar">J</div>
+        <div>
+          <div class="profile-name" id="profile-name">Jeremy</div>
+          <div class="profile-since">Scout since June 2026</div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">Preferences</div>
+        <div class="settings-row" onclick="toggleSetting(this, 'notifications')">
+          <div class="settings-row-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
+              <path d="M10 2a6 6 0 0 1 6 6v3l1.5 2.5H2.5L4 11V8a6 6 0 0 1 6-6z"/>
+              <path d="M8 16a2 2 0 0 0 4 0"/>
+            </svg>
+          </div>
+          <span class="settings-row-label">Push Notifications</span>
+          <div class="toggle-switch on" id="toggle-notifications"></div>
+        </div>
+        <div class="settings-row" onclick="toggleSetting(this, 'haptics')">
+          <div class="settings-row-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
+              <path d="M5 10h10M3 7h14M7 13h6"/>
+            </svg>
+          </div>
+          <span class="settings-row-label">Haptic Feedback</span>
+          <div class="toggle-switch on" id="toggle-haptics"></div>
+        </div>
+        <div class="settings-row" onclick="toggleSetting(this, 'highconfidence')">
+          <div class="settings-row-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
+              <path d="M10 2l2.2 5.4L18 8.3l-4 3.8.9 5.4L10 15l-4.9 2.5.9-5.4-4-3.8 5.8-.9L10 2z"/>
+            </svg>
+          </div>
+          <span class="settings-row-label">High-Confidence Only</span>
+          <div class="toggle-switch" id="toggle-highconfidence"></div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">About</div>
+        <div class="settings-row">
+          <div class="settings-row-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
+              <circle cx="10" cy="10" r="8"/><path d="M10 9v5M10 7h.01"/>
+            </svg>
+          </div>
+          <span class="settings-row-label">Version</span>
+          <span class="settings-row-value">1.0.0 (beta)</span>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
+              <path d="M3 6h14M3 10h14M3 14h8"/>
+            </svg>
+          </div>
+          <span class="settings-row-label">Data Sources</span>
+          <div class="settings-row-arrow"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 5l5 5-5 5"/></svg></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
+              <path d="M10 3a7 7 0 1 0 0 14A7 7 0 0 0 10 3z"/>
+              <path d="M7 10h6M10 7v6"/>
+            </svg>
+          </div>
+          <span class="settings-row-label">Privacy Policy</span>
+          <div class="settings-row-arrow"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 5l5 5-5 5"/></svg></div>
+        </div>
+      </div>
+
+      <div class="quote-banner">
+        <div class="quote-text">"Whiskey is liquid sunshine."</div>
+        <div class="quote-author">— George Bernard Shaw</div>
+      </div>
+    </section>
+
+  </div><!-- /screens -->
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottom-nav">
+    <button class="nav-item active" data-screen="scan" onclick="navTo('scan')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/>
+        <rect x="3" y="16" width="5" height="5"/><path d="M21 16h-5v5M16 16h.01M21 21h.01"/>
+      </svg>
+      <span class="nav-label">Scan</span>
+    </button>
+    <button class="nav-item" data-screen="browse" onclick="navTo('browse')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <span class="nav-label">Browse</span>
+    </button>
+    <button class="nav-item" data-screen="collection" onclick="navTo('collection')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M5 3h14v2l-2 14H7L5 5V3z"/><path d="M3 3h18"/>
+      </svg>
+      <span class="nav-label">Cellar</span>
+    </button>
+    <button class="nav-item" data-screen="notes" onclick="navTo('notes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+      </svg>
+      <span class="nav-label">Notes</span>
+    </button>
+    <button class="nav-item" data-screen="profile" onclick="navTo('profile')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span class="nav-label">Profile</span>
+    </button>
+  </nav>
+</div><!-- /app -->
+
+<!-- SCAN RESULT OVERLAY -->
+<div id="result-overlay" onclick="handleOverlayClick(event)">
+  <div class="result-sheet" id="result-sheet">
+    <div class="result-handle"></div>
+    <div class="result-scanning" id="result-scanning">
+      <div class="scanning-dots"><span></span><span></span><span></span></div>
+      <div class="scanning-label">Analyzing bottle…</div>
+    </div>
+    <div class="result-content" id="result-content">
+      <!-- filled dynamically -->
+    </div>
+  </div>
+</div>
+
+<!-- BOTTLE DETAIL OVERLAY -->
+<div id="detail-overlay">
+  <div class="detail-topbar">
+    <button class="back-btn" onclick="closeDetail()">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <path d="M13 5l-5 5 5 5"/>
+      </svg>
+    </button>
+    <span class="detail-topbar-title" id="detail-title">Bottle Detail</span>
+    <button class="icon-btn" onclick="toggleCollectionFromDetail()" id="detail-collect-btn">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18">
+        <path d="M10 2l2.2 5.4L18 8.3l-4 3.8.9 5.4L10 15l-4.9 2.5.9-5.4-4-3.8 5.8-.9L10 2z"/>
+      </svg>
+    </button>
+  </div>
+  <div id="detail-body"><!-- filled dynamically --></div>
+</div>
+
+<!-- NOTE EDITOR OVERLAY -->
+<div id="note-editor">
+  <div class="note-editor-bar">
+    <button class="back-btn" onclick="closeNoteEditor()">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <path d="M13 5l-5 5 5 5"/>
+      </svg>
+    </button>
+    <span class="note-editor-title">Tasting Note</span>
+    <button class="note-editor-save" onclick="saveNote()">Save</button>
+  </div>
+  <div class="note-editor-body">
+    <div class="note-field">
+      <div class="note-field-label">Whiskey Name</div>
+      <input class="note-input" id="note-whiskey" type="text" placeholder="e.g. Wild Turkey 101, 1980s"/>
+    </div>
+    <div class="note-field">
+      <div class="note-field-label">Rating</div>
+      <div class="star-picker" id="star-picker">
+        <button class="star-picker-btn" onclick="setRating(1)">★</button>
+        <button class="star-picker-btn" onclick="setRating(2)">★</button>
+        <button class="star-picker-btn" onclick="setRating(3)">★</button>
+        <button class="star-picker-btn" onclick="setRating(4)">★</button>
+        <button class="star-picker-btn" onclick="setRating(5)">★</button>
+      </div>
+    </div>
+    <div class="note-field">
+      <div class="note-field-label">Nose</div>
+      <input class="note-input" id="note-nose" type="text" placeholder="e.g. Vanilla, oak, dried fruits…"/>
+    </div>
+    <div class="note-field">
+      <div class="note-field-label">Palate</div>
+      <input class="note-input" id="note-palate" type="text" placeholder="e.g. Caramel, spice, dark cherry…"/>
+    </div>
+    <div class="note-field">
+      <div class="note-field-label">Finish</div>
+      <input class="note-input" id="note-finish" type="text" placeholder="e.g. Long, warming, hints of tobacco…"/>
+    </div>
+    <div class="note-field">
+      <div class="note-field-label">Notes</div>
+      <textarea class="note-input" id="note-text" placeholder="Overall impressions, occasion, score rationale…"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════
+const BOTTLES = [
+  {
+    id: 1, emoji: '🥃',
+    name: 'Wild Turkey 101',
+    distillery: 'Wild Turkey Distillery',
+    type: 'Bourbon', region: 'Kentucky',
+    age: '8 yr', proof: '101',
+    vintage: '1980s',
+    rarity: 'Common',
+    value: '$35–45',
+    color: '#c8710a',
+    flavors: ['Vanilla', 'Caramel', 'Oak', 'Spice', 'Dried Fruit'],
+    desc: 'A classic Kentucky straight bourbon with a bold, full-bodied profile. The 101 proof expression is beloved by enthusiasts for its honest, uncut character and exceptional value. Vintage 1980s bottles are prized for a richer, less filtered mash bill profile.',
+    tags: ['Kentucky', 'Vintage', 'Wheated']
+  },
+  {
+    id: 2, emoji: '🍶',
+    name: 'Pappy Van Winkle 23yr',
+    distillery: 'Buffalo Trace / Stitzel-Weller',
+    type: 'Bourbon', region: 'Kentucky',
+    age: '23 yr', proof: '95.6',
+    vintage: '2010s',
+    rarity: 'Unicorn',
+    value: '$1,500–3,000',
+    color: '#d4a017',
+    flavors: ['Dark Chocolate', 'Leather', 'Tobacco', 'Fig', 'Clove'],
+    desc: 'The crown jewel of American bourbon collecting. Pappy Van Winkle\'s Family Reserve 23 Year is released annually in extremely limited quantities and commands astronomical prices on the secondary market. Each bottle is a time capsule of old Stitzel-Weller craftsmanship.',
+    tags: ['Wheated', 'BTAC', 'Ultra-Rare']
+  },
+  {
+    id: 3, emoji: '🥃',
+    name: 'Eagle Rare 17yr',
+    distillery: 'Buffalo Trace Distillery',
+    type: 'Bourbon', region: 'Kentucky',
+    age: '17 yr', proof: '90',
+    vintage: 'Various',
+    rarity: 'Very Rare',
+    value: '$400–800',
+    color: '#e8920d',
+    flavors: ['Toffee', 'Herbs', 'Honey', 'Leather', 'Orange Peel'],
+    desc: 'Part of the Buffalo Trace Antique Collection, Eagle Rare 17 is released once yearly and features an extraordinarily complex profile developed over nearly two decades in new charred oak. Each year\'s release varies subtly based on barrel selection.',
+    tags: ['BTAC', 'Single Barrel', 'Anniversary']
+  },
+  {
+    id: 4, emoji: '🍾',
+    name: 'George T. Stagg',
+    distillery: 'Buffalo Trace Distillery',
+    type: 'Bourbon', region: 'Kentucky',
+    age: '15–17 yr', proof: '130–145',
+    vintage: 'Annual BTAC',
+    rarity: 'Very Rare',
+    value: '$600–1,200',
+    color: '#9a7a5a',
+    flavors: ['Cherry', 'Vanilla', 'Charred Oak', 'Mint', 'Coffee'],
+    desc: 'The powerhouse of the Buffalo Trace Antique Collection. George T. Stagg is an uncut, unfiltered bourbon that regularly earns top scores from critics worldwide. Its cask-strength proof (often exceeding 140) delivers an unmatched intensity and complexity.',
+    tags: ['BTAC', 'Cask Strength', 'Unfiltered']
+  },
+  {
+    id: 5, emoji: '🥃',
+    name: "Old Fitzgerald 8yr BiB",
+    distillery: "Heaven Hill / Stitzel-Weller",
+    type: "Bourbon", region: "Kentucky",
+    age: "8 yr", proof: "100",
+    vintage: "1960s–1980s",
+    rarity: "Scarce",
+    value: "$200–600",
+    color: "#c8710a",
+    flavors: ["Wheat", "Honey", "Baking Spice", "Peach", "Butterscotch"],
+    desc: "Old Fitzgerald Bottled-in-Bond is a wheated bourbon legend, originally produced at the iconic Stitzel-Weller Distillery. Vintage bottles from the 1960s–1980s are prized by collectors for their unmistakable wheated mash bill character and pristine age statements.",
+    tags: ["Wheated", "Bottled-in-Bond", "Stitzel-Weller"]
+  },
+  {
+    id: 6, emoji: '🥃',
+    name: "Four Roses Single Barrel",
+    distillery: "Four Roses Distillery",
+    type: "Bourbon", region: "Kentucky",
+    age: "10–13 yr", proof: "100–120",
+    vintage: "Various",
+    rarity: "Moderate",
+    value: "$50–80",
+    color: "#e8920d",
+    flavors: ["Rose", "Ripe Fruit", "Cinnamon", "Caramel", "Floral"],
+    desc: "Four Roses uses a unique combination of 5 yeast strains and 2 mash bills to produce 10 distinct bourbon recipes. The Single Barrel expression showcases one exceptional barrel, bottled at a higher proof to preserve its individual character.",
+    tags: ["Single Barrel", "High-Rye", "Award-Winning"]
+  },
+  {
+    id: 7, emoji: '🍾',
+    name: "A.H. Hirsch Reserve 20yr",
+    distillery: "Michter's (Pennco) / Hirsch",
+    type: "Bourbon", region: "Pennsylvania",
+    age: "20 yr", proof: "91.6",
+    vintage: "1974 distillate",
+    rarity: "Legendary",
+    value: "$2,000–5,000",
+    color: "#d4a017",
+    flavors: ["Marzipan", "Dried Cherry", "Cinnamon Toast", "Old Leather", "Sandalwood"],
+    desc: "Often called the greatest American bourbon ever produced. Distilled in 1974 at the Pennco distillery in Pennsylvania and aged over 20 years, A.H. Hirsch Reserve represents a lost era of Pennsylvania rye-style bourbon. The gold foil bottling is the most sought-after American whiskey in the world.",
+    tags: ["Pennsylvania", "Pre-Prohibition Style", "Legendary"]
+  },
+  {
+    id: 8, emoji: '🥃',
+    name: "W.L. Weller 12yr",
+    distillery: "Buffalo Trace Distillery",
+    type: "Bourbon", region: "Kentucky",
+    age: "12 yr", proof: "90",
+    vintage: "Current",
+    rarity: "Hard to Find",
+    value: "$50–150",
+    color: "#c8710a",
+    flavors: ["Caramel", "Vanilla", "Coconut", "Peach", "Light Oak"],
+    desc: "Often called the 'Poor Man's Pappy', W.L. Weller 12 Year shares the wheated mash bill of the Van Winkle family. Despite its modest suggested retail price, demand far outstrips supply, making it a sought-after bottle at any liquor store.",
+    tags: ["Wheated", "Buffalo Trace", "Pappy Alternative"]
+  }
+];
+
+const QUOTES = [
+  { text: "Too much of anything is bad, but too much good whiskey is barely enough.", author: "Mark Twain" },
+  { text: "Whiskey is liquid sunshine.", author: "George Bernard Shaw" },
+  { text: "There is no bad whiskey. There are only some whiskeys that aren't as good as others.", author: "Raymond Chandler" },
+  { text: "Always carry a flagon of whiskey in case of snakebite and furthermore always carry a small snake.", author: "W.C. Fields" },
+  { text: "Bourbon is like a symphony, and every bottle tells a different story.", author: "Unknown" },
+  { text: "I have never in my life seen a Kentuckian who didn't have a gun, a pack of cards, and a jug of whiskey.", author: "Andrew Jackson" },
+];
+
+const FILTERS = ['All', 'Bourbon', 'Rye', 'Vintage', 'Rare', 'BTAC'];
+
+// ── State ────────────────────────────────────────────────
+let activeScreen = 'scan';
+let activeFilter = 'All';
+let searchQuery = '';
+let collection = JSON.parse(localStorage.getItem('bs-collection') || '[]');
+let notes = JSON.parse(localStorage.getItem('bs-notes') || '[]');
+let editingNote = null;
+let noteRating = 0;
+let detailBottleId = null;
+
+// ══════════════════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════════════════
+function navTo(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  document.querySelector(`.nav-item[data-screen="${screen}"]`).classList.add('active');
+  activeScreen = screen;
+  if (screen === 'collection') renderCollection();
+  if (screen === 'notes') renderNotes();
+  if (screen === 'browse') renderBrowse();
+}
+
+// ══════════════════════════════════════════════════════════
+// SCAN + RESULT
+// ══════════════════════════════════════════════════════════
+function startScan() {
+  const overlay = document.getElementById('result-overlay');
+  const scanning = document.getElementById('result-scanning');
+  const content = document.getElementById('result-content');
+  scanning.style.display = 'flex';
+  content.classList.remove('show');
+  overlay.classList.add('show');
+
+  setTimeout(() => {
+    const bottle = BOTTLES[Math.floor(Math.random() * BOTTLES.length)];
+    const confidence = 88 + Math.floor(Math.random() * 11);
+    showResult(bottle, confidence);
+  }, 2200);
+}
+
+function showResult(bottle, confidence) {
+  const scanning = document.getElementById('result-scanning');
+  const content = document.getElementById('result-content');
+
+  const inCollection = collection.includes(bottle.id);
+  const rarityBadge = bottle.rarity === 'Unicorn' || bottle.rarity === 'Legendary'
+    ? 'badge-gold' : bottle.rarity === 'Very Rare' ? 'badge-amber' : 'badge-cream';
+
+  content.innerHTML = `
+    <div class="result-match-header">
+      <div class="result-bottle-img">${bottle.emoji}</div>
+      <div class="result-meta">
+        <div class="result-name">${bottle.name}</div>
+        <div class="result-distillery">${bottle.distillery}</div>
+        <div class="result-badges">
+          <span class="badge badge-amber">${bottle.type}</span>
+          <span class="badge ${rarityBadge}">${bottle.rarity}</span>
+          <span class="badge badge-cream">${bottle.vintage}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="confidence-bar">
+      <div class="confidence-label">
+        <span>Match Confidence</span>
+        <strong>${confidence}%</strong>
+      </div>
+      <div class="confidence-track">
+        <div class="confidence-fill" id="conf-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="result-details-grid">
+      <div class="detail-cell">
+        <div class="detail-label">Age</div>
+        <div class="detail-value accent">${bottle.age}</div>
+      </div>
+      <div class="detail-cell">
+        <div class="detail-label">Proof</div>
+        <div class="detail-value accent">${bottle.proof}°</div>
+      </div>
+      <div class="detail-cell">
+        <div class="detail-label">Region</div>
+        <div class="detail-value">${bottle.region}</div>
+      </div>
+      <div class="detail-cell">
+        <div class="detail-label">Est. Value</div>
+        <div class="detail-value accent">${bottle.value}</div>
+      </div>
+    </div>
+
+    <div class="flavor-section">
+      <div class="flavor-title">Flavor Profile</div>
+      <div class="flavor-tags">
+        ${bottle.flavors.map(f => `<span class="flavor-tag">${f}</span>`).join('')}
+      </div>
+    </div>
+
+    <div class="result-desc">${bottle.desc}</div>
+
+    <div class="result-actions">
+      <button class="btn-primary" onclick="addToCollectionFromResult(${bottle.id})">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <path d="M5 3h10v2l-2 12H7L5 5V3z"/><path d="M3 3h14"/>
+        </svg>
+        ${inCollection ? 'In Cellar ✓' : 'Add to Cellar'}
+      </button>
+      <button class="btn-secondary" onclick="closeResult(); openNoteEditor('${bottle.name}')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <path d="M14 2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6l-2-4z"/>
+          <polyline points="14 2 14 6 20 6"/><line x1="12" y1="11" x2="8" y2="11"/>
+          <line x1="12" y1="15" x2="8" y2="15"/>
+        </svg>
+        Add Note
+      </button>
+    </div>
+  `;
+
+  scanning.style.display = 'none';
+  content.classList.add('show');
+
+  setTimeout(() => {
+    const fill = document.getElementById('conf-fill');
+    if (fill) fill.style.width = confidence + '%';
+  }, 100);
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('result-overlay')) closeResult();
+}
+function closeResult() {
+  document.getElementById('result-overlay').classList.remove('show');
+}
+function addToCollectionFromResult(id) {
+  if (!collection.includes(id)) {
+    collection.push(id);
+    localStorage.setItem('bs-collection', JSON.stringify(collection));
+    showToast('Added to your Cellar 🥃');
+    const btn = document.querySelector('#result-content .btn-primary');
+    if (btn) btn.innerHTML = `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M5 3h10v2l-2 12H7L5 5V3z"/><path d="M3 3h14"/></svg> In Cellar ✓`;
+  } else {
+    showToast('Already in your Cellar');
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// BROWSE
+// ══════════════════════════════════════════════════════════
+function renderBrowse() {
+  // Filter chips
+  const chipsEl = document.getElementById('filter-chips');
+  chipsEl.innerHTML = FILTERS.map(f =>
+    `<button class="chip ${f === activeFilter ? 'active' : ''}" onclick="setFilter('${f}')">${f}</button>`
+  ).join('');
+
+  // Bottle list
+  const q = searchQuery.toLowerCase();
+  const filtered = BOTTLES.filter(b => {
+    const matchQ = !q || b.name.toLowerCase().includes(q) || b.distillery.toLowerCase().includes(q)
+      || b.flavors.some(f => f.toLowerCase().includes(q)) || b.tags.some(t => t.toLowerCase().includes(q));
+    const matchF = activeFilter === 'All'
+      || (activeFilter === 'Bourbon' && b.type === 'Bourbon')
+      || (activeFilter === 'Rye' && b.type === 'Rye')
+      || (activeFilter === 'Vintage' && b.vintage !== 'Current')
+      || (activeFilter === 'Rare' && ['Scarce','Very Rare','Unicorn','Legendary'].includes(b.rarity))
+      || (activeFilter === 'BTAC' && b.tags.includes('BTAC'));
+    return matchQ && matchF;
+  });
+
+  const listEl = document.getElementById('bottle-list');
+  if (!filtered.length) {
+    listEl.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--muted2);font-size:14px;">No bottles match your search</div>`;
+    return;
+  }
+  listEl.innerHTML = filtered.map(b => `
+    <div class="bottle-row" onclick="openDetail(${b.id})">
+      <div class="bottle-emoji">${b.emoji}</div>
+      <div class="bottle-info">
+        <div class="bottle-name">${b.name}</div>
+        <div class="bottle-distillery">${b.distillery}</div>
+        <div class="bottle-stats">
+          <span class="bottle-stat"><strong>${b.age}</strong></span>
+          <span class="bottle-stat"><strong>${b.proof}°</strong> proof</span>
+          <span class="bottle-stat">${b.rarity}</span>
+        </div>
+      </div>
+      <div class="bottle-chevron"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 5l5 5-5 5"/></svg></div>
+    </div>
+  `).join('');
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  renderBrowse();
+}
+function filterBottles(q) {
+  searchQuery = q;
+  const clear = document.getElementById('search-clear');
+  clear.classList.toggle('visible', q.length > 0);
+  renderBrowse();
+}
+function clearSearch() {
+  document.getElementById('browse-input').value = '';
+  filterBottles('');
+}
+
+// ══════════════════════════════════════════════════════════
+// DETAIL
+// ══════════════════════════════════════════════════════════
+function openDetail(id) {
+  const bottle = BOTTLES.find(b => b.id === id);
+  if (!bottle) return;
+  detailBottleId = id;
+
+  document.getElementById('detail-title').textContent = bottle.name;
+  const inCol = collection.includes(id);
+  const collectBtn = document.getElementById('detail-collect-btn');
+  collectBtn.style.color = inCol ? 'var(--amber-glow)' : '';
+
+  const rarityBadge = bottle.rarity === 'Unicorn' || bottle.rarity === 'Legendary'
+    ? 'badge-gold' : bottle.rarity === 'Very Rare' ? 'badge-amber' : 'badge-cream';
+
+  document.getElementById('detail-body').innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-bottle-icon">${bottle.emoji}</div>
+      <div class="detail-name">${bottle.name}</div>
+      <div class="detail-distillery">${bottle.distillery}</div>
+      <div class="result-badges">
+        <span class="badge badge-amber">${bottle.type}</span>
+        <span class="badge ${rarityBadge}">${bottle.rarity}</span>
+        <span class="badge badge-cream">${bottle.region}</span>
+      </div>
+    </div>
+    <div class="detail-body">
+      <div class="result-details-grid">
+        <div class="detail-cell"><div class="detail-label">Age Statement</div><div class="detail-value accent">${bottle.age}</div></div>
+        <div class="detail-cell"><div class="detail-label">Proof</div><div class="detail-value accent">${bottle.proof}°</div></div>
+        <div class="detail-cell"><div class="detail-label">Vintage Era</div><div class="detail-value">${bottle.vintage}</div></div>
+        <div class="detail-cell"><div class="detail-label">Est. Value</div><div class="detail-value accent">${bottle.value}</div></div>
+      </div>
+
+      <div class="flavor-section">
+        <div class="flavor-title">Flavor Profile</div>
+        <div class="flavor-tags">${bottle.flavors.map(f => `<span class="flavor-tag">${f}</span>`).join('')}</div>
+      </div>
+
+      <div class="result-desc">${bottle.desc}</div>
+
+      <div class="flavor-section">
+        <div class="flavor-title">Tags</div>
+        <div class="flavor-tags">${bottle.tags.map(t => `<span class="badge badge-amber" style="padding:5px 12px;font-size:11px;">${t}</span>`).join('')}</div>
+      </div>
+
+      <div class="result-actions" style="margin-top:8px;">
+        <button class="btn-primary" onclick="toggleCollectionFromDetail()">
+          ${inCol ? '✓ In Your Cellar' : '+ Add to Cellar'}
+        </button>
+        <button class="btn-secondary" onclick="closeDetail(); openNoteEditor('${bottle.name}')">
+          + Tasting Note
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('detail-overlay').classList.add('show');
+}
+
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('show');
+  detailBottleId = null;
+}
+
+function toggleCollectionFromDetail() {
+  if (!detailBottleId) return;
+  const id = detailBottleId;
+  const idx = collection.indexOf(id);
+  if (idx === -1) {
+    collection.push(id);
+    showToast('Added to your Cellar 🥃');
+  } else {
+    collection.splice(idx, 1);
+    showToast('Removed from Cellar');
+  }
+  localStorage.setItem('bs-collection', JSON.stringify(collection));
+  openDetail(id); // re-render
+}
+
+// ══════════════════════════════════════════════════════════
+// COLLECTION
+// ══════════════════════════════════════════════════════════
+function renderCollection() {
+  const bottles = BOTTLES.filter(b => collection.includes(b.id));
+  const statBottles = document.getElementById('stat-bottles');
+  const statDist = document.getElementById('stat-distilleries');
+  const statAge = document.getElementById('stat-avg-age');
+
+  statBottles.textContent = bottles.length;
+  const distilleries = new Set(bottles.map(b => b.distillery));
+  statDist.textContent = distilleries.size;
+  if (bottles.length) {
+    const ages = bottles.map(b => parseInt(b.age)).filter(n => !isNaN(n));
+    statAge.textContent = ages.length ? Math.round(ages.reduce((a,b)=>a+b,0)/ages.length) + 'yr' : '—';
+  } else { statAge.textContent = '—'; }
+
+  const content = document.getElementById('collection-content');
+  if (!bottles.length) {
+    content.innerHTML = `
+      <div class="collection-empty">
+        <svg viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M15 10h30v5l-4 35H19L15 15V10z"/><path d="M10 10h40"/>
+        </svg>
+        <strong>Your cellar is empty</strong>
+        <p>Scan a bottle or browse the database to start your collection</p>
+      </div>
+    `;
+    return;
+  }
+
+  content.innerHTML = `<div class="collection-grid">${
+    bottles.map(b => `
+      <div class="collection-card" onclick="openDetail(${b.id})">
+        <div class="collection-card-img">${b.emoji}</div>
+        <div class="collection-card-body">
+          <div class="collection-card-name">${b.name}</div>
+          <div class="collection-card-year">${b.vintage} · ${b.age}</div>
+        </div>
+        <button class="collection-card-remove" onclick="removeFromCollection(event, ${b.id})">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+            <path d="M3 3l10 10M13 3L3 13"/>
+          </svg>
+        </button>
+      </div>
+    `).join('')
+  }</div>`;
+}
+
+function removeFromCollection(e, id) {
+  e.stopPropagation();
+  collection = collection.filter(c => c !== id);
+  localStorage.setItem('bs-collection', JSON.stringify(collection));
+  renderCollection();
+  showToast('Removed from Cellar');
+}
+
+// ══════════════════════════════════════════════════════════
+// NOTES
+// ══════════════════════════════════════════════════════════
+function renderNotes() {
+  const list = document.getElementById('notes-list');
+  const empty = document.getElementById('notes-empty');
+  if (!notes.length) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = notes.map((n, i) => `
+    <div class="note-card" onclick="editNote(${i})">
+      <div class="note-header">
+        <div class="note-name">${n.whiskey || 'Unnamed Whiskey'}</div>
+        <div class="note-date">${n.date}</div>
+      </div>
+      <div class="note-rating">${
+        [1,2,3,4,5].map(s => `<span class="star${s > n.rating ? ' empty' : ''}">★</span>`).join('')
+      }</div>
+      <div class="note-text">${n.text || (n.nose || n.palate || n.finish || 'No notes written.')}</div>
+      <div class="note-tags">
+        ${n.nose ? `<span class="note-tag">Nose: ${n.nose.split(',')[0]}</span>` : ''}
+        ${n.palate ? `<span class="note-tag">Palate: ${n.palate.split(',')[0]}</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function openNoteEditor(whiskey) {
+  editingNote = null;
+  noteRating = 3;
+  document.getElementById('note-whiskey').value = whiskey || '';
+  document.getElementById('note-nose').value = '';
+  document.getElementById('note-palate').value = '';
+  document.getElementById('note-finish').value = '';
+  document.getElementById('note-text').value = '';
+  setRating(3);
+  navTo('notes');
+  document.getElementById('note-editor').classList.add('show');
+}
+function editNote(idx) {
+  editingNote = idx;
+  const n = notes[idx];
+  noteRating = n.rating;
+  document.getElementById('note-whiskey').value = n.whiskey || '';
+  document.getElementById('note-nose').value = n.nose || '';
+  document.getElementById('note-palate').value = n.palate || '';
+  document.getElementById('note-finish').value = n.finish || '';
+  document.getElementById('note-text').value = n.text || '';
+  setRating(n.rating);
+  document.getElementById('note-editor').classList.add('show');
+}
+function closeNoteEditor() {
+  document.getElementById('note-editor').classList.remove('show');
+}
+function setRating(r) {
+  noteRating = r;
+  const btns = document.querySelectorAll('.star-picker-btn');
+  btns.forEach((btn, i) => {
+    btn.style.color = i < r ? 'var(--gold-light)' : 'var(--muted2)';
+  });
+}
+function saveNote() {
+  const note = {
+    whiskey: document.getElementById('note-whiskey').value,
+    rating: noteRating,
+    nose: document.getElementById('note-nose').value,
+    palate: document.getElementById('note-palate').value,
+    finish: document.getElementById('note-finish').value,
+    text: document.getElementById('note-text').value,
+    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  };
+  if (editingNote !== null) notes[editingNote] = note;
+  else notes.unshift(note);
+  localStorage.setItem('bs-notes', JSON.stringify(notes));
+  closeNoteEditor();
+  renderNotes();
+  showToast('Note saved 📝');
+}
+
+// ══════════════════════════════════════════════════════════
+// PROFILE / SETTINGS
+// ══════════════════════════════════════════════════════════
+function toggleSetting(row, key) {
+  const toggle = document.getElementById('toggle-' + key);
+  toggle.classList.toggle('on');
+}
+function showNotifications() {
+  showToast('No new notifications');
+}
+
+// ══════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+function init() {
+  // Daily quote rotation
+  const q = QUOTES[new Date().getDate() % QUOTES.length];
+  document.getElementById('daily-quote').textContent = `"${q.text}"`;
+  document.getElementById('daily-quote-author').textContent = `— ${q.author}`;
+
+  // Recent scroll (random selection)
+  const recents = [...BOTTLES].sort(() => Math.random() - 0.5).slice(0, 5);
+  document.getElementById('recent-scroll').innerHTML = recents.map(b => `
+    <div class="recent-card" onclick="openDetail(${b.id})">
+      <div class="recent-card-img">${b.emoji}</div>
+      <div class="recent-card-body">
+        <div class="recent-card-name">${b.name}</div>
+        <div class="recent-card-year">${b.vintage}</div>
+      </div>
+    </div>
+  `).join('');
+
+  renderBrowse();
+  renderNotes();
+}
+
+init();
+</script>
+</body>
+</html>
