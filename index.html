@@ -496,7 +496,7 @@
       </div>
       <div id="local-bottles-section" style="display:none"></div>
       <div class="bottle-list" id="bottle-list"></div>
-      <div class="attribution-line" style="padding:8px 0 16px">Powered by <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a> · Local DB</div>
+      <div class="attribution-line" style="padding:8px 0 16px">Powered by <a href="https://thewhiskyedition.com" target="_blank">WHISKY:EDITION</a></div>
     </section>
 
     <!-- COLLECTION -->
@@ -1110,7 +1110,7 @@ function mapDistillerItem(item) {
     name, distillery,
     type: item.spiritType || 'Whiskey',
     country: (item.location||'').includes('Scotland') ? 'Scotland' : (item.location||'').includes('Ireland') ? 'Ireland' : (item.location||'').includes('Japan') ? 'Japan' : 'USA',
-    age: item.age || 'NAS',
+    age: (item.age && item.age !== 'NAS') ? item.age : '',
     abv: item.abv || null,
     proof: item.abv ? String(Math.round(item.abv * 2)) : '',
     desc: item.description || '',
@@ -1245,42 +1245,11 @@ function handleImageCapture(input) {
           } else {
             // Try a shorter/simpler query if first attempt found nothing
             const shortQuery = webEntities[0] || ocrText.trim().split(/\s+/).slice(0,3).join(' ');
+            // Try a shorter/simpler query before giving up
             let found = false;
             if (shortQuery && shortQuery !== apiQuery) {
               const retry = await searchWhiskyEditionAPI(shortQuery);
               if (retry.length > 0) { showApiResult(retry[0], labelChips, false); found = true; }
-            }
-            if (!found) {
-              // Fallback 1: Local bottle database (great for common American bourbons)
-              document.getElementById('scanning-label').textContent = 'Checking local database…';
-              const localHits = searchLocalBottles(apiQuery);
-              if (!localHits.length && shortQuery) localHits.push(...searchLocalBottles(shortQuery));
-              if (localHits.length) {
-                showLocalResult(localToMapped(localHits[0]), labelChips); found = true;
-              }
-            }
-            if (!found && getApifyToken()) {
-              // Fallback 2: Distiller live search
-              document.getElementById('scanning-label').textContent = 'Searching Distiller…';
-              try {
-                const distItems = await searchDistillerLive(apiQuery);
-                if (!distItems.length && shortQuery) distItems.push(...await searchDistillerLive(shortQuery));
-                if (distItems.length > 0) { showDistillerResult(distItems[0], labelChips); found = true; }
-              } catch(_) {}
-            }
-            if (!found) {
-              // Fallback 3: Open Food Facts
-              document.getElementById('scanning-label').textContent = 'Trying Open Food Facts…';
-              try {
-                const offItems = await searchOpenFoodFacts(apiQuery);
-                if (offItems.length > 0) { showOffResult(offItems[0], labelChips); found = true; }
-              } catch(_) {}
-            }
-            if (!found) {
-              // Fallback 4: Wikipedia
-              document.getElementById('scanning-label').textContent = 'Searching Wikipedia…';
-              const wiki = await searchWikipedia(apiQuery);
-              if (wiki && wiki.title) { showWikipediaResult(wiki, labelChips); found = true; }
             }
             if (!found) showNoMatch(labelChips, ocrText.toLowerCase());
           }
@@ -1370,7 +1339,7 @@ function mapApiItem(item) {
   const m = item.metadata || {};
   const abv = m.abv || 0;
   const proof = abv ? (abv * 2).toFixed(1) : 'N/A';
-  const age = m.age ? `${m.age} yr` : 'NAS';
+  const age = (m.age && m.age !== 'NAS') ? `${m.age} yr` : '';
   const country = m.country || '';
   const region = m.region ? `${m.region}${country ? ', ' + country : ''}` : country;
   const flavors = m.flavour ? m.flavour.split(/[,/]/).map(f => f.trim()).filter(Boolean) : [];
@@ -1448,7 +1417,7 @@ function showApiResult(item, labelChips, isDemo) {
     </div>
 
     <div class="result-details-grid">
-      <div class="detail-cell"><div class="detail-label">Age</div><div class="detail-value accent">${b.age}</div></div>
+      ${(b.age && b.age !== 'NAS') ? `<div class="detail-cell"><div class="detail-label">Age</div><div class="detail-value accent">${b.age}</div></div>` : ''}
       <div class="detail-cell"><div class="detail-label">ABV</div><div class="detail-value accent">${b.abv ? b.abv+'%' : 'N/A'}</div></div>
       <div class="detail-cell"><div class="detail-label">Region</div><div class="detail-value">${b.region}</div></div>
       ${b.price ? `<div class="detail-cell"><div class="detail-label">Price</div><div class="detail-value accent">${b.price}</div></div>` : `<div class="detail-cell"><div class="detail-label">Type</div><div class="detail-value">${b.type}</div></div>`}
@@ -1535,9 +1504,6 @@ async function renderBrowse() {
   // Render flavour chips
   const fc = document.getElementById('flavour-chips');
   if (fc) fc.innerHTML = FLAVOUR_OPTIONS.map(f=>`<button class="chip ${f===activeFlavour?'active':''}" onclick="setFlavour('${f}')">${f}</button>`).join('');
-  // Render local results immediately (synchronous — no wait)
-  renderLocalBottlesSection();
-
   const listEl = document.getElementById('bottle-list');
   listEl.innerHTML = `<div class="online-searching">⏳ Loading from WHISKY:EDITION…</div>`;
   try {
@@ -1581,7 +1547,7 @@ function renderLocalBottlesSection() {
         <div class="online-result-img-placeholder">🥃</div>
         <div class="online-result-info">
           <div class="online-result-name">${b.name}</div>
-          <div class="online-result-meta">${b.distillery} · ${b.region} · ${b.age}${b.abv?' · '+b.abv+'%':''}</div>
+          <div class="online-result-meta">${b.distillery} · ${b.region}${(b.age && b.age !== 'NAS') ? ' · ' + b.age : ''}${b.abv?' · '+b.abv+'%':''}</div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:3px">
             ${b.ratingAvg?`<span style="font-size:12px;color:var(--amber-glow);font-weight:700">⭐ ${b.ratingAvg}/100</span>`:''}
             ${b.valueForMoney?`<span class="vfm-stars">${vfmStars(b.valueForMoney)}</span>`:''}
@@ -1623,7 +1589,7 @@ function renderBrowseList(listEl) {
         : `<div class="online-result-img-placeholder">🥃</div>`}
       <div class="online-result-info">
         <div class="online-result-name">${b.name}</div>
-        <div class="online-result-meta">${b.distillery}${b.region ? ' · ' + b.region : ''} · ${b.age}${b.abv ? ' · ' + b.abv + '%' : ''}</div>
+        <div class="online-result-meta">${b.distillery}${b.region ? ' · ' + b.region : ''}${(b.age && b.age !== 'NAS') ? ' · ' + b.age : ''}${b.abv ? ' · ' + b.abv + '%' : ''}</div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:3px">
           ${rating}${vfm}${price}
         </div>
@@ -1700,7 +1666,7 @@ function renderDetailBody(b, inCol) {
     </div>
     <div class="detail-body">
       <div class="result-details-grid">
-        <div class="detail-cell"><div class="detail-label">Age</div><div class="detail-value accent">${b.age}</div></div>
+        ${(b.age && b.age !== 'NAS') ? `<div class="detail-cell"><div class="detail-label">Age</div><div class="detail-value accent">${b.age}</div></div>` : ''}
         <div class="detail-cell"><div class="detail-label">ABV</div><div class="detail-value accent">${b.abv ? b.abv+'%' : 'N/A'}</div></div>
         ${b.valueForMoney ? `<div class="detail-cell"><div class="detail-label">Value</div><div class="detail-value"><span class="vfm-stars">${vfmStars(b.valueForMoney)}</span></div></div>` : ''}
         ${b.price ? `<div class="detail-cell"><div class="detail-label">Price</div><div class="detail-value accent">${b.price}</div></div>` : ''}
@@ -1811,19 +1777,6 @@ function whSlugFor(name) {
   )?.slug || null;
 }
 
-// ═══════════════════════════════════════════════════════
-// OPEN FOOD FACTS API (scan fallback)
-// ═══════════════════════════════════════════════════════
-async function searchOpenFoodFacts(query) {
-  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&action=process&json=1&page_size=8&fields=product_name,brands,image_url,quantity,categories_tags`;
-  const r = await fetch(url, { headers: { 'User-Agent': 'BarrelScout/1.0' } });
-  if (!r.ok) throw new Error('OFF error');
-  const d = await r.json();
-  return (d.products || []).filter(p =>
-    p.product_name &&
-    (p.categories_tags || []).some(t => /whisky|whiskey|bourbon|scotch|rye/i.test(t))
-  );
-}
 
 function showLocalResult(b, labelChips) {
   currentScanItem = { _local: true, _mapped: b };
@@ -1933,38 +1886,6 @@ function addDistillerToCollection() {
   document.getElementById('result-collect-btn').textContent = '✓ In Your Cellar';
 }
 
-function showOffResult(product, labelChips) {
-  currentScanItem = null;
-  const scanning = document.getElementById('result-scanning');
-  const content  = document.getElementById('result-content');
-  const name  = product.product_name || 'Unknown Whiskey';
-  const brand = product.brands || '';
-  const img   = product.image_url || '';
-  content.innerHTML = `
-    <div class="result-match-header">
-      <div class="result-bottle-img">
-        ${img ? `<img src="${img}" alt="${name}" style="width:72px;height:88px;object-fit:contain;border-radius:6px">` : '🥃'}
-      </div>
-      <div class="result-meta">
-        <div class="result-name">${name}</div>
-        ${brand ? `<div class="result-distillery" style="color:var(--muted)">${brand}</div>` : ''}
-        <div class="result-badges">
-          <span class="badge badge-cream">Open Food Facts</span>
-        </div>
-      </div>
-    </div>
-    <div style="padding:14px 0 4px;color:var(--muted);font-size:13px;text-align:center">
-      Basic product match — no tasting notes available
-    </div>
-    ${labelChips.length ? `<div class="confidence-bar"><div class="confidence-label"><span>Detected labels</span></div></div><div class="label-chips">${labelChips.slice(0,6).map(c=>`<span class="chip">${c}</span>`).join('')}</div>` : ''}
-    <div class="result-actions" style="margin-top:12px">
-      <button class="btn-secondary" style="width:100%" onclick="closeResult()">Close</button>
-    </div>
-    <div class="attribution-line">Data from <a href="https://world.openfoodfacts.org" target="_blank">Open Food Facts</a> · CC BY-SA</div>`;
-  scanning.style.display = 'none';
-  content.classList.add('show');
-  document.getElementById('result-sheet').classList.add('show');
-}
 
 // ═══════════════════════════════════════════════════════
 // DISTILLERY SHEET
