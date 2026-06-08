@@ -1609,6 +1609,10 @@ async function renderBrowse() {
   }
 }
 
+function normalizeBottleName(n) {
+  return (n||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+}
+let localMatchNames = new Set();
 function renderLocalBottlesSection() {
   const el = document.getElementById('local-bottles-section');
   if (!el) return;
@@ -1621,6 +1625,8 @@ function renderLocalBottlesSection() {
     const q = searchQuery.toLowerCase();
     matches = LOCAL_BOTTLES.filter(b => b.name.toLowerCase().includes(q) || b.distillery.toLowerCase().includes(q) || (b.searchTerms||[]).some(t=>t.includes(q)));
   }
+  // Track names so the WHISKY:EDITION list can skip duplicates already shown here (Distiller DB takes priority)
+  localMatchNames = new Set(matches.map(b => normalizeBottleName(b.name)));
   if (!matches.length) { el.style.display = 'none'; return; }
   el.style.display = 'block';
   el.innerHTML = `
@@ -1628,7 +1634,7 @@ function renderLocalBottlesSection() {
     ${matches.slice(0,20).map((b,idx) => {
       const inCol = !!collection.find(c => c.slug === b.slug);
       return `<div class="online-result-row" onclick="openLocalDetail('${b.slug}')">
-        <div class="online-result-img-placeholder">🥃</div>
+        <div class="online-result-img-placeholder">${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.name}" style="width:44px;height:54px;object-fit:contain;border-radius:4px">` : '🥃'}</div>
         <div class="online-result-info">
           <div class="online-result-name">${b.name}</div>
           <div class="online-result-meta">${b.distillery} · ${b.region}${(b.age && b.age !== 'NAS') ? ' · ' + b.age : ''}${b.abv?' · '+b.abv+'%':''}</div>
@@ -1657,12 +1663,19 @@ function openLocalDetail(slug) {
 }
 
 function renderBrowseList(listEl) {
-  if (!browseItems.length) {
-    listEl.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--muted2);font-size:14px">No results found</div>`;
+  // Distiller Database has priority — skip any WHISKY:EDITION item whose name already appeared there.
+  // Keep original indices so openBrowseDetail(idx) still maps into browseItems correctly.
+  const filteredItems = browseItems
+    .map((item, idx) => ({ item, idx }))
+    .filter(({item}) => !localMatchNames.has(normalizeBottleName(item.name || item.title || '')));
+  if (!filteredItems.length) {
+    listEl.innerHTML = browseItems.length
+      ? '' // everything was a duplicate of the Distiller DB — nothing else to show
+      : `<div style="text-align:center;padding:40px 20px;color:var(--muted2);font-size:14px">No results found</div>`;
     return;
   }
   const header = `<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 0 8px">🌐 WHISKY:EDITION</div>`;
-  listEl.innerHTML = header + browseItems.map((item, idx) => {
+  listEl.innerHTML = header + filteredItems.map(({item, idx}) => {
     const b = mapApiItem(item);
     const rating = b.ratingAvg !== null ? `<span style="font-size:12px;color:var(--amber-glow);font-weight:700">⭐ ${b.ratingAvg}/100</span>` : '';
     const vfm    = b.valueForMoney ? `<span class="vfm-stars">${vfmStars(b.valueForMoney)}</span>` : '';
