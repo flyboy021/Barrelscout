@@ -2359,19 +2359,31 @@ const DISTILLERY_WEBSITES = {
   'Glenora Distillery': 'https://glenoradistillery.com/',
   'Pike Creek': 'https://www.pikecreekwhisky.com/',
 };
+function normalizeDistilleryName(s) {
+  return (s || '').toLowerCase().trim()
+    .replace(/\bco\.(?=\s|,|$)/g, 'company')
+    .replace(/\bcorp\.(?=\s|,|$)/g, 'corporation')
+    .replace(/\binc\.(?=\s|,|$)/g, 'incorporated')
+    .replace(/\bltd\.(?=\s|,|$)/g, 'limited')
+    .replace(/\bdist\.(?=\s|,|$)/g, 'distillery')
+    .replace(/\bdistilleries\b/g, 'distillery')
+    .replace(/\bdistillers\b/g, 'distillery')
+    .replace(/\bdistilling\b/g, 'distillery')
+    .replace(/\s+/g, ' ').trim();
+}
 function distilleryWebsiteUrl(name) {
   if (!name) return null;
   if (DISTILLERY_WEBSITES[name]) return DISTILLERY_WEBSITES[name];
-  const n = name.toLowerCase().trim();
+  const n = normalizeDistilleryName(name);
   const keys = Object.keys(DISTILLERY_WEBSITES);
-  // Exact case-insensitive
-  let k = keys.find(k => k.toLowerCase() === n);
+  // Exact case-insensitive (normalized)
+  let k = keys.find(k => normalizeDistilleryName(k) === n);
   if (k) return DISTILLERY_WEBSITES[k];
-  // One name is a prefix of the other (e.g. "Woodford Reserve" matches "Woodford Reserve Distillery")
-  k = keys.find(k => { const lk = k.toLowerCase(); return lk.startsWith(n) || n.startsWith(lk); });
+  // One name is a prefix of the other
+  k = keys.find(k => { const lk = normalizeDistilleryName(k); return lk.startsWith(n) || n.startsWith(lk); });
   if (k) return DISTILLERY_WEBSITES[k];
   // Substring match
-  k = keys.find(k => { const lk = k.toLowerCase(); return lk.includes(n) || n.includes(lk); });
+  k = keys.find(k => { const lk = normalizeDistilleryName(k); return lk.includes(n) || n.includes(lk); });
   return k ? DISTILLERY_WEBSITES[k] : null;
 }
 let _dsWebsiteUrl = '';
