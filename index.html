@@ -2169,14 +2169,18 @@ async function openDistillerySheet(name, country, region) {
   _dsName = name; _dsCountry = country; _dsRegion = region; _dsWebsiteUrl = '';
   document.getElementById('ds-name').textContent = name;
   document.getElementById('ds-sub').textContent = [region, country].filter(Boolean).join(', ') || 'Distillery';
-  // Reset website button while we fetch
+  // Show website button immediately with fallback, upgrade to real URL if Places API returns one
+  _dsWebsiteUrl = distilleryWebsiteUrl(name) || `https://www.google.com/search?q=${encodeURIComponent(name + ' distillery official site')}`;
   const websiteBtn = document.getElementById('ds-website-btn');
-  websiteBtn.style.display = 'none';
+  document.getElementById('ds-website-sub').textContent = distilleryWebsiteUrl(name)
+    ? _dsWebsiteUrl.replace(/^https?:\/\//,'').replace(/\/$/,'')
+    : 'Search for official site';
+  websiteBtn.style.display = 'flex';
+  // Try to upgrade to a real URL from Google Places in the background
   fetchDistilleryWebsiteFromPlaces(name).then(url => {
     if (url && _dsName === name) {
       _dsWebsiteUrl = url;
       document.getElementById('ds-website-sub').textContent = url.replace(/^https?:\/\//,'').replace(/\/$/,'');
-      websiteBtn.style.display = 'flex';
     }
   });
   // Reset market panel
