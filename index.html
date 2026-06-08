@@ -551,6 +551,13 @@
           <span class="settings-row-label">Demo mode (no API key)</span>
           <div class="toggle-switch" id="toggle-demo"></div>
         </div>
+        <div class="settings-row" onclick="editApifyToken()">
+          <div class="settings-row-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 2a4 4 0 0 1 4 4v1h2v11H4V7h2V6a4 4 0 0 1 4-4z"/><circle cx="10" cy="12" r="1.5"/></svg>
+          </div>
+          <span class="settings-row-label">Apify Token <small style="color:var(--muted);font-size:10px">(live Distiller search)</small></span>
+          <span class="settings-row-value" id="apify-token-status">Not set</span>
+        </div>
       </div>
       <div class="settings-group">
         <div class="settings-group-title">Preferences</div>
@@ -1021,6 +1028,96 @@ function initApiKeyUI() {
 }
 
 // ═══════════════════════════════════════════════════════
+// APIFY TOKEN MANAGEMENT
+// ═══════════════════════════════════════════════════════
+function getApifyToken() { return localStorage.getItem('bs-apify-token') || ''; }
+
+function editApifyToken() {
+  const current = getApifyToken();
+  const val = prompt('Enter your Apify API token (enables live Distiller.com search):', current);
+  if (val === null) return; // cancelled
+  if (val.trim() === '') {
+    localStorage.removeItem('bs-apify-token');
+    document.getElementById('apify-token-status').textContent = 'Not set';
+    showToast('Apify token removed');
+  } else {
+    localStorage.setItem('bs-apify-token', val.trim());
+    document.getElementById('apify-token-status').textContent = '●●●●●●' + val.trim().slice(-4);
+    showToast('Apify token saved ✓');
+  }
+}
+
+function initApifyTokenUI() {
+  const tok = getApifyToken();
+  if (tok) {
+    document.getElementById('apify-token-status').textContent = '●●●●●●' + tok.slice(-4);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// DISTILLER LIVE SEARCH (via Apify run-sync)
+// ═══════════════════════════════════════════════════════
+async function searchDistillerLive(query) {
+  const token = getApifyToken();
+  if (!token) return [];
+
+  const ACTOR_ID = 'I54WOf0LSJTH4J7UK';
+  const TIMEOUT_MS = 18000; // 18 second max — scan UX constraint
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+  try {
+    // Use run-sync-get-dataset-items — starts actor and returns items when done
+    const resp = await fetch(
+      `https://api.apify.com/v2/acts/${ACTOR_ID}/run-sync-get-dataset-items?token=${token}&timeout=15&format=json`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ searchQueries: [query], maxListings: 5, scrapeDetails: true }),
+        signal: controller.signal,
+      }
+    );
+    clearTimeout(timer);
+    if (!resp.ok) return [];
+    const items = await resp.json();
+    return Array.isArray(items) ? items.filter(i => i.name).map(mapDistillerItem) : [];
+  } catch (_) {
+    clearTimeout(timer);
+    return [];
+  }
+}
+
+function mapDistillerItem(item) {
+  const name = item.name || '';
+  const distillery = item.brand || name.split(' ').slice(0, 2).join(' ');
+  const fp = Array.isArray(item.flavorProfile)
+    ? item.flavorProfile.sort((a,b)=>(b.intensity||0)-(a.intensity||0)).slice(0,6).map(f=>(f.name||'').replace(/\b\w/g,c=>c.toUpperCase())).filter(Boolean)
+    : [];
+  const tasting = item.tastingNotes || {};
+  const score = item.distillerScore ? Math.round(item.distillerScore) : item.communityRating ? Math.round(item.communityRating * 20) : null;
+  const costMap = {'$':'~$20','$$':'~$35','$$$':'~$60','$$$$':'~$100','$$$$$':'~$200+'};
+  return {
+    name, distillery,
+    type: item.spiritType || 'Whiskey',
+    country: (item.location||'').includes('Scotland') ? 'Scotland' : (item.location||'').includes('Ireland') ? 'Ireland' : (item.location||'').includes('Japan') ? 'Japan' : 'USA',
+    age: item.age || 'NAS',
+    abv: item.abv || null,
+    proof: item.abv ? String(Math.round(item.abv * 2)) : '',
+    desc: item.description || '',
+    flavors: fp,
+    nose: tasting.nose || '',
+    palate: tasting.palate || '',
+    finish: tasting.finish || '',
+    ratingAvg: score,
+    price: costMap[item.costTier] || '',
+    imageUrl: item.imageUrl || '',
+    _source: 'distiller',
+    _sourceUrl: item.sourceUrl || '',
+  };
+}
+
+// ═══════════════════════════════════════════════════════
 // CAMERA / GALLERY TRIGGERS
 // ═══════════════════════════════════════════════════════
 function triggerCamera()  { document.getElementById('camera-input').click(); }
@@ -1153,8 +1250,17 @@ function handleImageCapture(input) {
                 showLocalResult(localToMapped(localHits[0]), labelChips); found = true;
               }
             }
+            if (!found && getApifyToken()) {
+              // Fallback 2: Distiller live search
+              document.getElementById('scanning-label').textContent = 'Searching Distiller…';
+              try {
+                const distItems = await searchDistillerLive(apiQuery);
+                if (!distItems.length && shortQuery) distItems.push(...await searchDistillerLive(shortQuery));
+                if (distItems.length > 0) { showDistillerResult(distItems[0], labelChips); found = true; }
+              } catch(_) {}
+            }
             if (!found) {
-              // Fallback 2: Open Food Facts
+              // Fallback 3: Open Food Facts
               document.getElementById('scanning-label').textContent = 'Trying Open Food Facts…';
               try {
                 const offItems = await searchOpenFoodFacts(apiQuery);
@@ -1162,7 +1268,7 @@ function handleImageCapture(input) {
               } catch(_) {}
             }
             if (!found) {
-              // Fallback 3: Wikipedia
+              // Fallback 4: Wikipedia
               document.getElementById('scanning-label').textContent = 'Searching Wikipedia…';
               const wiki = await searchWikipedia(apiQuery);
               if (wiki && wiki.title) { showWikipediaResult(wiki, labelChips); found = true; }
@@ -1762,6 +1868,62 @@ function addLocalToCollection() {
   document.getElementById('result-collect-btn').textContent = '✓ In Your Cellar';
 }
 
+function showDistillerResult(b, labelChips) {
+  currentScanItem = { _distiller: true, _mapped: b };
+  const scanning = document.getElementById('result-scanning');
+  const content  = document.getElementById('result-content');
+  const inCol = collection.find(c => c.name === b.name);
+  const rating = b.ratingAvg ? `<span class="badge badge-gold">⭐ ${b.ratingAvg}/100</span>` : '';
+  const price  = b.price ? `<span style="color:var(--amber);font-size:13px;font-weight:700">${b.price}</span>` : '';
+  content.innerHTML = `
+    <div class="result-match-header">
+      <div class="result-bottle-img">
+        ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.name}" style="width:72px;height:88px;object-fit:contain;border-radius:6px">` : '🥃'}
+      </div>
+      <div class="result-meta">
+        <div class="result-name">${b.name}</div>
+        <div class="result-distillery"><button class="distillery-link" onclick="openDistillerySheet('${b.distillery.replace(/'/g,"\\'")}','${(b.country||'').replace(/'/g,"\\'")}','${(b.country||'').replace(/'/g,"\\'")}')">🏭 ${b.distillery}</button></div>
+        <div class="result-badges">
+          <span class="badge badge-amber">${b.type}</span>
+          <span class="badge badge-cream" style="background:rgba(255,255,255,.08)">🔍 Distiller</span>
+        </div>
+      </div>
+    </div>
+    <div class="confidence-bar">
+      <div class="confidence-label"><span>${b.country}${b.age && b.age !== 'NAS' ? ` · ${b.age} yr` : ''}</span>${b.ratingAvg !== null ? `<strong>${b.ratingAvg}/100</strong>` : ''}</div>
+      ${b.ratingAvg !== null ? `<div class="confidence-track"><div class="confidence-fill" id="conf-fill" style="width:0%"></div></div>` : ''}
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0">${rating}${price}</div>
+    ${b.flavors?.length ? `<div class="flavor-tags" style="margin:8px 0">${b.flavors.map(f=>`<span class="flavor-tag">${f}</span>`).join('')}</div>` : ''}
+    ${b.nose ? `<div class="result-desc"><strong>Nose:</strong> ${b.nose}</div>` : ''}
+    ${b.palate ? `<div class="result-desc"><strong>Palate:</strong> ${b.palate}</div>` : ''}
+    ${b.finish ? `<div class="result-desc"><strong>Finish:</strong> ${b.finish}</div>` : ''}
+    ${!b.nose && b.desc ? `<div class="result-desc">${b.desc}</div>` : ''}
+    <div class="result-actions">
+      <button class="btn-primary" id="result-collect-btn" onclick="addDistillerToCollection()">${inCol ? '✓ In Your Cellar' : '+ Add to Cellar'}</button>
+      <button class="btn-secondary" onclick="closeResult(); openNoteEditor('${b.name.replace(/'/g,"\\'")}')">+ Tasting Note</button>
+    </div>
+    <div class="attribution-line">Data from <a href="https://distiller.com" target="_blank">Distiller.com</a> via Apify</div>`;
+  scanning.style.display = 'none';
+  content.classList.add('show');
+  document.getElementById('result-sheet').classList.add('show');
+  if (b.ratingAvg) setTimeout(() => { const f = document.getElementById('conf-fill'); if(f) f.style.width = b.ratingAvg + '%'; }, 100);
+}
+
+function addDistillerToCollection() {
+  if (!currentScanItem?._distiller) return;
+  const b = currentScanItem._mapped;
+  const slug = b.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  if (collection.find(c => c.slug === slug)) { showToast('Already in your Cellar'); return; }
+  collection.unshift({ slug, name:b.name, distillery:b.distillery, type:b.type,
+    region:b.country, age:b.age, abvDisplay: b.abv ? b.abv+'%' : 'N/A',
+    imageUrl:b.imageUrl||'', url:b._sourceUrl||'', nose:b.nose, palate:b.palate, finish:b.finish,
+    ratingAvg:b.ratingAvg, savedAt:new Date().toLocaleDateString() });
+  localStorage.setItem('bs-collection', JSON.stringify(collection));
+  showToast('Added to your Cellar 🥃');
+  document.getElementById('result-collect-btn').textContent = '✓ In Your Cellar';
+}
+
 function showOffResult(product, labelChips) {
   currentScanItem = null;
   const scanning = document.getElementById('result-scanning');
@@ -2056,6 +2218,7 @@ function showToast(msg) { const t=document.getElementById('toast'); t.textConten
 // ═══════════════════════════════════════════════════════
 function init() {
   initApiKeyUI();
+  initApifyTokenUI();
   const q = QUOTES[new Date().getDate() % QUOTES.length];
   document.getElementById('daily-quote').textContent = `"${q.text}"`;
   document.getElementById('daily-quote-author').textContent = `— ${q.author}`;
