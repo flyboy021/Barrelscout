@@ -2156,8 +2156,8 @@ function distilleryWebsiteUrl(name) {
   return key ? DISTILLERY_WEBSITES[key] : null;
 }
 function distilleryWebsite() {
-  const url = distilleryWebsiteUrl(_dsName);
-  if (url) window.open(url, '_blank');
+  const url = distilleryWebsiteUrl(_dsName) || `https://www.google.com/search?q=${encodeURIComponent(_dsName + ' distillery official site')}`;
+  window.open(url, '_blank');
 }
 async function openDistillerySheet(name, country, region) {
   _dsName = name; _dsCountry = country; _dsRegion = region;
