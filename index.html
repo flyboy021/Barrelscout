@@ -1013,6 +1013,7 @@ const LOCAL_BOTTLES = [
 { slug:'glenfiddich-12-year', name:'Glenfiddich 12 Year', distillery:'Glenfiddich', type:'Single Malt Scotch', country:'Scotland', region:'Dufftown, Speyside, Scotland', age:'12', abv:40.0, proof:'80', desc:'The world\'s most awarded single malt. Aged 12 years in American oak and European oak casks, delivering the iconic Glenfiddich pear and apple character.', flavors:["Pear", "Apple", "Vanilla", "Honey", "Oak", "Citrus"], nose:'Fresh pear, apple, vanilla, and a hint of oak.', palate:'Light and fruity — pear, apple, vanilla, and honey.', finish:'Clean and medium with fruit and vanilla.', ratingAvg:85, valueForMoney:5, price:'~$35', imageUrl:'', searchTerms:["glenfiddich 12 year"] },
 { slug:'glenfiddich-15-year', name:'Glenfiddich 15 Year', distillery:'Glenfiddich', type:'Single Malt Scotch', country:'Scotland', region:'Dufftown, Speyside, Scotland', age:'15', abv:40.0, proof:'80', desc:'The Solera Vat expression, matured in sherry, bourbon, and new oak simultaneously in a large Solera vessel.', flavors:["Honey", "Vanilla", "Sherry", "Fruit", "Oak", "Spice"], nose:'Honey, vanilla, sherry fruit, and spice.', palate:'Rich and smooth — honey, sherry, vanilla, and fruit.', finish:'Long and smooth with honey and oak.', ratingAvg:89, valueForMoney:5, price:'~$60', imageUrl:'', searchTerms:["glenfiddich 15 year"] },
 { slug:'glenfiddich-18-year', name:'Glenfiddich 18 Year', distillery:'Glenfiddich', type:'Single Malt Scotch', country:'Scotland', region:'Dufftown, Speyside, Scotland', age:'18', abv:40.0, proof:'80', desc:'Aged 18 years and finished in Oloroso sherry casks. Rich, complex, and rewarding.', flavors:["Dried Fruit", "Oak", "Sherry", "Vanilla", "Spice", "Honey"], nose:'Dried fruit, oak, vanilla, and sherry.', palate:'Rich and complex — dried fruit, sherry, oak, and spice.', finish:'Long and warming with dried fruit and oak.', ratingAvg:91, valueForMoney:4, price:'~$100', imageUrl:'', searchTerms:["glenfiddich 18 year"] },
+{ slug:'the-macallan-m', name:'Macallan M', distillery:'The Macallan', type:'Single Malt Scotch', country:'Scotland', region:'Highlands, Scotland', age:'', abv:44.7, proof:'89.4', desc:'A legendary and extraordinarily rare single malt. A 6-litre Lalique decanter holds the Guinness World Record for the most expensive whisky sold at auction — $628,000. Master whisky maker Bob Dalgarno spent two years sourcing whiskies dating from 1940 to 1991, including some of the last casks filled before WWII halted production and rare 1947 peated malts made during post-war coal rationing. Matured in sherry oak casks.', flavors:['Rich','Full Bodied','Sherry','Dried Fruit','Spice','Chocolate'], nose:'A pleasing bouquet of a rare bookstore — oak, wood smoke, aged port, baking spices, citrus, and fruitcake.', palate:'Viscous and coating. Chocolate, allspice, sherry, leather, and citrus flavors of extraordinary depth.', finish:'Pipe tobacco, oak, dried fruits, and citrus — long, slow, and unforgettable.', ratingAvg:98, valueForMoney:1, price:'$5,000+', imageUrl:'https://ip-distiller.imgix.net/images/spirits/a2f91f60-7b29-0133-fe8a-4e080c81bb47/the_macallan_m_original.jpg?w=640&h=280&mark-w=70&mark-h=70&fit=crop&crop=right&mark-align=top,left&mark-pad=0&mark=', searchTerms:['macallan m', 'the macallan m', 'macallan', 'macallan rare'] },
 { slug:'macallan-12-double-cask', name:'Macallan 12 Double Cask', distillery:'The Macallan', type:'Single Malt Scotch', country:'Scotland', region:'Speyside, Scotland', age:'12', abv:40.0, proof:'80', desc:'Matured in a combination of American and European sherry-seasoned oak casks. Rich and smooth with classic Macallan character.', flavors:["Sherry", "Vanilla", "Caramel", "Dried Fruit", "Spice", "Oak"], nose:'Rich sherry, vanilla, caramel, and dried fruit.', palate:'Smooth and rich — sherry, vanilla, caramel, and gentle spice.', finish:'Long and sweet with sherry and vanilla.', ratingAvg:90, valueForMoney:4, price:'~$60', imageUrl:'', searchTerms:["macallan 12 double cask"] },
 { slug:'macallan-12-sherry-oak', name:'Macallan 12 Sherry Oak', distillery:'The Macallan', type:'Single Malt Scotch', country:'Scotland', region:'Speyside, Scotland', age:'12', abv:43.0, proof:'86', desc:'Matured exclusively in hand-picked Oloroso sherry-seasoned European and American oak casks. The quintessential sherry bomb.', flavors:["Sherry", "Dried Fruit", "Spice", "Vanilla", "Oak", "Chocolate"], nose:'Sherry, dried fruit, spice, and chocolate.', palate:'Rich sherry character — dried fruit, chocolate, spice, and oak.', finish:'Long and warming with sherry and spice.', ratingAvg:92, valueForMoney:4, price:'~$100', imageUrl:'', searchTerms:["macallan 12 sherry oak"] },
 { slug:'macallan-18-double-cask', name:'Macallan 18 Double Cask', distillery:'The Macallan', type:'Single Malt Scotch', country:'Scotland', region:'Speyside, Scotland', age:'18', abv:43.0, proof:'86', desc:'Aged 18 years in American and European sherry-seasoned oak. A deeply complex and elegant expression of The Macallan.', flavors:["Sherry", "Oak", "Dried Fruit", "Caramel", "Chocolate", "Spice"], nose:'Rich sherry, oak, dried fruit, and caramel.', palate:'Complex and full — sherry, dark fruit, chocolate, oak, and spice.', finish:'Very long with sherry and oak.', ratingAvg:95, valueForMoney:4, price:'~$200+', imageUrl:'', searchTerms:["macallan 18 double cask"] },
@@ -1231,24 +1232,28 @@ function initApifyTokenUI() {
 // ═══════════════════════════════════════════════════════
 // DISTILLER LIVE SEARCH (via Apify run-sync)
 // ═══════════════════════════════════════════════════════
-async function searchDistillerLive(query) {
+// scan=true: fetch fewer results with full details (tasting notes) for scan flow
+// scan=false: fetch more results without details for fast browse search
+async function searchDistillerLive(query, scan = true) {
   const token = getApifyToken();
   if (!token) return [];
 
   const ACTOR_ID = 'I54WOf0LSJTH4J7UK';
-  const TIMEOUT_MS = 18000; // 18 second max — scan UX constraint
+  const maxListings = scan ? 5 : 25;
+  const scrapeDetails = scan;
+  const timeoutSec = scan ? 15 : 25;
+  const TIMEOUT_MS = (timeoutSec + 5) * 1000;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
-    // Use run-sync-get-dataset-items — starts actor and returns items when done
     const resp = await fetch(
-      `https://api.apify.com/v2/acts/${ACTOR_ID}/run-sync-get-dataset-items?token=${token}&timeout=15&format=json`,
+      `https://api.apify.com/v2/acts/${ACTOR_ID}/run-sync-get-dataset-items?token=${token}&timeout=${timeoutSec}&format=json`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ searchQueries: [query], maxListings: 5, scrapeDetails: true }),
+        body: JSON.stringify({ searchQueries: [query], maxListings, scrapeDetails }),
         signal: controller.signal,
       }
     );
@@ -1693,12 +1698,13 @@ async function renderBrowse() {
   if (searchQuery && getApifyToken()) {
     apifyEl.style.display = 'block';
     apifyEl.innerHTML = `<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 0 8px">🔎 Live Search</div><div style="color:var(--muted2);font-size:13px;padding:4px 0 8px">Searching Distiller.com…</div>`;
-    searchDistillerLive(searchQuery).then(items => {
+    searchDistillerLive(searchQuery, false).then(items => {
       if (!items.length) { apifyEl.style.display = 'none'; return; }
       const fresh = items.filter(i => !localMatchNames.has(normalizeBottleName(i.name)));
       if (!fresh.length) { apifyEl.style.display = 'none'; return; }
+      apifyBrowseItems = fresh;
       apifyEl.innerHTML = `<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 0 8px">🔎 Live Search</div>` +
-        fresh.map(b => `<div class="online-result-row" onclick='openApifyDetail(${JSON.stringify(JSON.stringify(b))})'>
+        fresh.map((b, i) => `<div class="online-result-row" onclick="openApifyDetail(${i})">
           ${b.imageUrl ? `<img class="online-result-img" src="${b.imageUrl}" alt="${b.name}">` : `<div class="online-result-img-placeholder">🥃</div>`}
           <div class="online-result-info">
             <div class="online-result-name">${b.name}</div>
@@ -1733,6 +1739,7 @@ function normalizeBottleName(n) {
   return (n||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 }
 let localMatchNames = new Set();
+let apifyBrowseItems = [];
 const CONTINENT_MAP = {
   'USA': 'Popular in America', 'Canada': 'Popular in America',
   'Scotland': 'Popular in Europe', 'Ireland': 'Popular in Europe',
@@ -1963,8 +1970,8 @@ async function openBrowseDetail(idx) {
     } catch(_) { /* silent — placeholder just stays hidden */ }
   }
 }
-function openApifyDetail(jsonStr) {
-  const b = JSON.parse(jsonStr);
+function openApifyDetail(idx) {
+  const b = apifyBrowseItems[idx];
   detailItem = { _distiller: true, _mapped: b };
   const inCol = !!collection.find(c => c.name === b.name);
   document.getElementById('detail-title').textContent = b.name;
