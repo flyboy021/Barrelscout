@@ -1751,24 +1751,68 @@ function setScanStatus(label, pct) {
   if (f && pct != null) f.style.width = Math.max(0, Math.min(100, pct)) + '%';
 }
 
+let _lastGeminiError = null, _lastScanEngine = null;
+
+// Is this Gemini error a key/setup problem the user must fix (vs. a transient blip)?
+function isGeminiConfigError(msg) {
+  const m = (msg || '').toLowerCase();
+  return /403|401|404|permission|api key|api_key|not valid|invalid|has not been used|disabled|service_disabled|not found|not_found|enable|quota|resource_exhausted|429/.test(m);
+}
+
 async function analyzeImage(base64, apiKey, mime) {
-  // 1) Try Gemini Flash first — it actually recognizes the brand/expression
-  //    instead of just reading text off the label.
+  _lastGeminiError = null; _lastScanEngine = null;
+  // 1) Try Gemini Flash first — it actually recognizes the brand/expression.
   try {
     const g = await identifyWithGemini(base64, apiKey, mime);
     if (g && g.query) {
+      _lastScanEngine = 'gemini';
       return {
+        ok: true,
         ocrText: g.ocrText || g.query,
         labelChips: g.chips,
         apiQuery: g.query,
         shortQuery: g.brand || g.query.split(/\s+/).slice(0, 3).join(' ')
       };
     }
+    // Gemini answered but had no confident ID (e.g. blurry / not a bottle)
+    _lastGeminiError = 'Gemini could not confidently identify the bottle.';
   } catch (e) {
-    console.warn('Gemini identify failed, falling back to Vision:', e.message);
+    _lastGeminiError = (e && e.message) ? e.message : String(e);
+    console.warn('Gemini error:', _lastGeminiError);
+    // A key/setup error won't fix itself — surface it instead of hiding a bad Vision result.
+    if (isGeminiConfigError(_lastGeminiError)) {
+      _lastScanEngine = 'gemini-config-error';
+      return { ok: false, configError: true, error: _lastGeminiError };
+    }
   }
-  // 2) Fallback: Google Cloud Vision (OCR + labels + web entities)
-  return await analyzeWithVision(base64, apiKey);
+  // 2) Transient/empty only: fall back to Google Vision (OCR + labels).
+  _lastScanEngine = 'vision';
+  const v = await analyzeWithVision(base64, apiKey);
+  v.ok = true;
+  v.labelChips = ['⚠ Basic scan (AI off)', ...(v.labelChips || [])];
+  return v;
+}
+
+// Clear, actionable card when the Gemini key/API isn't set up right.
+function showGeminiKeyError(error) {
+  const scanning = document.getElementById('result-scanning');
+  const content  = document.getElementById('result-content');
+  content.innerHTML = `
+    <div class="no-match-card">
+      <strong>AI identifier isn’t working</strong>
+      <p>Your photo couldn’t be sent to Gemini, so identification is degraded. This is almost always a key/setup issue, not your photo.</p>
+      <p style="margin-top:10px;font-weight:700;color:var(--text2)">Most likely fix:</p>
+      <p style="margin-top:4px">Enable the <strong>Generative Language API</strong> for your key at Google AI Studio (aistudio.google.com/apikey), or make sure you pasted an <em>AI Studio</em> key — a Vision-only key won’t work for AI identification.</p>
+      <div style="margin-top:12px;font-size:12px;color:var(--muted);line-height:1.5;word-break:break-word">
+        <strong style="color:var(--text2)">Error from Google:</strong><br>${(error || 'unknown').toString().slice(0, 300)}
+      </div>
+      <div class="result-actions" style="margin-top:14px">
+        <button class="btn-primary" onclick="closeResult(); navTo('profile')" style="max-width:200px;margin:0 auto">Open Settings</button>
+        <button class="btn-secondary" onclick="closeResult()" style="max-width:160px;margin:8px auto 0">Close</button>
+      </div>
+    </div>`;
+  scanning.style.display = 'none';
+  content.classList.add('show');
 }
 
 async function identifyWithGemini(base64, apiKey, mime) {
@@ -1926,7 +1970,17 @@ function handleImageCapture(input) {
     setScanStatus('Identifying bottle…', 25);
 
     try {
-      const { ocrText, labelChips, apiQuery, shortQuery } = await analyzeImage(imgData.base64, apiKey, imgData.mime);
+      const res = await analyzeImage(imgData.base64, apiKey, imgData.mime);
+
+      // Gemini key/setup problem — show the fix instead of a misleading basic-scan result.
+      if (res && res.configError) { showGeminiKeyError(res.error); input.value = ''; return; }
+
+      const { ocrText, labelChips, apiQuery, shortQuery } = res;
+      // If we silently dropped to the basic (Vision) scanner, tell the user why.
+      if (_lastScanEngine === 'vision' && _lastGeminiError) {
+        showToast('⚠️ AI ID unavailable — using basic scan');
+        console.error('Gemini fallback reason:', _lastGeminiError);
+      }
       setScanStatus('Searching database…', 60);
 
       if (!apiQuery) {
