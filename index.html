@@ -621,7 +621,7 @@
         <div class="settings-row">
           <div class="settings-row-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="8"/><path d="M10 9v5M10 7h.01"/></svg></div>
           <span class="settings-row-label">Version</span>
-          <span class="settings-row-value">1.2.1 (smart match)</span>
+          <span class="settings-row-value">1.2.2 (specs)</span>
         </div>
       </div>
       <div class="quote-banner">
@@ -2735,6 +2735,7 @@ function showDistillerResult(b, labelChips) {
       <div class="confidence-label"><span>${b.country}${b.age && b.age !== 'NAS' ? ` · ${b.age} yr` : ''}</span>${b.ratingAvg !== null ? `<strong>${b.ratingAvg}/100</strong>` : ''}</div>
       ${b.ratingAvg !== null ? `<div class="confidence-track"><div class="confidence-fill" id="conf-fill" style="width:0%"></div></div>` : ''}
     </div>
+    ${specRow(b)}
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0">${rating}${price}</div>
     ${b.flavors?.length ? `<div class="flavor-tags" style="margin:8px 0">${b.flavors.map(f=>`<span class="flavor-tag">${f}</span>`).join('')}</div>` : ''}
     ${b.nose ? `<div class="result-desc"><strong>Nose:</strong> ${b.nose}</div>` : ''}
