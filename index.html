@@ -2644,6 +2644,20 @@ function whSlugFor(name) {
 }
 
 
+// Render an ABV / Proof / Age spec row from a bottle's fields ('' if no data).
+function specRow(b) {
+  if (!b) return '';
+  const abv = (b.abv !== null && b.abv !== undefined && b.abv !== '' && b.abv !== 0) ? b.abv + '%' : '';
+  const proof = (b.proof !== null && b.proof !== undefined && b.proof !== '' && b.proof !== 'N/A') ? String(b.proof).replace(/\.0$/, '') : '';
+  let age = (b.age && b.age !== 'NAS') ? String(b.age).trim() : '';
+  if (age && /\d$/.test(age)) age += ' yr';
+  const cells = [];
+  if (abv)   cells.push(`<div class="spec"><span class="spec-v">${abv}</span><span class="spec-k">ABV</span></div>`);
+  if (proof) cells.push(`<div class="spec"><span class="spec-v">${proof}</span><span class="spec-k">Proof</span></div>`);
+  if (age)   cells.push(`<div class="spec"><span class="spec-v">${age}</span><span class="spec-k">Age</span></div>`);
+  return cells.length ? `<div class="spec-row">${cells.join('')}</div>` : '';
+}
+
 function showLocalResult(b, labelChips) {
   currentScanItem = { _local: true, _mapped: b };
   const scanning = document.getElementById('result-scanning');
