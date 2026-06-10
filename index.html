@@ -8,6 +8,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="BarrelScout" />
   <meta name="description" content="Identify vintage and collectible whiskey & bourbon bottles instantly." />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="icon-192.png" />
   <title>BarrelScout – Whiskey Bottle Identifier</title>
   <style>
     :root {
@@ -3200,6 +3203,13 @@ function openHomeDetail(idx, el) {
 }
 
 init();
+
+// Register the service worker for offline support (PWA).
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch((e) => console.warn('SW registration failed:', e));
+  });
+}
 </script>
 </body>
 </html>
