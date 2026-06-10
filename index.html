@@ -198,6 +198,17 @@
     .candidate-sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
     .candidate-go{color:var(--muted);font-size:22px;flex-shrink:0;line-height:1}
 
+    /* BARCODE SCANNER OVERLAY */
+    .bc-overlay{position:fixed;inset:0;z-index:200;background:#000;display:none;flex-direction:column}
+    .bc-overlay.show{display:flex}
+    .bc-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px;color:#fff}
+    .bc-title{font-size:16px;font-weight:700}
+    .bc-close{color:#fff;font-size:24px;line-height:1;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+    .bc-reader{flex:1;width:100%;overflow:hidden;position:relative;background:#000}
+    .bc-reader video{width:100%!important;height:100%!important;object-fit:cover}
+    .bc-scan-box{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:72%;max-width:300px;height:150px;border:2px solid var(--amber);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.45);pointer-events:none}
+    .bc-hint{padding:16px 20px calc(20px + var(--safe-bottom));color:rgba(255,255,255,.85);font-size:13px;text-align:center;line-height:1.5}
+
     .result-desc{font-size:14px;line-height:1.6;color:var(--text2);margin-bottom:18px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm)}
     .result-actions{display:flex;gap:10px}
     .btn-primary{flex:1;background:linear-gradient(135deg,var(--amber) 0%,var(--amber-light) 100%);color:#fff;font-size:14px;font-weight:700;padding:13px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 3px 12px rgba(184,115,51,.35)}
@@ -449,6 +460,12 @@
           </svg>
           Choose from Photo Library
         </button>
+        <button class="scan-gallery-btn" onclick="triggerBarcode()" style="margin-top:10px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 5v14M7 5v14M11 5v14M14 5v14M18 5v14M21 5v14" stroke-linecap="round"/>
+          </svg>
+          Scan a Barcode
+        </button>
       </div>
 
       <!-- Hidden file inputs -->
@@ -628,6 +645,16 @@
       <span class="nav-label">Profile</span>
     </button>
   </nav>
+</div>
+
+<!-- BARCODE SCANNER OVERLAY -->
+<div id="bc-overlay" class="bc-overlay">
+  <div class="bc-header">
+    <span class="bc-title">Scan a Barcode</span>
+    <span class="bc-close" onclick="closeBarcodeScanner()">✕</span>
+  </div>
+  <div class="bc-reader" id="bc-reader"><div class="bc-scan-box"></div></div>
+  <div class="bc-hint" id="bc-hint">Point the camera at the barcode on the bottle or box.</div>
 </div>
 
 <!-- RESULT OVERLAY -->
@@ -1517,10 +1544,202 @@ function triggerCamera()  { document.getElementById('camera-input').click(); }
 function triggerGallery() { document.getElementById('gallery-input').click(); }
 
 // ═══════════════════════════════════════════════════════
+// BARCODE SCANNING (UPC/EAN) → UPC lookup → match
+// Uses html5-qrcode (lazy-loaded) for cross-browser camera scanning.
+// ═══════════════════════════════════════════════════════
+let _bcScanner = null, _bcRunning = false;
+
+function triggerBarcode() { openBarcodeScanner(); }
+
+function ensureBarcodeLib() {
+  if (window.Html5Qrcode) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+    s.onload = () => resolve(!!window.Html5Qrcode);
+    s.onerror = () => resolve(false);
+    document.head.appendChild(s);
+  });
+}
+
+async function openBarcodeScanner() {
+  const ov = document.getElementById('bc-overlay');
+  const hint = document.getElementById('bc-hint');
+  ov.classList.add('show');
+  hint.textContent = 'Starting camera…';
+  const ok = await ensureBarcodeLib();
+  if (!ok) { hint.textContent = 'Couldn’t load the barcode scanner. Check your connection and try again.'; return; }
+  try {
+    const fmts = [
+      Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E,
+      Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.CODE_39
+    ];
+    _bcScanner = new Html5Qrcode('bc-reader', { formatsToSupport: fmts, verbose: false });
+    _bcRunning = true;
+    await _bcScanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 280, height: 150 } },
+      (decoded) => onBarcodeDecoded(decoded),
+      () => {}
+    );
+    hint.textContent = 'Point the camera at the barcode on the bottle or box.';
+  } catch (e) {
+    hint.textContent = 'Camera error: ' + (e && e.message ? e.message : e) + '. Make sure you allowed camera access.';
+  }
+}
+
+async function closeBarcodeScanner() {
+  try { if (_bcScanner && _bcRunning) { await _bcScanner.stop(); _bcScanner.clear(); } } catch (_) {}
+  _bcRunning = false; _bcScanner = null;
+  document.getElementById('bc-overlay').classList.remove('show');
+}
+
+async function onBarcodeDecoded(code) {
+  if (!_bcRunning) return;            // ignore duplicate fires
+  _bcRunning = false;
+  try { if (_bcScanner) { await _bcScanner.stop(); _bcScanner.clear(); } } catch (_) {}
+  _bcScanner = null;
+  document.getElementById('bc-overlay').classList.remove('show');
+  handleBarcode((code || '').trim());
+}
+
+// Look up a bottle from a scanned barcode, then run it through the match pipeline.
+async function handleBarcode(code) {
+  const overlay = document.getElementById('result-overlay');
+  const scanning = document.getElementById('result-scanning');
+  const content = document.getElementById('result-content');
+  content.classList.remove('show');
+  scanning.style.display = 'flex';
+  overlay.classList.add('show');
+  setScanStatus('Barcode ' + code + '…', 15);
+
+  const chips = ['Barcode', code];
+
+  // 1) Match against any UPCs stored in the local DB first (instant, offline).
+  const byUpc = searchLocalByUPC(code);
+  if (byUpc) { showCandidatePicker([byUpc], chips, code); return; }
+
+  // 2) Resolve the barcode to a product name via UPCitemdb.
+  setScanStatus('Looking up barcode…', 45);
+  let info = null;
+  try { info = await lookupUPC(code); } catch (_) {}
+  const name = info && info.title ? info.title : '';
+  if (!name) { showNoMatch(chips, ''); return; }
+
+  // 3) Feed the product name into the normal matching pipeline.
+  chips.push(name);
+  setScanStatus('Searching database…', 65);
+  await matchQueryToBottle(name, chips);
+}
+
+// Find a local bottle whose upc/upcs field matches the scanned code.
+function searchLocalByUPC(code) {
+  const c = String(code).replace(/\D/g, '');
+  if (!c) return null;
+  for (const b of BOTTLE_DB) {
+    const ups = [].concat(b.upc || [], b.upcs || []).map(x => String(x).replace(/\D/g, ''));
+    if (ups.includes(c)) return b;
+  }
+  return null;
+}
+
+// Resolve a UPC/EAN to product info via UPCitemdb (free trial tier), with CORS-proxy fallback.
+async function lookupUPC(code) {
+  const target = 'https://api.upcitemdb.com/prod/trial/lookup?upc=' + encodeURIComponent(code);
+  const urls = [
+    target,
+    'https://corsproxy.io/?' + encodeURIComponent(target),
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(target)
+  ];
+  for (const u of urls) {
+    try {
+      const r = await fetch(u);
+      if (!r.ok) continue;
+      const d = await r.json();
+      if (d && Array.isArray(d.items) && d.items.length) {
+        const it = d.items[0];
+        return { title: it.title || '', brand: it.brand || '' };
+      }
+      if (d && d.code === 'OK') return { title: '', brand: '' }; // valid but unknown product
+    } catch (_) {}
+  }
+  return null;
+}
+
+// Run a text query (e.g. a product name) through the same match steps used after photo ID.
+async function matchQueryToBottle(apiQuery, labelChips) {
+  let found = false;
+  setScanStatus('Checking local database…', 72);
+  const cands = gatherLocalCandidates(apiQuery, '', apiQuery);
+  if (cands.length) { showCandidatePicker(cands, labelChips, apiQuery); return; }
+  if (getApifyToken()) {
+    setScanStatus('Searching Distiller…', 85);
+    try {
+      const d = await searchDistillerLive(apiQuery);
+      if (d.length) { showDistillerResult(d[0], labelChips); found = true; }
+    } catch (_) {}
+  }
+  if (!found) {
+    setScanStatus('Searching WHISKY:EDITION…', 92);
+    try {
+      const a = await searchWhiskyEditionAPI(apiQuery);
+      if (a.length) { showApiResult(a[0], labelChips, false); found = true; }
+    } catch (_) {}
+  }
+  if (!found) showNoMatch(labelChips, apiQuery.toLowerCase());
+}
+
+// ═══════════════════════════════════════════════════════
 // IMAGE ANALYSIS — Gemini Flash (primary) → Google Vision (fallback)
 // Returns a unified { ocrText, labelChips, apiQuery, shortQuery }
 // so the downstream matching steps don't care which engine ran.
 // ═══════════════════════════════════════════════════════
+// Shrink a captured photo before sending: scale so the longest side ≤ maxDim,
+// re-encode as JPEG. Keeps the whole label in frame, cuts the payload ~10–30×,
+// and stops the API from hard-downsampling a giant photo (which loses label text).
+// Returns { base64, mime } or null if the browser can't decode the file.
+function downscaleImage(file, maxDim = 1600, quality = 0.85) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        let w = img.naturalWidth || img.width;
+        let h = img.naturalHeight || img.height;
+        const scale = Math.min(1, maxDim / Math.max(w, h));
+        w = Math.max(1, Math.round(w * scale));
+        h = Math.max(1, Math.round(h * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); // flatten any transparency
+        ctx.drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        URL.revokeObjectURL(url);
+        resolve({ base64: dataUrl.split(',')[1], mime: 'image/jpeg' });
+      } catch (err) {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
+// Get send-ready image data: try canvas downscale first, else fall back to the raw file.
+async function prepImage(file) {
+  const small = await downscaleImage(file);
+  if (small) return small;
+  return await new Promise((res) => {
+    const r = new FileReader();
+    r.onload = (e) => res({ base64: e.target.result.split(',')[1], mime: file.type || 'image/jpeg' });
+    r.onerror = () => res(null);
+    r.readAsDataURL(file);
+  });
+}
+
 // Update the scanning overlay: status text + progress bar (0–100).
 function setScanStatus(label, pct) {
   const l = document.getElementById('scanning-label');
@@ -1695,14 +1914,16 @@ function handleImageCapture(input) {
     return;
   }
 
-  // Read file as base64
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    const base64 = e.target.result.split(',')[1]; // strip data: prefix
+  // Downscale the photo first (keeps the whole label in frame + tiny payload),
+  // then identify. Falls back to the raw file if canvas decoding is unavailable.
+  (async () => {
+    setScanStatus('Preparing image…', 18);
+    const imgData = await prepImage(file);
+    if (!imgData) { showNoMatch([], ''); input.value = ''; return; }
     setScanStatus('Identifying bottle…', 25);
 
     try {
-      const { ocrText, labelChips, apiQuery, shortQuery } = await analyzeImage(base64, apiKey, file.type);
+      const { ocrText, labelChips, apiQuery, shortQuery } = await analyzeImage(imgData.base64, apiKey, imgData.mime);
       setScanStatus('Searching database…', 60);
 
       if (!apiQuery) {
@@ -1756,8 +1977,7 @@ function handleImageCapture(input) {
         </div>`;
       content.classList.add('show');
     }
-  };
-  reader.readAsDataURL(file);
+  })();
 
   // Reset input so same photo can be re-scanned
   input.value = '';
