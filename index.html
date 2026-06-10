@@ -187,6 +187,10 @@
     .vision-label-chips{display:flex;flex-wrap:wrap;gap:6px}
     .vision-label-chip{padding:3px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--text2)}
 
+    /* "Scanned as:" diagnostic line */
+    .read-as{font-size:11.5px;color:var(--muted);margin:2px 0 10px;line-height:1.4}
+    .read-as strong{color:var(--text2);font-weight:700}
+
     /* BOTTLE SPEC ROW (ABV / Proof / Age) */
     .spec-row{display:flex;gap:8px;margin:10px 0}
     .spec{flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 6px;text-align:center}
@@ -621,7 +625,7 @@
         <div class="settings-row">
           <div class="settings-row-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="8"/><path d="M10 9v5M10 7h.01"/></svg></div>
           <span class="settings-row-label">Version</span>
-          <span class="settings-row-value">1.2.3 (auto-update)</span>
+          <span class="settings-row-value">1.2.4 (scanned-as)</span>
         </div>
       </div>
       <div class="quote-banner">
@@ -1675,6 +1679,7 @@ async function handleBarcode(code) {
   scanning.style.display = 'flex';
   overlay.classList.add('show');
   setScanStatus('Barcode ' + code + '…', 15);
+  _lastScanEngine = 'barcode'; _scanReadAs = 'barcode ' + code;
 
   const chips = ['Barcode', code];
 
@@ -1690,6 +1695,7 @@ async function handleBarcode(code) {
   if (!name) { showNoMatch(chips, ''); return; }
 
   // 3) Feed the product name into the normal matching pipeline.
+  _scanReadAs = name;
   chips.push(name);
   setScanStatus('Searching database…', 65);
   await matchQueryToBottle(name, chips);
@@ -2242,6 +2248,7 @@ function showApiResult(item, labelChips, isDemo) {
       </div>
     </div>
 
+    ${readAsLine()}
     <div class="confidence-bar">
       <div class="confidence-label">
         <span>Online Match</span>
@@ -2689,6 +2696,7 @@ function showLocalResult(b, labelChips) {
         </div>
       </div>
     </div>
+    ${readAsLine()}
     <div class="confidence-bar">
       <div class="confidence-label"><span>${b.region}</span>${b.ratingAvg !== null ? `<strong>${b.ratingAvg}/100</strong>` : ''}</div>
       ${b.ratingAvg !== null ? `<div class="confidence-track"><div class="confidence-fill" id="conf-fill" style="width:0%"></div></div>` : ''}
@@ -2740,6 +2748,7 @@ function showDistillerResult(b, labelChips) {
         </div>
       </div>
     </div>
+    ${readAsLine()}
     <div class="confidence-bar">
       <div class="confidence-label"><span>${b.country}${b.age && b.age !== 'NAS' ? ` · ${b.age} yr` : ''}</span>${b.ratingAvg !== null ? `<strong>${b.ratingAvg}/100</strong>` : ''}</div>
       ${b.ratingAvg !== null ? `<div class="confidence-track"><div class="confidence-fill" id="conf-fill" style="width:0%"></div></div>` : ''}
