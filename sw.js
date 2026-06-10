@@ -2,7 +2,7 @@
    Strategy: network-first for same-origin GETs (so the app stays fresh online),
    falling back to cache when offline. Cross-origin requests (Gemini, Vision,
    UPCitemdb, CORS proxies, the html5-qrcode CDN) are never intercepted. */
-const CACHE = 'barrelscout-v1';
+const CACHE = 'barrelscout-v2';
 const CORE = [
   './',
   './index.html',
