@@ -1810,7 +1810,15 @@ function setScanStatus(label, pct) {
   if (f && pct != null) f.style.width = Math.max(0, Math.min(100, pct)) + '%';
 }
 
-let _lastGeminiError = null, _lastScanEngine = null;
+let _lastGeminiError = null, _lastScanEngine = null, _scanReadAs = '';
+
+// Small "Scanned as: …" line so a wrong match is self-explaining: shows exactly
+// what the identifier read off the label, and which engine read it.
+function readAsLine() {
+  if (!_scanReadAs) return '';
+  const eng = _lastScanEngine === 'gemini' ? 'AI' : (_lastScanEngine === 'vision' ? 'basic scan' : _lastScanEngine === 'barcode' ? 'barcode' : '');
+  return `<div class="read-as">Scanned as: <strong>${_scanReadAs}</strong>${eng ? ` · ${eng}` : ''}</div>`;
+}
 
 // Is this Gemini error a key/setup problem the user must fix (vs. a transient blip)?
 function isGeminiConfigError(msg) {
@@ -1819,12 +1827,12 @@ function isGeminiConfigError(msg) {
 }
 
 async function analyzeImage(base64, apiKey, mime) {
-  _lastGeminiError = null; _lastScanEngine = null;
+  _lastGeminiError = null; _lastScanEngine = null; _scanReadAs = '';
   // 1) Try Gemini Flash first — it actually recognizes the brand/expression.
   try {
     const g = await identifyWithGemini(base64, apiKey, mime);
     if (g && g.query) {
-      _lastScanEngine = 'gemini';
+      _lastScanEngine = 'gemini'; _scanReadAs = g.query;
       return {
         ok: true,
         ocrText: g.ocrText || g.query,
@@ -1847,6 +1855,7 @@ async function analyzeImage(base64, apiKey, mime) {
   _lastScanEngine = 'vision';
   const v = await analyzeWithVision(base64, apiKey);
   v.ok = true;
+  _scanReadAs = v.apiQuery || '';
   v.labelChips = ['⚠ Basic scan (AI off)', ...(v.labelChips || [])];
   return v;
 }
