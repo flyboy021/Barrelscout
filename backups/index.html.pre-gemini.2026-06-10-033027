@@ -408,8 +408,8 @@
           <path d="M8 11a4 4 0 1 1 8 0 4 4 0 0 1-8 0z"/><path d="M8 11l-5 5v2h2v-2h2v-2h1"/>
         </svg>
         <div class="api-key-banner-text">
-          <strong>Add your Google AI API key to enable real scanning</strong>
-          Powers AI bottle identification (Gemini). Paste your key below — it stays on your device only.
+          <strong>Add your Google Vision API key to enable real scanning</strong>
+          Paste your key below — it stays on your device only.
           <div class="api-key-input-row">
             <input class="api-key-input" id="api-key-field" type="password" placeholder="AIzaSy…" autocomplete="off"/>
             <button class="api-key-save" onclick="saveApiKey()">Save</button>
@@ -543,7 +543,7 @@
           <div class="settings-row-icon">
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M8 11a4 4 0 1 1 8 0 4 4 0 0 1-8 0z"/><path d="M8 11l-5 5v2h2v-2h2v-2h1"/></svg>
           </div>
-          <span class="settings-row-label">Google AI API Key</span>
+          <span class="settings-row-label">Google Vision API Key</span>
           <span class="settings-row-value" id="api-key-status">Not set</span>
         </div>
         <div class="settings-row" onclick="toggleSetting(this,'demo')">
@@ -1381,125 +1381,7 @@ function triggerCamera()  { document.getElementById('camera-input').click(); }
 function triggerGallery() { document.getElementById('gallery-input').click(); }
 
 // ═══════════════════════════════════════════════════════
-// IMAGE ANALYSIS — Gemini Flash (primary) → Google Vision (fallback)
-// Returns a unified { ocrText, labelChips, apiQuery, shortQuery }
-// so the downstream matching steps don't care which engine ran.
-// ═══════════════════════════════════════════════════════
-async function analyzeImage(base64, apiKey, mime) {
-  // 1) Try Gemini Flash first — it actually recognizes the brand/expression
-  //    instead of just reading text off the label.
-  try {
-    const g = await identifyWithGemini(base64, apiKey, mime);
-    if (g && g.query) {
-      return {
-        ocrText: g.ocrText || g.query,
-        labelChips: g.chips,
-        apiQuery: g.query,
-        shortQuery: g.brand || g.query.split(/\s+/).slice(0, 3).join(' ')
-      };
-    }
-  } catch (e) {
-    console.warn('Gemini identify failed, falling back to Vision:', e.message);
-  }
-  // 2) Fallback: Google Cloud Vision (OCR + labels + web entities)
-  return await analyzeWithVision(base64, apiKey);
-}
-
-async function identifyWithGemini(base64, apiKey, mime) {
-  document.getElementById('scanning-label').textContent = 'Identifying bottle…';
-  const prompt = `You are an expert whisky/whiskey bottle identifier. Look at this photo of a bottle and identify exactly which product it is. Respond with ONLY minified JSON (no markdown, no code fences) in this exact shape:
-{"brand":"","expression":"","fullName":"","type":"","age":"","proof":"","confidence":0,"labelText":""}
-Rules:
-- fullName = the complete product name as it would appear in a catalog, e.g. "Buffalo Trace Kentucky Straight Bourbon" or "The Macallan 12 Year Old Double Cask".
-- type = e.g. Bourbon, Scotch Single Malt, Rye, Tennessee Whiskey, Irish.
-- age = number of years if an age statement is visible, else "".
-- proof = US proof if shown, else "".
-- confidence = a number 0..1 for how sure you are of fullName.
-- labelText = the visible text you can read on the label.
-If this is NOT a whisky/whiskey/spirit bottle, set confidence to 0 and fullName to "".`;
-  const model = 'gemini-2.5-flash';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-  const resp = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [
-        { text: prompt },
-        { inline_data: { mime_type: mime || 'image/jpeg', data: base64 } }
-      ]}],
-      generationConfig: { temperature: 0, responseMimeType: 'application/json' }
-    })
-  });
-  if (!resp.ok) {
-    const e = await resp.json().catch(() => ({}));
-    throw new Error(e.error?.message || ('Gemini HTTP ' + resp.status));
-  }
-  const data = await resp.json();
-  let txt = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
-  txt = txt.replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
-  let obj;
-  try { obj = JSON.parse(txt); } catch (_) { return null; }
-  if (!obj || !obj.fullName || (typeof obj.confidence === 'number' && obj.confidence < 0.15)) return null;
-  const chips = [obj.brand, obj.expression, obj.type,
-    obj.age ? obj.age + ' yr' : '', obj.proof ? obj.proof + ' proof' : '']
-    .map(s => (s == null ? '' : String(s)).trim()).filter(Boolean);
-  chips.push('Gemini ✦');
-  return {
-    query: String(obj.fullName).trim(),
-    brand: (obj.brand || '').trim(),
-    ocrText: String(obj.labelText || obj.fullName || ''),
-    chips: [...new Set(chips)]
-  };
-}
-
-async function analyzeWithVision(base64, apiKey) {
-  document.getElementById('scanning-label').textContent = 'Sending to Vision API…';
-  const response = await fetch(
-    `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        requests: [{
-          image: { content: base64 },
-          features: [
-            { type: 'LABEL_DETECTION',   maxResults: 20 },
-            { type: 'WEB_DETECTION',     maxResults: 10 },
-            { type: 'TEXT_DETECTION',    maxResults: 1  },
-            { type: 'LOGO_DETECTION',    maxResults: 5  }
-          ]
-        }]
-      })
-    }
-  );
-  if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.error?.message || 'Vision API error');
-  }
-  const data = await response.json();
-  const result = data.responses[0];
-  const ocrText = (result.textAnnotations?.[0]?.description || '');
-  const webEntities = (result.webDetection?.webEntities || [])
-    .filter(e => e.score > 0.5 && e.description)
-    .map(e => e.description);
-  const labelAnnotations = (result.labelAnnotations || []).slice(0, 8).map(l => l.description);
-  const logoAnnotations  = (result.logoAnnotations  || []).map(l => l.description);
-  const labelChips = [...new Set([...labelAnnotations, ...logoAnnotations])];
-  const GENERIC_LABEL = new Set(['single','double','small','batch','barrel','straight','bourbon','whiskey','whisky','kentucky','tennessee','blended','aged','reserve','mash','sour','pure','premium','special','limited','edition','select','gold','black','original','classic','cask','strength','proof','years','year','old','american']);
-  const ocrLines = ocrText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 2);
-  let bestOcrLine = ocrLines[0] || '';
-  for (const line of ocrLines) {
-    const words = line.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/);
-    if (words.length >= 1 && !words.every(w => GENERIC_LABEL.has(w))) { bestOcrLine = line; break; }
-  }
-  const ocrFirstLine = bestOcrLine.slice(0, 80);
-  const apiQuery = webEntities[0] || ocrFirstLine || labelAnnotations[0] || '';
-  const shortQuery = ocrFirstLine || ocrText.trim().split(/\s+/).slice(0, 3).join(' ');
-  return { ocrText, labelChips, apiQuery, shortQuery };
-}
-
-// ═══════════════════════════════════════════════════════
-// IMAGE CAPTURE → ANALYZE → MATCH
+// IMAGE CAPTURE → VISION API → MATCH
 // ═══════════════════════════════════════════════════════
 function handleImageCapture(input) {
   const file = input.files[0];
@@ -1528,7 +1410,7 @@ function handleImageCapture(input) {
       content.innerHTML = `
         <div class="no-match-card">
           <strong>No API key set</strong>
-          <p>Add your Google AI API key on the Scan screen to identify bottles, or enable Demo Mode in Profile → API & Scanning.</p>
+          <p>Add your Google Vision API key on the Scan screen to identify bottles, or enable Demo Mode in Profile → API & Scanning.</p>
           <button class="btn-primary" onclick="closeResult(); navTo('profile')" style="max-width:220px;margin:0 auto">
             Go to Settings
           </button>
@@ -1555,15 +1437,62 @@ function handleImageCapture(input) {
   const reader = new FileReader();
   reader.onload = async (e) => {
     const base64 = e.target.result.split(',')[1]; // strip data: prefix
-    document.getElementById('scanning-label').textContent = 'Identifying bottle…';
+    document.getElementById('scanning-label').textContent = 'Sending to Vision API…';
 
     try {
-      const { ocrText, labelChips, apiQuery, shortQuery } = await analyzeImage(base64, apiKey, file.type);
+      const response = await fetch(
+        `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            requests: [{
+              image: { content: base64 },
+              features: [
+                { type: 'LABEL_DETECTION',   maxResults: 20 },
+                { type: 'WEB_DETECTION',     maxResults: 10 },
+                { type: 'TEXT_DETECTION',    maxResults: 1  },
+                { type: 'LOGO_DETECTION',    maxResults: 5  }
+              ]
+            }]
+          })
+        }
+      );
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error?.message || 'Vision API error');
+      }
+
+      const data = await response.json();
       document.getElementById('scanning-label').textContent = 'Searching database…';
+
+      const result = data.responses[0];
+
+      // Build best query from Vision results — prioritize OCR (label text) then web entities
+      const ocrText = (result.textAnnotations?.[0]?.description || '');
+      const webEntities = (result.webDetection?.webEntities || [])
+        .filter(e => e.score > 0.5 && e.description)
+        .map(e => e.description);
+      const labelAnnotations = (result.labelAnnotations || []).slice(0, 8).map(l => l.description);
+      const logoAnnotations  = (result.logoAnnotations  || []).map(l => l.description);
+      const labelChips = [...new Set([...labelAnnotations, ...logoAnnotations])];
+
+      // Skip generic label words to find the actual brand name line
+      const GENERIC_LABEL = new Set(['single','double','small','batch','barrel','straight','bourbon','whiskey','whisky','kentucky','tennessee','blended','aged','reserve','mash','sour','pure','premium','special','limited','edition','select','gold','black','original','classic','cask','strength','proof','years','year','old','american']);
+      const ocrLines = ocrText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 2);
+      let bestOcrLine = ocrLines[0] || '';
+      for (const line of ocrLines) {
+        const words = line.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/);
+        if (words.length >= 1 && !words.every(w => GENERIC_LABEL.has(w))) { bestOcrLine = line; break; }
+      }
+      const ocrFirstLine = bestOcrLine.slice(0, 80);
+      const apiQuery = webEntities[0] || ocrFirstLine || labelAnnotations[0] || '';
 
       if (!apiQuery) {
         showNoMatch(labelChips, ocrText.toLowerCase());
       } else {
+        const shortQuery = ocrFirstLine || ocrText.trim().split(/\s+/).slice(0,3).join(' ');
         let found = false;
 
         // Step 1: Local DB — OCR-based matching (more reliable than visual web entity)
