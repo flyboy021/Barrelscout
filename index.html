@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#1a0a00" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -1288,11 +1288,19 @@ function searchLocalBottlesFuzzy(query, threshold = 0.62) {
     .slice(0, 5);
 }
 
+// Catch-all junk entries (name is a bare category) — they match every bottle of
+// that type and pollute results, so we never let them be candidates.
+const GENERIC_BOTTLE_NAMES = new Set(['bourbon','whiskey','whisky','scotch','rye','tennessee whiskey','tennessee whisky','blended','blended whiskey','blended whisky','single malt','single malt scotch','single malt whisky','irish whiskey','irish','canadian','canadian whisky','japanese whisky','japanese whiskey','american whiskey','spirit','spirits']);
+function isGenericEntry(b) {
+  const n = (b && b.name ? b.name : '').toLowerCase().trim();
+  return GENERIC_BOTTLE_NAMES.has(n);
+}
+
 // Gather the best LOCAL candidates from every signal, dedupe, return top 3 bottles.
 function gatherLocalCandidates(apiQuery, shortQuery, ocrText) {
   const out = []; const seen = new Set();
   const add = (b, score) => {
-    if (!b) return;
+    if (!b || isGenericEntry(b)) return;
     if (seen.has(b.slug)) {
       const e = out.find(x => x.b.slug === b.slug);
       if (e && score > e.score) e.score = score;
