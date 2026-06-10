@@ -187,6 +187,16 @@
     .vision-label-chips{display:flex;flex-wrap:wrap;gap:6px}
     .vision-label-chip{padding:3px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--text2)}
 
+    /* Fireball easter-egg warning */
+    .fireball-warn{text-align:center;padding:18px 6px 6px;animation:fbpop .35s ease}
+    @keyframes fbpop{0%{transform:scale(.82);opacity:0}100%{transform:scale(1);opacity:1}}
+    .fb-emoji{font-size:58px;line-height:1;display:inline-block;animation:fbshake .45s ease infinite alternate}
+    @keyframes fbshake{0%{transform:rotate(-7deg)}100%{transform:rotate(7deg)}}
+    .fb-title{font-size:26px;font-weight:900;letter-spacing:.04em;margin-top:10px;color:#ff7a2f;text-shadow:0 0 18px rgba(255,90,0,.55)}
+    .fb-text{font-size:16px;color:var(--cream2);margin-top:12px;line-height:1.55}
+    .fb-text strong{color:#ff9d4d}
+    .fb-sub{font-size:12px;color:var(--muted);margin-top:10px;font-style:italic}
+
     /* Prominent distillery card (tap → website / map / more) */
     .distillery-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:linear-gradient(135deg,rgba(184,115,51,.16),rgba(184,115,51,.05));border:1px solid rgba(184,115,51,.4);border-radius:var(--radius-sm);padding:12px 14px;margin:12px 0;cursor:pointer;transition:border-color .15s,filter .15s}
     .distillery-card:active{filter:brightness(1.12)}
@@ -635,7 +645,7 @@
         <div class="settings-row">
           <div class="settings-row-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="8"/><path d="M10 9v5M10 7h.01"/></svg></div>
           <span class="settings-row-label">Version</span>
-          <span class="settings-row-value">1.2.5 (distillery card)</span>
+          <span class="settings-row-value">1.2.6 (🔥)</span>
         </div>
       </div>
       <div class="quote-banner">
@@ -1703,6 +1713,7 @@ async function handleBarcode(code) {
   try { info = await lookupUPC(code); } catch (_) {}
   const name = info && info.title ? info.title : '';
   if (!name) { showNoMatch(chips, ''); return; }
+  if (isFireball(name)) { showFireballWarning(); return; } // 🔥
 
   // 3) Feed the product name into the normal matching pipeline.
   _scanReadAs = name;
@@ -2067,6 +2078,8 @@ function handleImageCapture(input) {
         showToast('Couldn’t read the label clearly — try a closer, glare-free photo');
         console.error('Gemini low-confidence; used basic scan. Detail:', _lastGeminiError);
       }
+      // 🔥 Easter egg
+      if (isFireball(apiQuery) || isFireball(ocrText)) { showFireballWarning(); return; }
       setScanStatus('Searching database…', 60);
 
       if (!apiQuery) {
@@ -2670,6 +2683,26 @@ function whSlugFor(name) {
   )?.slug || null;
 }
 
+
+// Easter egg: Fireball isn't whiskey, it's "petroleum drinking fuel."
+function isFireball(s) { return /fire\s*ball/i.test(s || ''); }
+function showFireballWarning() {
+  const scanning = document.getElementById('result-scanning');
+  const content  = document.getElementById('result-content');
+  content.innerHTML = `
+    <div class="fireball-warn">
+      <div class="fb-emoji">🔥🛢️</div>
+      <div class="fb-title">WHOA THERE!</div>
+      <div class="fb-text">This is <strong>NOT</strong> whiskey.<br>It's <strong>petroleum drinking fuel!</strong> 🔥</div>
+      <div class="fb-sub">Cinnamon-flavored regret. Proceed at your own risk, partner.</div>
+      <div class="result-actions" style="margin-top:18px">
+        <button class="btn-primary" onclick="closeResult()" style="max-width:240px;margin:0 auto">I've been warned 🥵</button>
+      </div>
+    </div>`;
+  scanning.style.display = 'none';
+  content.classList.add('show');
+  document.getElementById('result-sheet').classList.add('show');
+}
 
 // Prominent, obviously-tappable distillery card → opens the sheet (map/website/more).
 function distilleryCard(b) {
