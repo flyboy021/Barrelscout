@@ -182,6 +182,20 @@
     .vision-label-chips{display:flex;flex-wrap:wrap;gap:6px}
     .vision-label-chip{padding:3px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--text2)}
 
+    /* CANDIDATE PICKER ("Did you mean…?") */
+    .candidate-head{margin-bottom:14px}
+    .candidate-head-title{font-size:18px;font-weight:800;color:var(--cream2)}
+    .candidate-head-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
+    .candidate-list{display:flex;flex-direction:column;gap:9px}
+    .candidate-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;transition:border-color .15s,background .15s}
+    .candidate-card:hover{border-color:var(--amber);background:var(--bg3)}
+    .candidate-img{width:44px;height:54px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--bg3);border-radius:6px;overflow:hidden}
+    .candidate-img img{width:100%;height:100%;object-fit:contain}
+    .candidate-meta{flex:1;min-width:0}
+    .candidate-name{font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .candidate-sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+    .candidate-go{color:var(--muted);font-size:22px;flex-shrink:0;line-height:1}
+
     .result-desc{font-size:14px;line-height:1.6;color:var(--text2);margin-bottom:18px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm)}
     .result-actions{display:flex;gap:10px}
     .btn-primary{flex:1;background:linear-gradient(135deg,var(--amber) 0%,var(--amber-light) 100%);color:#fff;font-size:14px;font-weight:700;padding:13px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 3px 12px rgba(184,115,51,.35)}
@@ -1187,6 +1201,125 @@ function localToMapped(b) {
 }
 
 // ═══════════════════════════════════════════════════════
+// FUZZY MATCHING — tolerates OCR slips & spelling drift
+// (e.g. "Maker's Mark" vs "makers mark", "Macallen" vs "Macallan")
+// ═══════════════════════════════════════════════════════
+function _lev(a, b) {
+  a = a || ''; b = b || '';
+  const m = a.length, n = b.length;
+  if (!m) return n; if (!n) return m;
+  let prev = Array.from({ length: n + 1 }, (_, i) => i);
+  for (let i = 1; i <= m; i++) {
+    const cur = [i];
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+    }
+    prev = cur;
+  }
+  return prev[n];
+}
+// Normalized 0..1 similarity (1 = identical)
+function _sim(a, b) {
+  a = (a || '').toLowerCase().trim(); b = (b || '').toLowerCase().trim();
+  if (!a || !b) return 0;
+  const L = Math.max(a.length, b.length);
+  return L ? 1 - _lev(a, b) / L : 0;
+}
+// Best fuzzy score of a query against one bottle (whole-string OR token overlap)
+function fuzzyBottleScore(query, b) {
+  const q = (query || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!q) return 0;
+  const qTokens = q.split(' ').filter(w => w.length >= 3);
+  const fields = [b.name, b.distillery, ...(b.searchTerms || [])].map(s => (s || '').toLowerCase());
+  const hayTokens = [...new Set(fields.join(' ').replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean))];
+  let best = 0;
+  for (const f of fields) best = Math.max(best, _sim(q, f));
+  let matched = 0;
+  for (const qt of qTokens) {
+    let tb = 0;
+    for (const ht of hayTokens) {
+      if (ht.includes(qt) || qt.includes(ht)) { tb = 1; break; }
+      tb = Math.max(tb, _sim(qt, ht));
+    }
+    if (tb >= 0.8) matched++;
+  }
+  const tokenScore = qTokens.length ? matched / qTokens.length : 0;
+  return Math.max(best, tokenScore * 0.95);
+}
+function searchLocalBottlesFuzzy(query, threshold = 0.62) {
+  if (!query) return [];
+  return BOTTLE_DB.map(b => ({ b, s: fuzzyBottleScore(query, b) }))
+    .filter(x => x.s >= threshold)
+    .sort((a, z) => z.s - a.s)
+    .slice(0, 5);
+}
+
+// Gather the best LOCAL candidates from every signal, dedupe, return top 3 bottles.
+function gatherLocalCandidates(apiQuery, shortQuery, ocrText) {
+  const out = []; const seen = new Set();
+  const add = (b, score) => {
+    if (!b) return;
+    if (seen.has(b.slug)) {
+      const e = out.find(x => x.b.slug === b.slug);
+      if (e && score > e.score) e.score = score;
+      return;
+    }
+    seen.add(b.slug); out.push({ b, score });
+  };
+  // 1) full OCR text scan (strongest — distinctive multi-word match)
+  searchLocalBottlesByOCR(ocrText).forEach((b, i) => add(b, 1.0 - i * 0.02));
+  // 2) exact/substring on the identified name
+  searchLocalBottles(apiQuery).forEach((b, i) => add(b, 0.9 - i * 0.02));
+  if (shortQuery) searchLocalBottles(shortQuery).forEach((b, i) => add(b, 0.85 - i * 0.02));
+  // 3) fuzzy on the identified name (catches spelling/OCR drift)
+  searchLocalBottlesFuzzy(apiQuery).forEach(x => add(x.b, x.s * 0.8));
+  if (shortQuery) searchLocalBottlesFuzzy(shortQuery).forEach(x => add(x.b, x.s * 0.78));
+  // 4) distinctive single OCR words (handles cursive/script misreads) — weakest
+  const SCAN_GENERIC = new Set(['single','double','small','batch','barrel','straight','bourbon','whiskey','whisky','kentucky','tennessee','blended','aged','reserve','mash','sour','proof','years','year','old','american','bottle','glass','liquor','distillery','distilled','bottled','product','spirits','alcohol','content','from','with','the','and','for','this']);
+  const ocrWords = (ocrText || '').toLowerCase().split(/\W+/).filter(w => w.length >= 4 && !SCAN_GENERIC.has(w));
+  for (const w of ocrWords) searchLocalBottles(w).forEach((b, i) => add(b, 0.6 - i * 0.02));
+  out.sort((a, z) => z.score - a.score);
+  return out.slice(0, 3).map(x => x.b);
+}
+
+// "Did you mean…?" picker — shown when more than one local candidate is plausible.
+let _scanCandidates = [], _scanLabelChips = [];
+function showCandidatePicker(cands, labelChips, query) {
+  if (!cands.length) return false;
+  if (cands.length === 1) { showLocalResult(localToMapped(cands[0]), labelChips); return true; }
+  _scanCandidates = cands; _scanLabelChips = labelChips;
+  const scanning = document.getElementById('result-scanning');
+  const content  = document.getElementById('result-content');
+  const cards = cands.map((b, i) => `
+    <button class="candidate-card" onclick="pickCandidate(${i})">
+      <div class="candidate-img">${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.name}" loading="lazy">` : '🥃'}</div>
+      <div class="candidate-meta">
+        <div class="candidate-name">${b.name}</div>
+        <div class="candidate-sub">${b.distillery || ''}${b.type ? ` · ${b.type}` : ''}</div>
+      </div>
+      <div class="candidate-go">›</div>
+    </button>`).join('');
+  content.innerHTML = `
+    <div class="candidate-head">
+      <div class="candidate-head-title">Did you mean…?</div>
+      <div class="candidate-head-sub">Closest matches${query ? ` for “${query}”` : ''} — tap to confirm</div>
+    </div>
+    <div class="candidate-list">${cards}</div>
+    <div class="result-actions" style="margin-top:10px">
+      <button class="btn-secondary" onclick="closeResult()">None of these</button>
+    </div>`;
+  scanning.style.display = 'none';
+  content.classList.add('show');
+  document.getElementById('result-sheet').classList.add('show');
+  return true;
+}
+function pickCandidate(i) {
+  const c = _scanCandidates[i];
+  if (c) showLocalResult(localToMapped(c), _scanLabelChips);
+}
+
+// ═══════════════════════════════════════════════════════
 // WIKIPEDIA FALLBACK API
 // ═══════════════════════════════════════════════════════
 async function searchWikipedia(query) {
@@ -1566,25 +1699,13 @@ function handleImageCapture(input) {
       } else {
         let found = false;
 
-        // Step 1: Local DB — OCR-based matching (more reliable than visual web entity)
+        // Step 1: Local DB — gather best candidates (exact + OCR + fuzzy), then
+        // show the single match directly, or a "Did you mean…?" picker if ambiguous.
         document.getElementById('scanning-label').textContent = 'Checking local database…';
-        // 1a: full OCR text scan (requires distinctive non-generic word match)
-        const ocrLocalHits = searchLocalBottlesByOCR(ocrText);
-        if (ocrLocalHits.length) { showLocalResult(localToMapped(ocrLocalHits[0]), labelChips); found = true; }
-        // 1b: distinctive word fallback — handles cursive/script OCR misreads (e.g. "flee" → "elmer")
-        if (!found) {
-          const SCAN_GENERIC = new Set(['single','double','small','batch','barrel','straight','bourbon','whiskey','whisky','kentucky','tennessee','blended','aged','reserve','mash','sour','proof','years','year','old','american','bottle','glass','liquor','distillery','distilled','bottled','product','spirits','alcohol','content','from','with','the','and','for','this']);
-          const ocrWords = ocrText.toLowerCase().split(/\W+/).filter(w => w.length >= 4 && !SCAN_GENERIC.has(w));
-          for (const word of ocrWords) {
-            const hits = searchLocalBottles(word);
-            if (hits.length) { showLocalResult(localToMapped(hits[0]), labelChips); found = true; break; }
-          }
-        }
-        // 1c: web entity / OCR first-line query (visual match — less reliable, runs last for local DB)
-        if (!found) {
-          const localHits = searchLocalBottles(apiQuery);
-          if (!localHits.length && shortQuery) localHits.push(...searchLocalBottles(shortQuery));
-          if (localHits.length) { showLocalResult(localToMapped(localHits[0]), labelChips); found = true; }
+        const localCands = gatherLocalCandidates(apiQuery, shortQuery, ocrText);
+        if (localCands.length) {
+          showCandidatePicker(localCands, labelChips, apiQuery);
+          found = true;
         }
 
         // Step 2: Live Distiller search (if Apify token set)
@@ -1774,6 +1895,7 @@ function showApiResult(item, labelChips, isDemo) {
     <div class="result-details-grid">
       ${(b.age && b.age !== 'NAS') ? `<div class="detail-cell"><div class="detail-label">Age</div><div class="detail-value accent">${b.age}</div></div>` : ''}
       <div class="detail-cell"><div class="detail-label">ABV</div><div class="detail-value accent">${b.abv ? b.abv+'%' : 'N/A'}</div></div>
+      <div class="detail-cell"><div class="detail-label">Proof</div><div class="detail-value accent">${b.abv ? (b.abv*2).toFixed(1).replace(/\.0$/,'') : 'N/A'}</div></div>
       <div class="detail-cell"><div class="detail-label">Region</div><div class="detail-value">${b.region}</div></div>
       ${b.price ? `<div class="detail-cell"><div class="detail-label">Price</div><div class="detail-value accent">${b.price}</div></div>` : `<div class="detail-cell"><div class="detail-label">Type</div><div class="detail-value">${b.type}</div></div>`}
     </div>
@@ -2053,6 +2175,7 @@ function renderDetailBody(b, inCol) {
       <div class="result-details-grid">
         ${(b.age && b.age !== 'NAS') ? `<div class="detail-cell"><div class="detail-label">Age</div><div class="detail-value accent">${b.age}</div></div>` : ''}
         <div class="detail-cell"><div class="detail-label">ABV</div><div class="detail-value accent">${b.abv ? b.abv+'%' : 'N/A'}</div></div>
+        <div class="detail-cell"><div class="detail-label">Proof</div><div class="detail-value accent">${b.abv ? (b.abv*2).toFixed(1).replace(/\.0$/,'') : 'N/A'}</div></div>
         ${b.valueForMoney ? `<div class="detail-cell"><div class="detail-label">Value</div><div class="detail-value"><span class="vfm-stars">${vfmStars(b.valueForMoney)}</span></div></div>` : ''}
         ${b.price ? `<div class="detail-cell"><div class="detail-label">Price</div><div class="detail-value accent">${b.price}</div></div>` : ''}
       </div>
