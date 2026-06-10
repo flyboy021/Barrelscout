@@ -1770,7 +1770,7 @@ let _lastGeminiError = null, _lastScanEngine = null;
 // Is this Gemini error a key/setup problem the user must fix (vs. a transient blip)?
 function isGeminiConfigError(msg) {
   const m = (msg || '').toLowerCase();
-  return /403|401|404|permission|api key|api_key|not valid|invalid|has not been used|disabled|service_disabled|not found|not_found|enable|quota|resource_exhausted|429/.test(m);
+  return /403|401|404|permission|api key|api_key|not valid|invalid|has not been used|disabled|service_disabled|not found|not_found|enable|quota|resource_exhausted|429|blocked|are blocked|service_blocked/.test(m);
 }
 
 async function analyzeImage(base64, apiKey, mime) {
@@ -1812,7 +1812,7 @@ function showGeminiKeyError(error, configLike) {
   const content  = document.getElementById('result-content');
   const fixBlock = configLike
     ? `<p style="margin-top:10px;font-weight:700;color:var(--text2)">Most likely fix:</p>
-       <p style="margin-top:4px">Enable the <strong>Generative Language API</strong> for your key (aistudio.google.com/apikey), or paste an <em>AI Studio</em> key — a Vision-only key won’t work. If you just enabled it, wait a few more minutes and retry.</p>`
+       <p style="margin-top:4px">If it says <em>“are blocked”</em>, your key has an <strong>API restriction</strong>. In Google Cloud → Credentials → your key → <strong>API restrictions</strong>, add <strong>Generative Language API</strong> (or choose “Don’t restrict key”), then save. Otherwise, just paste a fresh <em>AI Studio</em> key (aistudio.google.com/apikey), which has no restrictions.</p>`
     : `<p style="margin-top:10px">The Gemini request failed for the reason below. If it mentions a network or timeout issue, just try again. If it mentions the model or a bad request, tell me the message and I’ll fix it.</p>`;
   content.innerHTML = `
     <div class="no-match-card">
