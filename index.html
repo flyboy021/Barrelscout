@@ -187,6 +187,12 @@
     .vision-label-chips{display:flex;flex-wrap:wrap;gap:6px}
     .vision-label-chip{padding:3px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--text2)}
 
+    /* BOTTLE SPEC ROW (ABV / Proof / Age) */
+    .spec-row{display:flex;gap:8px;margin:10px 0}
+    .spec{flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 6px;text-align:center}
+    .spec-v{display:block;font-size:15px;font-weight:800;color:var(--cream2)}
+    .spec-k{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+
     /* CANDIDATE PICKER ("Did you mean…?") */
     .candidate-head{margin-bottom:14px}
     .candidate-head-title{font-size:18px;font-weight:800;color:var(--cream2)}
@@ -2664,6 +2670,7 @@ function showLocalResult(b, labelChips) {
       <div class="confidence-label"><span>${b.region}</span>${b.ratingAvg !== null ? `<strong>${b.ratingAvg}/100</strong>` : ''}</div>
       ${b.ratingAvg !== null ? `<div class="confidence-track"><div class="confidence-fill" id="conf-fill" style="width:0%"></div></div>` : ''}
     </div>
+    ${specRow(b)}
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0">${rating}${vfm}${price}</div>
     ${b.flavors?.length ? `<div class="flavor-tags" style="margin:8px 0">${b.flavors.map(f=>`<span class="flavor-tag">${f}</span>`).join('')}</div>` : ''}
     <div class="result-desc">${b.desc}</div>
