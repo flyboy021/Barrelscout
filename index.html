@@ -119,6 +119,8 @@
     .scanning-dots span:nth-child(3){animation-delay:.4s}
     @keyframes dotPulse{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1.1)}}
     .scanning-label{font-size:15px;color:var(--text2);letter-spacing:.04em}
+    .scan-progress{width:80%;max-width:240px;height:6px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;overflow:hidden}
+    .scan-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--amber),var(--gold-light));border-radius:99px;transition:width .45s ease}
     .result-content{padding:0 20px 10px;display:none}
     .result-content.show{display:block}
 
@@ -638,6 +640,7 @@
     <div class="result-scanning" id="result-scanning">
       <div class="scanning-dots"><span></span><span></span><span></span></div>
       <div class="scanning-label" id="scanning-label">Analyzing bottle…</div>
+      <div class="scan-progress"><div class="scan-progress-fill" id="scan-progress-fill"></div></div>
     </div>
     <div class="result-content" id="result-content"></div>
   </div>
@@ -1518,6 +1521,14 @@ function triggerGallery() { document.getElementById('gallery-input').click(); }
 // Returns a unified { ocrText, labelChips, apiQuery, shortQuery }
 // so the downstream matching steps don't care which engine ran.
 // ═══════════════════════════════════════════════════════
+// Update the scanning overlay: status text + progress bar (0–100).
+function setScanStatus(label, pct) {
+  const l = document.getElementById('scanning-label');
+  if (l && label != null) l.textContent = label;
+  const f = document.getElementById('scan-progress-fill');
+  if (f && pct != null) f.style.width = Math.max(0, Math.min(100, pct)) + '%';
+}
+
 async function analyzeImage(base64, apiKey, mime) {
   // 1) Try Gemini Flash first — it actually recognizes the brand/expression
   //    instead of just reading text off the label.
@@ -1539,7 +1550,7 @@ async function analyzeImage(base64, apiKey, mime) {
 }
 
 async function identifyWithGemini(base64, apiKey, mime) {
-  document.getElementById('scanning-label').textContent = 'Identifying bottle…';
+  setScanStatus('Identifying bottle…', 40);
   const prompt = `You are an expert whisky/whiskey bottle identifier. Look at this photo of a bottle and identify exactly which product it is. Respond with ONLY minified JSON (no markdown, no code fences) in this exact shape:
 {"brand":"","expression":"","fullName":"","type":"","age":"","proof":"","confidence":0,"labelText":""}
 Rules:
@@ -1586,7 +1597,7 @@ If this is NOT a whisky/whiskey/spirit bottle, set confidence to 0 and fullName 
 }
 
 async function analyzeWithVision(base64, apiKey) {
-  document.getElementById('scanning-label').textContent = 'Sending to Vision API…';
+  setScanStatus('Reading the label…', 40);
   const response = await fetch(
     `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`,
     {
@@ -1607,7 +1618,7 @@ async function analyzeWithVision(base64, apiKey) {
   );
   if (!response.ok) {
     const err = await response.json();
-    throw new Error(err.error?.message || 'Vision API error');
+    throw new Error(err.error?.message || 'Image analysis error');
   }
   const data = await response.json();
   const result = data.responses[0];
@@ -1648,7 +1659,7 @@ function handleImageCapture(input) {
   const overlay = document.getElementById('result-overlay');
   const scanning = document.getElementById('result-scanning');
   const content  = document.getElementById('result-content');
-  document.getElementById('scanning-label').textContent = 'Reading image…';
+  setScanStatus('Reading image…', 12);
   scanning.style.display = 'flex';
   content.classList.remove('show');
   overlay.classList.add('show');
@@ -1674,7 +1685,7 @@ function handleImageCapture(input) {
 
   if (demoMode && !apiKey) {
     // Demo mode: fetch a random bottle from WHISKY:EDITION
-    setTimeout(() => { document.getElementById('scanning-label').textContent = 'Loading demo…'; }, 600);
+    setTimeout(() => { setScanStatus('Loading demo…', 55); }, 600);
     const demoQueries = ['macallan','wild turkey','glenfiddich','buffalo trace','maker mark','ardbeg','jack daniels'];
     const dq = demoQueries[Math.floor(Math.random() * demoQueries.length)];
     searchWhiskyEditionAPI(dq).then(items => {
@@ -1688,11 +1699,11 @@ function handleImageCapture(input) {
   const reader = new FileReader();
   reader.onload = async (e) => {
     const base64 = e.target.result.split(',')[1]; // strip data: prefix
-    document.getElementById('scanning-label').textContent = 'Identifying bottle…';
+    setScanStatus('Identifying bottle…', 25);
 
     try {
       const { ocrText, labelChips, apiQuery, shortQuery } = await analyzeImage(base64, apiKey, file.type);
-      document.getElementById('scanning-label').textContent = 'Searching database…';
+      setScanStatus('Searching database…', 60);
 
       if (!apiQuery) {
         showNoMatch(labelChips, ocrText.toLowerCase());
@@ -1701,7 +1712,7 @@ function handleImageCapture(input) {
 
         // Step 1: Local DB — gather best candidates (exact + OCR + fuzzy), then
         // show the single match directly, or a "Did you mean…?" picker if ambiguous.
-        document.getElementById('scanning-label').textContent = 'Checking local database…';
+        setScanStatus('Checking local database…', 72);
         const localCands = gatherLocalCandidates(apiQuery, shortQuery, ocrText);
         if (localCands.length) {
           showCandidatePicker(localCands, labelChips, apiQuery);
@@ -1710,7 +1721,7 @@ function handleImageCapture(input) {
 
         // Step 2: Live Distiller search (if Apify token set)
         if (!found && getApifyToken()) {
-          document.getElementById('scanning-label').textContent = 'Searching database…';
+          setScanStatus('Searching Distiller…', 85);
           try {
             const distItems = await searchDistillerLive(apiQuery);
             if (!distItems.length && shortQuery) distItems.push(...await searchDistillerLive(shortQuery));
@@ -1720,7 +1731,7 @@ function handleImageCapture(input) {
 
         // Step 3: WHISKY:EDITION
         if (!found) {
-          document.getElementById('scanning-label').textContent = 'Searching WHISKY:EDITION…';
+          setScanStatus('Searching WHISKY:EDITION…', 92);
           try {
             const apiItems = await searchWhiskyEditionAPI(apiQuery);
             if (apiItems.length > 0) { showApiResult(apiItems[0], labelChips, false); found = true; }
@@ -1740,7 +1751,7 @@ function handleImageCapture(input) {
         <div class="no-match-card">
           <strong>API Error</strong>
           <p>${err.message}</p>
-          <p style="margin-top:8px;font-size:12px;color:var(--muted)">Check your API key in Profile → API & Scanning, and make sure the Cloud Vision API is enabled in your Google Cloud Console.</p>
+          <p style="margin-top:8px;font-size:12px;color:var(--muted)">Check your API key in Profile → API & Scanning, and make sure the Generative Language (Gemini) API is enabled for your key.</p>
           <button class="btn-secondary" onclick="closeResult()" style="max-width:180px;margin:12px auto 0">Close</button>
         </div>`;
       content.classList.add('show');
@@ -1759,10 +1770,10 @@ function showNoMatch(labelChips, ocrText) {
   content.innerHTML = `
     <div class="no-match-card">
       <strong>No bottle matched</strong>
-      <p>Vision analyzed the image but couldn't match a bottle in the database. Try a clearer photo of the front label.</p>
+      <p>We analyzed the image but couldn't match a bottle in the database. Try a clearer, straight-on photo of the front label.</p>
       ${labelChips.length ? `
       <div class="vision-labels" style="margin-top:0">
-        <div class="vision-labels-title">Vision detected</div>
+        <div class="vision-labels-title">Detected</div>
         <div class="vision-label-chips">${labelChips.map(l=>`<span class="vision-label-chip">${l}</span>`).join('')}</div>
       </div>` : ''}
       ${ocrText ? `<div style="margin-top:12px;font-size:12px;color:var(--muted);line-height:1.5"><strong style="color:var(--text2)">OCR text found:</strong><br>${ocrText.slice(0,200)}</div>` : ''}
@@ -1903,7 +1914,7 @@ function showApiResult(item, labelChips, isDemo) {
 
     ${labelChips.length ? `
     <div class="vision-labels">
-      <div class="vision-labels-title">Vision detected</div>
+      <div class="vision-labels-title">Detected</div>
       <div class="vision-label-chips">${labelChips.map(l=>`<span class="vision-label-chip">${l}</span>`).join('')}</div>
     </div>` : ''}
 
