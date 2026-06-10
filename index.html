@@ -1313,7 +1313,21 @@ function gatherLocalCandidates(apiQuery, shortQuery, ocrText) {
   const ocrWords = (ocrText || '').toLowerCase().split(/\W+/).filter(w => w.length >= 4 && !SCAN_GENERIC.has(w));
   for (const w of ocrWords) searchLocalBottles(w).forEach((b, i) => add(b, 0.6 - i * 0.02));
   out.sort((a, z) => z.score - a.score);
-  return out.slice(0, 3).map(x => x.b);
+  return out.slice(0, 3); // [{ b, score }] — scores kept so we can judge confidence
+}
+
+// Decide: show the top bottle directly when it's a clear winner, otherwise the picker.
+// "Clear winner" = strong top score AND a meaningful gap over the runner-up.
+function resolveLocalCandidates(scored, labelChips, query) {
+  if (!scored || !scored.length) return false;
+  const top = scored[0], second = scored[1];
+  const confident = top.score >= 0.88 && (!second || (top.score - second.score) >= 0.12);
+  if (confident || scored.length === 1) {
+    showLocalResult(localToMapped(top.b), labelChips);
+  } else {
+    showCandidatePicker(scored.map(x => x.b), labelChips, query);
+  }
+  return true;
 }
 
 // "Did you mean…?" picker — shown when more than one local candidate is plausible.
@@ -1675,7 +1689,7 @@ async function matchQueryToBottle(apiQuery, labelChips) {
   let found = false;
   setScanStatus('Checking local database…', 72);
   const cands = gatherLocalCandidates(apiQuery, '', apiQuery);
-  if (cands.length) { showCandidatePicker(cands, labelChips, apiQuery); return; }
+  if (cands.length) { resolveLocalCandidates(cands, labelChips, apiQuery); return; }
   if (getApifyToken()) {
     setScanStatus('Searching Distiller…', 85);
     try {
@@ -1779,11 +1793,10 @@ async function analyzeImage(base64, apiKey, mime) {
   } catch (e) {
     _lastGeminiError = (e && e.message) ? e.message : String(e);
     console.warn('Gemini error:', _lastGeminiError);
-    // A key/setup error won't fix itself — surface it instead of hiding a bad Vision result.
-    if (isGeminiConfigError(_lastGeminiError)) {
-      _lastScanEngine = 'gemini-config-error';
-      return { ok: false, configError: true, error: _lastGeminiError };
-    }
+    // Any real Gemini error: surface the exact message instead of hiding a weak
+    // Vision result behind a vague toast, so the cause is always visible.
+    _lastScanEngine = 'gemini-error';
+    return { ok: false, configError: true, configLike: isGeminiConfigError(_lastGeminiError), error: _lastGeminiError };
   }
   // 2) Transient/empty only: fall back to Google Vision (OCR + labels).
   _lastScanEngine = 'vision';
@@ -1794,21 +1807,24 @@ async function analyzeImage(base64, apiKey, mime) {
 }
 
 // Clear, actionable card when the Gemini key/API isn't set up right.
-function showGeminiKeyError(error) {
+function showGeminiKeyError(error, configLike) {
   const scanning = document.getElementById('result-scanning');
   const content  = document.getElementById('result-content');
+  const fixBlock = configLike
+    ? `<p style="margin-top:10px;font-weight:700;color:var(--text2)">Most likely fix:</p>
+       <p style="margin-top:4px">Enable the <strong>Generative Language API</strong> for your key (aistudio.google.com/apikey), or paste an <em>AI Studio</em> key — a Vision-only key won’t work. If you just enabled it, wait a few more minutes and retry.</p>`
+    : `<p style="margin-top:10px">The Gemini request failed for the reason below. If it mentions a network or timeout issue, just try again. If it mentions the model or a bad request, tell me the message and I’ll fix it.</p>`;
   content.innerHTML = `
     <div class="no-match-card">
-      <strong>AI identifier isn’t working</strong>
-      <p>Your photo couldn’t be sent to Gemini, so identification is degraded. This is almost always a key/setup issue, not your photo.</p>
-      <p style="margin-top:10px;font-weight:700;color:var(--text2)">Most likely fix:</p>
-      <p style="margin-top:4px">Enable the <strong>Generative Language API</strong> for your key at Google AI Studio (aistudio.google.com/apikey), or make sure you pasted an <em>AI Studio</em> key — a Vision-only key won’t work for AI identification.</p>
+      <strong>AI identifier hit an error</strong>
+      <p>Your photo couldn’t be identified by Gemini this time.</p>
+      ${fixBlock}
       <div style="margin-top:12px;font-size:12px;color:var(--muted);line-height:1.5;word-break:break-word">
-        <strong style="color:var(--text2)">Error from Google:</strong><br>${(error || 'unknown').toString().slice(0, 300)}
+        <strong style="color:var(--text2)">Error from Google:</strong><br>${(error || 'unknown').toString().slice(0, 400)}
       </div>
       <div class="result-actions" style="margin-top:14px">
-        <button class="btn-primary" onclick="closeResult(); navTo('profile')" style="max-width:200px;margin:0 auto">Open Settings</button>
-        <button class="btn-secondary" onclick="closeResult()" style="max-width:160px;margin:8px auto 0">Close</button>
+        <button class="btn-primary" onclick="closeResult()" style="max-width:160px;margin:0 auto">Try Again</button>
+        <button class="btn-secondary" onclick="closeResult(); navTo('profile')" style="max-width:160px;margin:8px auto 0">Settings</button>
       </div>
     </div>`;
   scanning.style.display = 'none';
@@ -1972,14 +1988,14 @@ function handleImageCapture(input) {
     try {
       const res = await analyzeImage(imgData.base64, apiKey, imgData.mime);
 
-      // Gemini key/setup problem — show the fix instead of a misleading basic-scan result.
-      if (res && res.configError) { showGeminiKeyError(res.error); input.value = ''; return; }
+      // Gemini errored — show the exact reason instead of a vague fallback.
+      if (res && res.configError) { showGeminiKeyError(res.error, res.configLike); input.value = ''; return; }
 
       const { ocrText, labelChips, apiQuery, shortQuery } = res;
-      // If we silently dropped to the basic (Vision) scanner, tell the user why.
+      // Gemini ran but wasn't confident → quietly used the basic scanner.
       if (_lastScanEngine === 'vision' && _lastGeminiError) {
-        showToast('⚠️ AI ID unavailable — using basic scan');
-        console.error('Gemini fallback reason:', _lastGeminiError);
+        showToast('Couldn’t read the label clearly — try a closer, glare-free photo');
+        console.error('Gemini low-confidence; used basic scan. Detail:', _lastGeminiError);
       }
       setScanStatus('Searching database…', 60);
 
@@ -1993,7 +2009,7 @@ function handleImageCapture(input) {
         setScanStatus('Checking local database…', 72);
         const localCands = gatherLocalCandidates(apiQuery, shortQuery, ocrText);
         if (localCands.length) {
-          showCandidatePicker(localCands, labelChips, apiQuery);
+          resolveLocalCandidates(localCands, labelChips, apiQuery);
           found = true;
         }
 
