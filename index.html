@@ -1296,31 +1296,40 @@ function isGenericEntry(b) {
   return GENERIC_BOTTLE_NAMES.has(n);
 }
 
-// Gather the best LOCAL candidates from every signal, dedupe, return top 3 bottles.
+// Gather the best LOCAL candidates. Collect from every signal, then RANK by actual
+// match quality (not array order) so the exact bottle beats same-brand siblings.
 function gatherLocalCandidates(apiQuery, shortQuery, ocrText) {
-  const out = []; const seen = new Set();
-  const add = (b, score) => {
-    if (!b || isGenericEntry(b)) return;
-    if (seen.has(b.slug)) {
-      const e = out.find(x => x.b.slug === b.slug);
-      if (e && score > e.score) e.score = score;
-      return;
-    }
-    seen.add(b.slug); out.push({ b, score });
-  };
-  // 1) full OCR text scan (strongest — distinctive multi-word match)
-  searchLocalBottlesByOCR(ocrText).forEach((b, i) => add(b, 1.0 - i * 0.02));
-  // 2) exact/substring on the identified name
-  searchLocalBottles(apiQuery).forEach((b, i) => add(b, 0.9 - i * 0.02));
-  if (shortQuery) searchLocalBottles(shortQuery).forEach((b, i) => add(b, 0.85 - i * 0.02));
-  // 3) fuzzy on the identified name (catches spelling/OCR drift)
-  searchLocalBottlesFuzzy(apiQuery).forEach(x => add(x.b, x.s * 0.8));
-  if (shortQuery) searchLocalBottlesFuzzy(shortQuery).forEach(x => add(x.b, x.s * 0.78));
-  // 4) distinctive single OCR words (handles cursive/script misreads) — weakest
+  // 1) Collect a candidate pool from all signals.
+  const pool = new Map(); // slug -> bottle
+  const consider = b => { if (b && !isGenericEntry(b) && b.slug) pool.set(b.slug, b); };
+  searchLocalBottlesByOCR(ocrText).forEach(consider);
+  searchLocalBottles(apiQuery).forEach(consider);
+  if (shortQuery) searchLocalBottles(shortQuery).forEach(consider);
+  searchLocalBottlesFuzzy(apiQuery).forEach(x => consider(x.b));
+  if (shortQuery) searchLocalBottlesFuzzy(shortQuery).forEach(x => consider(x.b));
   const SCAN_GENERIC = new Set(['single','double','small','batch','barrel','straight','bourbon','whiskey','whisky','kentucky','tennessee','blended','aged','reserve','mash','sour','proof','years','year','old','american','bottle','glass','liquor','distillery','distilled','bottled','product','spirits','alcohol','content','from','with','the','and','for','this']);
-  const ocrWords = (ocrText || '').toLowerCase().split(/\W+/).filter(w => w.length >= 4 && !SCAN_GENERIC.has(w));
-  for (const w of ocrWords) searchLocalBottles(w).forEach((b, i) => add(b, 0.6 - i * 0.02));
-  out.sort((a, z) => z.score - a.score);
+  (ocrText || '').toLowerCase().split(/\W+/).filter(w => w.length >= 4 && !SCAN_GENERIC.has(w))
+    .forEach(w => searchLocalBottles(w).forEach(consider));
+
+  // 2) Score every candidate by how well it actually matches the identified bottle.
+  const apiLower = (apiQuery || '').toLowerCase();
+  const ocrLower = (ocrText || '').toLowerCase();
+  const scoreOf = (b) => {
+    let s = Math.max(fuzzyBottleScore(apiQuery, b), shortQuery ? fuzzyBottleScore(shortQuery, b) : 0);
+    // Strong bonus when the bottle's full name (ignoring parentheticals) is literally
+    // contained in what we read — that's an exact hit, not just a brand match.
+    const nm = (b.name || '').toLowerCase().replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim();
+    if (nm.length > 5 && (apiLower.includes(nm) || ocrLower.includes(nm))) s = Math.max(s, 0.97);
+    return s;
+  };
+
+  // 3) Rank by score, dedupe by display name, return top 3.
+  const nameKey = b => (b.name || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const out = []; const seenNames = new Set();
+  [...pool.values()].map(b => ({ b, score: scoreOf(b) }))
+    .filter(x => x.score > 0)
+    .sort((a, z) => z.score - a.score)
+    .forEach(x => { const nk = nameKey(x.b); if (!seenNames.has(nk)) { seenNames.add(nk); out.push(x); } });
   return out.slice(0, 3); // [{ b, score }] — scores kept so we can judge confidence
 }
 
@@ -1339,11 +1348,11 @@ function resolveLocalCandidates(scored, labelChips, query) {
 }
 
 // "Did you mean…?" picker — shown when more than one local candidate is plausible.
-let _scanCandidates = [], _scanLabelChips = [];
+let _scanCandidates = [], _scanLabelChips = [], _scanQuery = '';
 function showCandidatePicker(cands, labelChips, query) {
   if (!cands.length) return false;
   if (cands.length === 1) { showLocalResult(localToMapped(cands[0]), labelChips); return true; }
-  _scanCandidates = cands; _scanLabelChips = labelChips;
+  _scanCandidates = cands; _scanLabelChips = labelChips; _scanQuery = query || '';
   const scanning = document.getElementById('result-scanning');
   const content  = document.getElementById('result-content');
   const cards = cands.map((b, i) => `
@@ -1362,7 +1371,7 @@ function showCandidatePicker(cands, labelChips, query) {
     </div>
     <div class="candidate-list">${cards}</div>
     <div class="result-actions" style="margin-top:10px">
-      <button class="btn-secondary" onclick="closeResult()">None of these</button>
+      <button class="btn-secondary" onclick="searchOnlineFallback()">None of these — search online</button>
     </div>`;
   scanning.style.display = 'none';
   content.classList.add('show');
@@ -1372,6 +1381,26 @@ function showCandidatePicker(cands, labelChips, query) {
 function pickCandidate(i) {
   const c = _scanCandidates[i];
   if (c) showLocalResult(localToMapped(c), _scanLabelChips);
+}
+
+// "None of these" → look up the exact bottle Gemini read in the online sources.
+async function searchOnlineFallback() {
+  const q = _scanQuery, chips = _scanLabelChips;
+  const scanning = document.getElementById('result-scanning');
+  const content  = document.getElementById('result-content');
+  content.classList.remove('show');
+  scanning.style.display = 'flex';
+  setScanStatus('Searching online…', 60);
+  let found = false;
+  if (getApifyToken()) {
+    setScanStatus('Searching Distiller…', 78);
+    try { const d = await searchDistillerLive(q); if (d.length) { showDistillerResult(d[0], chips); found = true; } } catch (_) {}
+  }
+  if (!found) {
+    setScanStatus('Searching WHISKY:EDITION…', 90);
+    try { const a = await searchWhiskyEditionAPI(q); if (a.length) { showApiResult(a[0], chips, false); found = true; } } catch (_) {}
+  }
+  if (!found) showNoMatch(chips, (q || '').toLowerCase());
 }
 
 // ═══════════════════════════════════════════════════════
