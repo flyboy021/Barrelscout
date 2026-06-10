@@ -615,7 +615,7 @@
         <div class="settings-row">
           <div class="settings-row-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="8"/><path d="M10 9v5M10 7h.01"/></svg></div>
           <span class="settings-row-label">Version</span>
-          <span class="settings-row-value">1.2.0 (smart match)</span>
+          <span class="settings-row-value">1.2.1 (smart match)</span>
         </div>
       </div>
       <div class="quote-banner">
@@ -1315,7 +1315,9 @@ function gatherLocalCandidates(apiQuery, shortQuery, ocrText) {
   const apiLower = (apiQuery || '').toLowerCase();
   const ocrLower = (ocrText || '').toLowerCase();
   const scoreOf = (b) => {
-    let s = Math.max(fuzzyBottleScore(apiQuery, b), shortQuery ? fuzzyBottleScore(shortQuery, b) : 0);
+    // Rank by the FULL identified name only — NOT the bare brand. Scoring on the brand
+    // (shortQuery) gives every same-brand sibling a perfect score and causes ties.
+    let s = fuzzyBottleScore(apiQuery, b);
     // Strong bonus when the bottle's full name (ignoring parentheticals) is literally
     // contained in what we read — that's an exact hit, not just a brand match.
     const nm = (b.name || '').toLowerCase().replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim();
