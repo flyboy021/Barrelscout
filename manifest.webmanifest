@@ -1,0 +1,13 @@
+{
+  "name": "Vicinity — METAR/TAF nearby",
+  "short_name": "Vicinity",
+  "description": "Latest METAR and TAF for every station within 50nm, on a map.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#11161f",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
