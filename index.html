@@ -91,8 +91,27 @@
   .rb-vnr{color:var(--lifr);font-weight:800}
   #ribbon.rb-tappable{cursor:pointer}
   .rb-brief{color:var(--txt);font-weight:600}
-  .rb-caret{margin-left:auto;color:var(--muted);font-style:normal;transition:transform .15s}
+  .rb-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex:none}
+  .rb-speak{background:transparent;border:0;color:var(--muted);cursor:pointer;padding:0;
+    display:inline-flex;line-height:0}
+  .rb-speak.on{color:#2b6fff}
+  .rb-speak svg{width:18px;height:18px}
+  .rb-caret{color:var(--muted);font-style:normal;transition:transform .15s}
   #ribbon.exp .rb-caret{transform:rotate(180deg)}
+  .tip-pop{position:fixed;top:calc(max(env(safe-area-inset-top),12px) + 46px);right:10px;
+    z-index:4000;max-width:270px}
+  .tip-arrow{position:absolute;top:-6px;right:16px;width:13px;height:13px;background:#2b6fff;
+    transform:rotate(45deg);border-radius:2px}
+  .tip-body{position:relative;background:#2b6fff;color:#fff;border-radius:12px;padding:12px 14px;
+    box-shadow:0 10px 28px #0008;font-size:13px;line-height:1.5}
+  .tip-body b{display:block;font-size:14px;font-weight:800;margin-bottom:4px}
+  .tip-body em{font-style:normal;font-weight:800}
+  .tip-ok{margin-top:10px;background:#fff;color:#12437e;border:0;border-radius:8px;padding:7px 16px;
+    font-weight:800;font-size:13px;cursor:pointer}
+  @keyframes tipPulse{0%{box-shadow:0 0 0 0 rgba(43,111,255,.55)}
+    70%{box-shadow:0 0 0 9px rgba(43,111,255,0)}100%{box-shadow:0 0 0 0 rgba(43,111,255,0)}}
+  .tip-hint{animation:tipPulse 1.3s ease-out infinite;border-radius:50%}
+  .set-ver{margin-top:8px;text-align:center;font-size:11px;opacity:.5}
   #briefPanel{display:none;background:var(--panel);border-bottom:1px solid var(--line)}
   #briefPanel.open{display:block;padding:8px 12px;max-height:min(38vh,320px);overflow-y:auto}
   .bp-row{display:flex;gap:10px;align-items:baseline;padding:3px 0;font-size:13px}
@@ -310,7 +329,12 @@
             <span class="set-label">Location access<br><span id="gpsPrefStatus" class="set-sub"></span></span>
             <button id="gpsPrefReset" class="toggle" title="Forget the saved choice and ask again next time">Reset</button>
           </div>
+          <div class="set-row">
+            <span class="set-label">Read weather aloud on load</span>
+            <button id="autoReadPref" class="toggle" title="Automatically read the area brief and nearest weather when it loads">Off</button>
+          </div>
           <button id="tip" class="tip">☕ Tip the dev</button>
+          <div id="setVer" class="set-ver"></div>
         </div>
       </div>
     </div>
@@ -378,6 +402,15 @@
 
   <div id="ribbon"></div>
   <div id="briefPanel"></div>
+
+  <div id="tipAutospeak" class="tip-pop" style="display:none">
+    <div class="tip-arrow"></div>
+    <div class="tip-body">
+      <b>New — Read weather aloud</b>
+      <div>Hear the area brief and the nearest METAR/TAF spoken. Turn on <em>Read weather aloud on load</em> in Settings (the gear above), or tap the speaker on the summary bar anytime.</div>
+      <button type="button" id="tipAutospeakOk" class="tip-ok">Got it</button>
+    </div>
+  </div>
   <div id="map"></div>
 
   <div id="status"></div>
@@ -676,13 +709,13 @@ function decodeWx(wx){
   if (!wx) return null;
   return wx.split(/\s+/).map(tok => {
     if (tok === "+FC") return "tornado/waterspout";
-    let out = "", t = tok;
+    let out = "", t = tok, vic = false;
     if (t[0] === "-"){ out += "light "; t = t.slice(1); }
     else if (t[0] === "+"){ out += "heavy "; t = t.slice(1); }
-    if (t.startsWith("VC")){ out += "nearby "; t = t.slice(2); }
+    if (t.startsWith("VC")){ vic = true; t = t.slice(2); }
     const words = [];
     for (let i = 0; i < t.length; i += 2){ const p = t.slice(i, i+2); if (WX_MAP[p]) words.push(WX_MAP[p]); }
-    return (out + words.join(" ")).trim();
+    return ((out + words.join(" ")).trim() + (vic ? " in the vicinity" : "")).trim();
   }).filter(Boolean).join(", ");
 }
 const TAF_COVER = {FEW:"few", SCT:"scattered", BKN:"broken", OVC:"overcast",
@@ -1079,6 +1112,203 @@ function routeBrief(arr){
   if (!details.length) details.push({label:"", cat:"VFR", text:"VFR the whole way."});
   return {summary, details};
 }
+// ---- read aloud (free device text-to-speech) -----------------------------
+const SPEAKER_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.8 5.5a9 9 0 0 1 0 13"/></svg>`;
+function digitWords(str){
+  const w = {"0":"zero","1":"one","2":"two","3":"three","4":"four","5":"five","6":"six","7":"seven","8":"eight","9":"nine"};
+  return String(str).split("").map(c => w[c] || c).join(" ");
+}
+function spokenName(name){
+  if (!name) return "the airport";
+  let n = name.split(",")[0].trim();
+  n = n.replace(/\b(Intl|Rgnl|Muni|Arpt|Fld|Natl|Cnty|Mem|AFB|MCAS|NAS|NAF|NALF|AAF|ANGB|ARB|Rgn|Spb)\b/g, m => ({
+    Intl:"International", Rgnl:"Regional", Rgn:"Regional", Muni:"Municipal", Arpt:"airport", Fld:"Field",
+    Natl:"National", Cnty:"County", Mem:"Memorial", AFB:"Air Force Base", MCAS:"Marine Corps Air Station",
+    NAS:"Naval Air Station", NAF:"Naval Air Facility", NALF:"Naval Auxiliary Landing Field",
+    AAF:"Army Airfield", ANGB:"Air National Guard Base", ARB:"Air Reserve Base", Spb:"Seaplane Base"
+  }[m] || m));
+  if (!/airport|field|base|station/i.test(n)) n += " airport";
+  return n;
+}
+function spokenWind(s){
+  if (s.wspd == null && s.wdir == null) return "";
+  if (s.wspd != null && Number(s.wspd) === 0) return "winds calm";   // 00000KT
+  const dir = (s.wdir === "VRB" || s.wdir == null) ? "variable" : digitWords(String(s.wdir).padStart(3,"0"));
+  let t = `wind ${dir} at ${s.wspd} knots`;
+  if (s.wgst) t += `, gusting ${s.wgst} knots`;
+  return t;
+}
+function spokenVisStr(v){
+  let s = String(v); const more = s.includes("+"); s = s.replace("+","").trim();
+  s = s.replace("1/2","one half").replace("1/4","one quarter").replace("3/4","three quarters")
+       .replace("1/8","one eighth").replace("3/8","three eighths").replace("5/8","five eighths").replace("1/16","one sixteenth");
+  s = s.replace(/(\d)\s+(one|three|five)/, "$1 and $2");
+  return more ? s + " or more" : s;
+}
+function spokenVisPhrase(v){
+  if (v == null) return "";
+  const num = abVisNum(v);
+  return `visibility ${spokenVisStr(v)} statute mile${(num != null && num <= 1) ? "" : "s"}`;
+}
+function spokenVis(s){ return spokenVisPhrase(s.visib); }
+function spokenCloudLayer(c){
+  if (c.cover === "CLR") return "sky clear below one two thousand";
+  if (["SKC","NSC","NCD"].includes(c.cover)) return "sky clear";
+  if (c.cover === "VV") return c.base != null ? `indefinite ceiling at ${c.base} feet above ground level` : "indefinite ceiling";
+  const lab = {FEW:"few clouds at", SCT:"scattered at", BKN:"broken at", OVC:"overcast at"}[c.cover];
+  if (!lab) return "";
+  return c.base != null ? `${lab} ${c.base.toLocaleString()}` : lab;
+}
+function spokenClouds(s){
+  if (!s.clouds || !s.clouds.length){
+    if (s.cover === "CLR") return "sky clear below one two thousand";
+    if (s.cover === "SKC") return "sky clear";
+    return "";
+  }
+  return s.clouds.map(spokenCloudLayer).filter(Boolean).join(", ");
+}
+function spokenTemp(s){
+  if (s.temp == null) return "";
+  const w = n => n < 0 ? `minus ${Math.abs(n)}` : `${n}`;
+  const d = s.dewp != null ? `, dewpoint ${w(Math.round(s.dewp))}` : "";
+  return `temperature ${w(Math.round(s.temp))}${d}`;
+}
+function spokenAltim(s){
+  const m = (s.rawOb || "").match(/\bA(\d{4})\b/);
+  if (m) return `altimeter ${digitWords(m[1])}`;
+  if (s.altim != null) return `altimeter ${(s.altim * 0.02953).toFixed(2)}`;
+  return "";
+}
+function spokenRemarks(s){
+  const rmk = decodeRemarks(s.rawOb) || [];
+  const sig = rmk.filter(r => /thunderstorm|lightning|rain|snow|hail|drizzle|funnel|tornado|waterspout|freezing|rising rapidly|falling rapidly|squall|virga|dust|sand|fog|mist|smoke|volcanic|wind shift|peak wind|gust|cumulonimbus|towering cumulus|altocumulus/i.test(r))
+    .map(r => r.replace(/<[^>]+>/g, "").trim());
+  return sig.join(", ");
+}
+function spokenMetar(s){
+  const tm = (s.rawOb || "").match(/\b\d{2}(\d{4})Z\b/);
+  const pw = s.wxString ? (decodeWx(s.wxString) || "") : "";
+  const auto = /\bAUTO\b/.test(s.rawOb || "");
+  const parts = [spokenName(s.name), tm ? `${digitWords(tm[1])} zulu` : "", "Mee tar", auto ? "Automated" : "",
+    spokenWind(s), spokenVis(s), pw, spokenClouds(s), spokenTemp(s), spokenAltim(s)].filter(Boolean);
+  let text = parts.join(". ");
+  const rmk = spokenRemarks(s);
+  if (rmk) text += `. Remarks, ${rmk}`;
+  return text + ".";
+}
+function spokenTime(epoch){ const d = new Date(epoch * 1000); return digitWords(String(d.getUTCHours()).padStart(2,"0") + String(d.getUTCMinutes()).padStart(2,"0")); }
+function spokenTaf(t){
+  if (!t || !t.fcsts || !t.fcsts.length) return "";
+  const out = ["Terminal Area Forecast"];
+  t.fcsts.forEach((f, i) => {
+    let pre = `from ${spokenTime(f.timeFrom)} zulu`;
+    if (i > 0 && f.fcstChange === "BECMG") pre = `becoming ${spokenTime(f.timeFrom)} zulu`;
+    else if (f.fcstChange === "TEMPO") pre = `temporary ${spokenTime(f.timeFrom)} zulu`;
+    else if (f.probability) pre = `${f.probability} percent chance ${spokenTime(f.timeFrom)} zulu`;
+    const bits = [];
+    if (f.wdir != null || f.wspd != null){
+      const dir = (f.wdir === "VRB" || f.wdir == null) ? "variable" : digitWords(String(f.wdir).padStart(3,"0"));
+      let w = `wind ${dir} at ${f.wspd} knots`; if (f.wgst) w += ` gusting ${f.wgst}`; bits.push(w);
+    }
+    if (f.visib != null) bits.push(spokenVisPhrase(f.visib));
+    if (f.wxString){ const pw = decodeWx(f.wxString); if (pw) bits.push(pw); }
+    if (f.clouds && f.clouds.length) bits.push(f.clouds.map(spokenCloudLayer).filter(Boolean).join(", "));
+    else if (f.vertVis != null) bits.push(`indefinite ceiling at ${f.vertVis * 100} feet above ground level`);
+    out.push(`${pre}, ${bits.join(", ")}`);
+  });
+  return out.join(". ") + ".";
+}
+function closestStation(){
+  const arr = visibleStations().filter(s => !isStale(s));
+  if (!center) return arr[0] || lastStations[0];
+  let best = Infinity, s = null;
+  for (const x of arr){ const d = distanceNm(center.lat, center.lon, x.lat, x.lon); if (d < best){ best = d; s = x; } }
+  return s || lastStations[0];
+}
+function updateSpeakBtn(on){ const b = $("speakBtn"); if (b) b.classList.toggle("on", on); }
+// Native Capacitor TTS when available (Android/iOS webview has no Web Speech API), else browser speech.
+const capTTS = () => (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.TextToSpeech) || null;
+let speaking = false, lastReadKey = null;
+// Browsers block speechSynthesis until the user interacts once. Unlock it on the
+// first touch/tap/key so auto-read works for the rest of the session.
+let speechPrimed = false;
+function primeSpeech(){
+  if (speechPrimed || !window.speechSynthesis || capTTS()) return;
+  speechPrimed = true;
+  try{ const u = new SpeechSynthesisUtterance(" "); u.volume = 0; speechSynthesis.speak(u); speechSynthesis.cancel(); }catch(e){}
+}
+["pointerdown","touchend","keydown"].forEach(ev => window.addEventListener(ev, primeSpeech, {passive:true}));
+function stopSpeak(){
+  speaking = false;
+  const t = capTTS(); if (t) t.stop().catch(() => {});
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  updateSpeakBtn(false);
+}
+function speakOne(text){
+  return new Promise(resolve => {
+    if (!text){ resolve(); return; }
+    const t = capTTS();
+    if (t){ t.speak({text, lang:"en-US", rate:1.0}).then(resolve, resolve); return; }
+    if (window.speechSynthesis){
+      const u = new SpeechSynthesisUtterance(text); u.rate = 0.96;
+      u.onend = resolve; u.onerror = resolve;
+      speechSynthesis.speak(u); return;
+    }
+    resolve();
+  });
+}
+async function speakSegments(segs){
+  stopSpeak(); speaking = true; updateSpeakBtn(true);
+  for (let i = 0; i < segs.length; i++){
+    if (!speaking) break;
+    await speakOne(segs[i]);
+    if (!speaking) break;
+    if (i < segs.length - 1) await sleep(700);   // ~0.7s pause between brief, METAR and TAF
+  }
+  speaking = false; updateSpeakBtn(false);
+}
+function speakAloud(){
+  if (speaking){ stopSpeak(); return; }
+  if (!capTTS() && !window.speechSynthesis){ setStatus("Read‑aloud isn't available on this device."); return; }
+  const arr = visibleStations();
+  const s = closestStation();
+  if (!s){ setStatus("No nearby weather to read."); return; }
+  let brief = (scope === "route" ? routeBrief(arr) : areaBrief(arr)).summary
+    .replace(/ — /g, " with ").replace(/ & /g, " and ");
+  if (scope !== "route" && !/the area/i.test(brief)) brief = brief.replace(/\.\s*$/, "") + " throughout the area.";
+  const segs = [brief, spokenMetar(s)];
+  if (s.taf) segs.push(spokenTaf(s.taf));
+  speakSegments(segs);
+}
+// Auto-read once per new location when the setting is on.
+function maybeAutoRead(delay){
+  if (!getAutoRead() || scope === "route") return;   // area / single-airport only for now, not routes
+  const key = center ? `${center.lat.toFixed(3)},${center.lon.toFixed(3)}` : null;
+  if (!key || key === lastReadKey) return;
+  lastReadKey = key;
+  // Wait for any map fly animation to finish before opening the popup + speaking,
+  // otherwise the popup/speech starts mid-flight and the audio gets cut off.
+  setTimeout(() => {
+    const s = closestStation();
+    const m = s && markersByIcao[s.icaoId];
+    if (m){
+      const p = m.getPopup && m.getPopup();
+      if (p) p.options.autoPan = false;   // don't let the popup shove the map off-center
+      m.openPopup();
+    }
+    // On the web, speech is blocked until the first user gesture — so if we haven't
+    // been primed yet, play the read the instant the user first touches the screen.
+    if (!capTTS() && !speechPrimed) armReadOnGesture();
+    else speakAloud();
+  }, delay || 500);
+}
+function armReadOnGesture(){
+  const fire = () => {
+    ["pointerdown","touchend","keydown"].forEach(ev => window.removeEventListener(ev, fire));
+    primeSpeech(); speakAloud();
+  };
+  ["pointerdown","touchend","keydown"].forEach(ev => window.addEventListener(ev, fire, {passive:true}));
+}
 function updateRibbon(arr){
   const el = $("ribbon"); if (!el) return;
   const p = $("briefPanel");
@@ -1086,10 +1316,15 @@ function updateRibbon(arr){
   if (!arr || !arr.length){ el.style.display = "none"; collapse(); return; }
   const brief = (scope === "route") ? routeBrief(arr) : areaBrief(arr);
   lastBriefDetails = brief.details;
-  el.innerHTML = `<span class="rb-brief">${brief.summary}</span>` + (brief.details.length ? `<i class="rb-caret">▾</i>` : "");
-  el.classList.toggle("rb-tappable", brief.details.length > 0);
+  el.innerHTML = `<span class="rb-brief">${brief.summary}</span>`
+    + `<span class="rb-right"><button type="button" id="speakBtn" class="rb-speak" aria-label="Read the nearest weather aloud" title="Read aloud">${SPEAKER_SVG}</button>`
+    + (brief.details.length ? `<i class="rb-caret">▾</i>` : "")
+    + `</span>`;
+  el.classList.add("rb-tappable");
+  if (window.speechSynthesis && speechSynthesis.speaking) updateSpeakBtn(true);
   el.style.display = "flex";
   collapse();   // close details on data refresh
+  applyTipHints();   // re-pulse the speaker if the first-run tip is still showing
 }
 function toggleBriefPanel(){
   const p = $("briefPanel"), el = $("ribbon"); if (!p) return;
@@ -1381,6 +1616,7 @@ async function loadRoute(){
     if (lastStations[0]) updateFavicon(lastStations[0].fltCat);
     lastUpdate = new Date(); setUpdated();
     setStatus(lastStations.length ? "" : "No reporting stations along this route.");
+    maybeAutoRead();
   }catch(e){ setStatus(e.message || "Could not load route", true); }
 }
 // ---- waypoint management ----
@@ -1881,6 +2117,7 @@ async function load(c, opts){
       : "Vicinity";
     lastUpdate = new Date(); setUpdated();
     setStatus(lastStations.length ? "" : "No reporting stations found.");
+    maybeAutoRead(opts.animate ? 1800 : 500);   // longer wait after the intro fly-in so speech isn't cut off
   }catch(e){
     setStatus(e.message || "Could not load weather", true);
   }
@@ -2212,13 +2449,46 @@ function setSkipIntroPref(on){
 }
 setSkipIntroPref(getSkipIntroPref());
 $("skipIntroPref").addEventListener("click", () => setSkipIntroPref(!getSkipIntroPref()));
+const AUTO_READ_KEY = "wxradius.autoRead";
+function getAutoRead(){ return localStorage.getItem(AUTO_READ_KEY) === "1"; }
+function setAutoRead(on){
+  localStorage.setItem(AUTO_READ_KEY, on ? "1" : "0");
+  const b = $("autoReadPref"); b.textContent = on ? "On" : "Off"; b.classList.toggle("on", on);
+}
+setAutoRead(getAutoRead());
+$("autoReadPref").addEventListener("click", () => setAutoRead(!getAutoRead()));
+const APP_BUILD = "134";   // bump alongside sw.js CACHE so Settings shows the live version
+{ const v = $("setVer"); if (v) v.textContent = `Vicinity · build ${APP_BUILD}`; }
+// One-time "new feature" callout pointing at Settings — shows once, then never again.
+const TIP_AUTOSPEAK_KEY = "wxradius.tipAutospeak";
+function tipVisible(){ const t = $("tipAutospeak"); return t && t.style.display !== "none"; }
+function applyTipHints(){   // pulse the gear + speaker so the tip points at both
+  if (!tipVisible()) return;
+  ["cogBtn","speakBtn"].forEach(id => { const b = $(id); if (b) b.classList.add("tip-hint"); });
+}
+function clearTipHints(){ ["cogBtn","speakBtn"].forEach(id => { const b = $(id); if (b) b.classList.remove("tip-hint"); }); }
+function hideAutospeakTip(){ clearTipHints(); const t = $("tipAutospeak"); if (t) t.style.display = "none"; }
+function maybeShowAutospeakTip(){
+  if (localStorage.getItem(TIP_AUTOSPEAK_KEY)) return;
+  localStorage.setItem(TIP_AUTOSPEAK_KEY, "1");
+  const t = $("tipAutospeak"); if (t) t.style.display = "block";
+  applyTipHints();
+}
+$("tipAutospeakOk").addEventListener("click", hideAutospeakTip);
+setTimeout(maybeShowAutospeakTip, 1500);
 updateGpsPrefStatus();
 $("gpsPrefReset").addEventListener("click", () => {
   localStorage.removeItem(GPS_PREF_KEY);
+  gpsOk = false;
   updateGpsPrefStatus();
+  const native = !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform());
+  setStatus(native
+    ? "Cleared. The device location permission is controlled by Android — to change it, open Settings → Apps → Vicinity → Permissions → Location."
+    : "Location choice reset — the app will ask again next time you use GPS.");
 });
 $("cogBtn").addEventListener("click", e => {
   e.stopPropagation();
+  hideAutospeakTip();
   const p = $("settingsPanel");
   p.style.display = p.style.display === "none" ? "block" : "none";
 });
@@ -2278,7 +2548,10 @@ $("rpChips").addEventListener("click", e => {
   if (scope === "route"){ if (route.length >= 2) loadRoute(); else drawRoute(); }
 });
 $("listBtn").addEventListener("click", () => setViewMode(viewMode === "map" ? "list" : "map"));
-$("ribbon").addEventListener("click", toggleBriefPanel);
+$("ribbon").addEventListener("click", e => {
+  if (e.target.closest("#speakBtn")){ e.stopPropagation(); speakAloud(); return; }
+  toggleBriefPanel();
+});
 
 // ---- AI weather brief ------------------------------------------------------
 const AI_API = (PROXY_BASE || "") + "/api/summarize";

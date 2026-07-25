@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0f16"/>
+      <stop offset="1" stop-color="#141c28"/>
+    </linearGradient>
+    <radialGradient id="glowY" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffd23f" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ffd23f" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="500" fill="url(#bg)"/>
+
+  <!-- faint lat/long grid -->
+  <g stroke="#5d7088" stroke-opacity="0.14" stroke-width="1">
+    <line x1="0" y1="125" x2="1024" y2="125"/>
+    <line x1="0" y1="250" x2="1024" y2="250"/>
+    <line x1="0" y1="375" x2="1024" y2="375"/>
+    <line x1="600" y1="0" x2="600" y2="500"/>
+    <line x1="760" y1="0" x2="760" y2="500"/>
+    <line x1="920" y1="0" x2="920" y2="500"/>
+  </g>
+
+  <!-- ROUTE MOTIF (right side) -->
+  <g>
+    <!-- corridor band -->
+    <path d="M600 388 C 700 330, 790 250, 860 190 S 930 120, 968 96"
+          fill="none" stroke="#ffd23f" stroke-opacity="0.10" stroke-width="74" stroke-linecap="round"/>
+    <!-- route line -->
+    <path d="M600 388 C 700 330, 790 250, 860 190 S 930 120, 968 96"
+          fill="none" stroke="#ffd23f" stroke-opacity="0.95" stroke-width="5" stroke-linecap="round"/>
+
+    <!-- category dots -->
+    <g stroke="#ffffff" stroke-opacity="0.85" stroke-width="2.5">
+      <circle cx="668" cy="336" r="11" fill="#2b6fff"/>
+      <circle cx="726" cy="292" r="11" fill="#11a911"/>
+      <circle cx="792" cy="248" r="11" fill="#e0152b"/>
+      <circle cx="700" cy="392" r="10" fill="#11a911"/>
+      <circle cx="852" cy="196" r="11" fill="#d017d0"/>
+      <circle cx="906" cy="150" r="10" fill="#2b6fff"/>
+      <circle cx="628" cy="300" r="9"  fill="#11a911"/>
+      <circle cx="792" cy="330" r="9"  fill="#11a911"/>
+    </g>
+
+    <!-- departure pin (green D) -->
+    <circle cx="600" cy="388" r="30" fill="url(#glowY)" filter="url(#soft)"/>
+    <circle cx="600" cy="388" r="16" fill="#11a911" stroke="#ffffff" stroke-width="3"/>
+    <text x="600" y="394" font-family="DejaVu Sans, Arial, sans-serif" font-size="16" font-weight="800"
+          fill="#ffffff" text-anchor="middle">D</text>
+
+    <!-- destination pin (red A) -->
+    <circle cx="968" cy="96" r="30" fill="url(#glowY)" filter="url(#soft)"/>
+    <circle cx="968" cy="96" r="16" fill="#e0152b" stroke="#ffffff" stroke-width="3"/>
+    <text x="968" y="102" font-family="DejaVu Sans, Arial, sans-serif" font-size="16" font-weight="800"
+          fill="#ffffff" text-anchor="middle">A</text>
+  </g>
+
+  <!-- TITLE + TAGLINE (left side) -->
+  <text x="66" y="222" font-family="DejaVu Sans, Arial, sans-serif" font-size="112" font-weight="800"
+        fill="#ffffff" letter-spacing="-1">Vicinity</text>
+  <text x="70" y="272" font-family="DejaVu Sans, Arial, sans-serif" font-size="29" font-weight="500"
+        fill="#9fb4cf">METARs · TAFs · Radar, at a glance</text>
+
+  <!-- flight-category legend -->
+  <g font-family="DejaVu Sans, Arial, sans-serif" font-size="21" font-weight="700">
+    <circle cx="80"  cy="352" r="9" fill="#11a911"/><text x="98"  y="359" fill="#c7d4e3">VFR</text>
+    <circle cx="182" cy="352" r="9" fill="#2b6fff"/><text x="200" y="359" fill="#c7d4e3">MVFR</text>
+    <circle cx="308" cy="352" r="9" fill="#e0152b"/><text x="326" y="359" fill="#c7d4e3">IFR</text>
+    <circle cx="404" cy="352" r="9" fill="#d017d0"/><text x="422" y="359" fill="#c7d4e3">LIFR</text>
+  </g>
+
+  <!-- tag line bottom -->
+  <text x="70" y="430" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="500"
+        fill="#6f8299">Nearby &amp; along-route aviation weather for pilots</text>
+</svg>
